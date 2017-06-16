@@ -1,0 +1,177 @@
+**
+* Background Types Pointers
+*
+background_type_tbl:
+       data arch_n                     ; 0 Arch north
+       data arch_e                     ; 1 arch east
+       data arch_s                     ; 2 arch south
+       data arch_w                     ; 3 arch west
+       data tree_arch_n                ; 4 Tree arch north
+       data tree_arch_e                ; 5 Tree arch east
+       data tree_arch_s                ; 6 Tree arch south
+       data tree_arch_w                ; 7 Tree arch west
+       data gate_n                     ; 8 Gate
+       data gate_e                     ; 9 Gate
+       data gate_s                     ; A Gate
+       data gate_w                     ; B Gate
+       data wall_size_1                ; C walls size 0
+       data wall_size_2                ; D walls size 1
+       data wall_size_3                ; E walls size 2
+       data tree_room_size_1           ; F trees size 0
+       data tree_filler_w              ; 10 trees size 1
+       data tree_filler_n              ; 11 trees size 2
+       data wizard                     ; 12 Wizard
+       data cauldron                   ; 13 Pot
+       data high_arch_e                ; 14 High Arch east
+       data high_arch_s                ; 15 High Arch south
+       data high_arch_e_base           ; 16 High Arch east base
+       data high_arch_s_base           ; 17 High Arch south base
+**
+* Background Type Makeup
+*
+* +0 = sprite
+* +1 = x
+* +2 = y
+* +3 = z
+* +4 = width (x)
+* +5 = depth (y)
+* +6 = height (z)
+* +7 = flags (see code)
+*
+arch_n:
+       byte 2, >8D, >C4, >80, 3, 5, >28, >50
+       byte 3, >73, >C4, >80, 3, 5, >28, >50
+       byte 0
+arch_e:
+       byte 2, >C4, >73, >80, 5, 3, >28, >10
+       byte 3, >C4, >8D, >80, 5, 3, >28, >10
+       byte 0
+high_arch_e:
+       byte 2, >C4, >73, >B0, 5, 3, >28, >10
+       byte 3, >C4, >8D, >B0, 5, 3, >28, >10
+       byte 0
+arch_s:
+       byte 2, >8D, >3B, >80, 3, 5, >28, >50
+       byte 3, >73, >3B, >80, 3, 5, >28, >50
+       byte 0
+high_arch_s:
+       byte 2, >8D, >3B, >B0, 3, 5, >28, >50
+       byte 3, >73, >3B, >B0, 3, 5, >28, >50
+       byte 0
+arch_w:
+       byte 2, >3B, >73, >80, 5, 3, >28, >10
+       byte 3, >3B, >8D, >80, 5, 3, >28, >10
+       byte 0
+tree_arch_n:
+       byte 4, >8D, >C4, >80, 3, 5, >28, >50
+       byte 5, >73, >C4, >80, 3, 5, >28, >50
+       byte 0
+tree_arch_e:
+       byte 4, >C4, >73, >80, 5, 3, >28, >10
+       byte 5, >C4, >8D, >80, 5, 3, >28, >10
+       byte 0
+tree_arch_s:
+       byte 4, >8D, >3B, >80, 3, 5, >28, >50
+       byte 5, >73, >3B, >80, 3, 5, >28, >50
+       byte 0
+tree_arch_w:
+       byte 4, >3B, >73, >80, 5, 3, >28, >10
+       byte 5, >3B, >8D, >80, 5, 3, >28, >10
+       byte 0
+gate_n:
+       byte 8, >80, >BE, >A0, >C, 1, >20, >50
+       byte 0
+gate_e:
+       byte 8, >BE, >80, >A0, 1, >C, >20, >10
+       byte 0
+gate_s:
+       byte 8, >80, >41, >A0, >C, 1, >20, >50
+       byte 0
+gate_w:
+       byte 8, >41, >80, >A0, 1, >C, >20, >10
+       byte 0
+wall_size_1:
+       byte >D, >3F, >B8, >80, 0, 8, >28, >10
+       byte >E, >47, >C0, >80, 8, 0, >28, >10
+       byte >F, >3F, >49, >80, 0, 8, >2C, >10
+       byte >F, >B8, >C0, >80, 8, 0, >2C, >50
+       byte >F, >3F, >49, >AC, 0, 8, >2C, >10
+       byte >F, >B8, >C0, >AC, 8, 0, >2C, >50
+       byte >A, >5C, >C0, >80, >14, 0, >14, >50
+       byte >B, >3F, >5C, >98, 0, >C, >14, >10
+       byte >C, >3F, >A0, >98, 0, >C, >C, >10
+       byte >B, >A4, >C0, >98, >C, 0, >14, >50
+       byte >A, >3F, >6D, >B1, 0, >14, >14, >10
+       byte >C, >60, >C0, >A0, >C, 0, >C, >50
+       byte >A, >90, >C0, >B0, >14, 0, >14, >50
+       byte 0
+wall_size_2:
+       byte >D, >3F, >98, >80, 0, 8, >28, >10
+       byte >E, >47, >A0, >80, 8, 0, >28, >10
+       byte >F, >3F, >63, >80, 0, 8, >2C, >10
+       byte >F, >B8, >A0, >80, 8, 0, >2C, >50
+       byte >F, >3F, >63, >AC, 0, 8, >2C, >10
+       byte >F, >B8, >A0, >AC, 8, 0, >2C, >50
+       byte >D, >3F, >98, >A8, 0, 8, >28, >10
+       byte >E, >47, >A0, >A8, 8, 0, >28, >10
+       byte >F, >B8, >A0, >D0, 8, 0, >2C, >50
+       byte >A, >80, >A0, >80, >14, 0, >14, >50
+       byte >A, >3F, >7E, >B0, 0, >14, >14, >10
+       byte >B, >60, >A0, >90, >C, 0, >14, >50
+       byte >A, >60, >A0, >B8, >14, 0, >14, >50
+       byte >C, >A0, >A0, >B0, >C, 0, >C, >50
+       byte 0
+wall_size_3:
+       byte >D, >5F, >B8, >80, 0, 8, >28, >10
+       byte >E, >67, >C0, >80, 8, 0, >28, >10
+       byte >F, >5F, >48, >80, 0, 8, >2C, >10
+       byte >F, >9D, >C0, >80, 8, 0, >2C, >50
+       byte >D, >5F, >B8, >A8, 0, 8, >28, >10
+       byte >E, >67, >C0, >A8, 8, 0, >28, >10
+       byte >F, >5F, >48, >AC, 0, 8, >2C, >10
+       byte >F, >9D, >C0, >AC, 8, 0, >2C, >50
+       byte >F, >5F, >48, >D0, 0, 8, >2C, >10
+       byte >A, >5F, >90, >80, 0, >14, >14, >10
+       byte >A, >84, >C0, >B0, >14, 0, >14, >50
+       byte >B, >5F, >60, >90, 0, >C, >14, >10
+       byte >A, >5F, >68, >B8, 0, >14, >14, >10
+       byte >C, >5F, >A0, >B0, 0, >C, >C, >10
+       byte 0
+tree_room_size_1:
+       byte >80, >3F, >49, >80, 0, 8, >2C, >10
+       byte >81, >3F, >58, >80, 0, 8, >2C, >10
+       byte >82, >3F, >68, >80, 0, 8, >2C, >10
+       byte >80, >3F, >98, >80, 0, 8, >2C, >10
+       byte >81, >3F, >A8, >80, 0, 8, >2C, >10
+       byte >82, >3F, >B8, >80, 0, 8, >2C, >10
+       byte >80, >48, >C0, >80, 8, 0, >2C, >50
+       byte >81, >58, >C0, >80, 8, 0, >2C, >50
+       byte >82, >68, >C0, >80, 8, 0, >2C, >50
+       byte >80, >98, >C0, >80, 8, 0, >2C, >50
+       byte >81, >A8, >C0, >80, 8, 0, >2C, >50
+       byte >82, >B8, >C0, >80, 8, 0, >2C, >50
+       byte 0
+tree_filler_w:
+       byte >80, >3F, >78, >80, 0, 8, >2C, >10
+       byte >81, >3F, >88, >80, 0, 8, >2C, >10
+       byte 0
+tree_filler_n:
+       byte >80, >78, >C0, >80, 8, 0, >2C, >50
+       byte >81, >88, >C0, >80, 8, 0, >2C, >50
+       byte 0
+wizard:
+       byte >9E, >98, >68, >80, 5, 5, >18, >10
+       byte >90, >A0, >60, >80, 5, 5, 0, >12
+       byte 0
+cauldron:
+       byte >8D, >80, >80, >80, >A, >A, >18, >10
+       byte >8E, >80, >88, >80, 0, 0, 0, >12
+       byte 0
+high_arch_e_base:
+       byte 7, >C8, >78, >A4, 8, 8, >C, >10
+       byte 7, >C8, >88, >A4, 8, 8, >C, >10
+       byte 0
+high_arch_s_base:
+       byte 7, >78, >38, >A4, 8, 8, >C, >10
+       byte 7, >88, >38, >A4, 8, 8, >C, >10
+       byte 0
