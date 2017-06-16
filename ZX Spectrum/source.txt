@@ -1,0 +1,5876 @@
+Disassembly file for "knight lore"
+
+Disassembly
+
+; 5ba0 - 6108 = Scratch mem
+; 6108 - 6248 = font
+; 6248 - 6251 = Room Size Table
+; 6251 - 6bd1 = Locations
+; 6bd1 - 6c0b = Block Types Table
+; 6c0b - 6ce2 = Block Type data
+; 6ce2 - 6d12 = Background Types Table
+; 6d12 - 6f2f = Background Types data
+; 6f2f - 6ff2 = Unknown Table
+; 6ff2 - 7112 = Objects
+; 7112 - 728a = Ptrs to sprite GFX
+; 728A - AF6C = sprite GFX
+; af6c - d8f3 = code
+
+; B096 - B20E - Jump Table
+; B20e - b218 - Audio Tunes
+; B218 - b239 =    ""
+; B239 - b253 =    ""
+; B253 - B2B6 =    ""
+; B332 - B3E9 = Frequency Table
+; B58B - B593 = Jump Table
+; BAd2 - BB4C = Completed Message
+; BB4c - BC10 = Game Over stats
+; BCe7 - BCEC = DAY text
+; BCEC - BDOC = DAY font
+; BDa2 - BE31 = Menu Text
+; C7A9 - C7B1 = Jump Table
+; CA32 - CA3A = Jump Table
+; CA92 - CA9A = Jump Table
+; CF69 - CF9F = Jump Table
+; D1EE - D1E6 = Start Locations *4
+; D27E - D296 = Panel Data
+; D2CF - D2EF = Border Data
+; d8f3 - f0f3 = linear screen buffer
+
+
+; Room Sizes
+6248 	DB 040h,040h,080h	; 0 
+	DB 020h,040h,080h	; 1
+	DB 040h,020h,080h	; 2
+
+; Locations
+6251	DB 000h,019h,003h
+	DB 000h,001h,00Ch,0FFh,007h,010h,050h,090h,011h,051h,091h,00Ah,04Ah,006h,08Ah,002h
+	DB 042h,082h,0C8h,0C1h,0C0h,0A8h,0C9h
+
+	DB 001h,014h,014h
+	DB 001h,003h,00Dh,0FFh,003h,02Bh,02Ch,013h,014h,023h,06Bh,06Ch,053h,054h,040h,01Ch
+	DB 048h,028h
+
+	DB 002h,006h,003h
+	DB 000h,001h,003h,00Ch
+
+	DB 003h,01Ah,016h
+	DB 001h,003h,00Dh,0FFh,003h,022h,01Ah,025h,01Dh,02Bh,023h,01Bh,024h,01Ch,093h,02Bh
+	DB 02Ch,013h,014h,0B3h,063h,064h,05Bh,05Ch
+
+	DB 004h,013h,005h
+	DB 000h,003h,00Ch,0FFh,02Bh,023h,01Ah,01Ch,013h,0B2h,05Ah,05Ch,053h,002h,063h,09Bh
+	DB 0DBh
+
+	DB 008h,01Ah,003h
+	DB 004h,005h,00Fh,010h,0FFh,01Bh,01Bh,05Bh,09Bh,0DBh,02Bh,023h,01Ah,01Ch,013h,093h
+	DB 063h,05Ah,05Ch,053h,0B8h,009h,080h,049h
+
+	DB 009h,00Bh,006h
+	DB 005h,007h,00Fh,011h,009h,00Bh,0FFh,048h,023h
+
+	DB 00Ah,019h,003h
+	DB 005h,007h,00Fh,011h,0FFh,01Dh,022h,062h,0A2h,024h,064h,0A4h,02Fh,02Ah,02Bh,06Bh
+	DB 02Ch,01Ah,01Bh,05Bh,01Ch,038h,00Eh
+
+	DB 00Bh,006h,006h
+	DB 005h,007h,00Fh,011h
+
+	DB 00Ch,017h,003h
+	DB 005h,007h,00Fh,011h,0FFh,02Fh,03Dh,032h,028h,02Ch,02Fh,022h,01Ch,010h,02Bh,012h
+	DB 017h,00Dh,004h,0B8h,024h
+
+	DB 00Dh,006h,004h
+	DB 000h,001h,003h,00Ch
+
+	DB 00Eh,00Bh,015h
+	DB 001h,003h,00Dh,0FFh,053h,012h,01Dh,02Ch,023h
+
+	DB 00Fh,01Ch,004h
+	DB 000h,003h,00Ch,0FFh,007h,023h,025h,013h,015h,063h,064h,065h,05Bh,004h,05Dh,053h
+	DB 054h,055h,01Ch,09Bh,0A4h,09Bh,09Dh,094h,0B0h,09Ch
+
+	DB 010h,018h,00Dh
+	DB 000h,015h,017h,00Eh,0FFh,001h,0C3h,0C4h,05Bh,005h,00Ch,00Bh,00Ah,09Bh,045h,04Ch
+	DB 04Bh,04Ah,0A8h,0C2h,050h,05Ah
+
+	DB 012h,018h,00Ch
+	DB 000h,002h,00Eh,0FFh,097h,0FAh,0FDh,0F3h,0F4h,0EBh,0ECh,0E3h,0E4h,097h,0DBh,0DCh
+	DB 0D3h,0D4h,0CBh,0CCh,0C2h,0C5h
+
+	DB 014h,01Ah,00Eh
+	DB 000h,015h,017h,00Eh,0FFh,001h,0C3h,0C4h,0ADh,0C2h,0CAh,0D2h,0DAh,0DBh,0DCh,0ACh
+	DB 0DDh,0E5h,0ADh,075h,03Dh,029h,00Bh,00Ch
+
+	DB 018h,011h,00Dh
+	DB 000h,002h,00Eh,0FFh,02Fh,02Ah,02Bh,02Ch,02Dh,012h,013h,014h,015h,0B8h,01Bh
+
+	DB 01Dh,01Bh,00Eh
+	DB 000h,015h,017h,00Eh,0FFh,007h,0C3h,0C4h,00Ch,04Ch,08Ch,0CCh,024h,064h,002h,02Ch
+	DB 06Ch,034h,029h,014h,01Ch,058h,00Ch,078h,054h
+
+	DB 01Fh,017h,00Bh
+	DB 000h,002h,00Eh,0FFh,003h,012h,015h,02Ah,02Dh,02Fh,052h,013h,014h,055h,06Ah,02Bh
+	DB 02Ch,06Dh,0E1h,093h,06Bh
+
+	DB 020h,012h,003h
+	DB 000h,001h,015h,017h,00Ch,0FFh,002h,018h,0C3h,0C4h,0AAh,050h,088h,0C0h,028h,002h
+
+	DB 021h,01Ch,016h
+	DB 014h,016h,003h,00Dh,0FFh,007h,021h,061h,0A2h,0A3h,024h,064h,025h,065h,003h,026h
+	DB 066h,0E7h,0DFh,029h,0A4h,0A6h,030h,0E2h,0C0h,0A5h
+
+	DB 022h,01Ah,003h
+	DB 002h,003h,00Ch,0FFh,003h,030h,078h,0B9h,0FAh,02Fh,039h,03Ah,03Dh,03Eh,03Fh,033h
+	DB 02Bh,023h,02Ah,034h,02Ch,024h,0A8h,0FBh
+
+	DB 024h,018h,003h
+	DB 000h,002h,00Ch,0FFh,02Fh,002h,005h,00Ah,00Fh,010h,015h,019h,01Bh,02Fh,01Ch,01Fh
+	DB 028h,02Ah,02Ch,02Eh,03Ah,03Dh
+
+	DB 027h,00Fh,006h
+	DB 000h,00Ch,0FFh,003h,01Bh,01Ch,023h,024h,04Bh,012h,015h,02Ah,02Dh
+
+	DB 028h,010h,00Eh
+	DB 000h,015h,00Eh,017h,0FFh,039h,023h,063h,029h,00Bh,00Ch,001h,0C3h,0C4h
+
+	DB 02Dh,017h,004h
+	DB 014h,002h,016h,00Ch,0FFh,007h,0DFh,0E7h,013h,01Bh,023h,05Bh,063h,0A3h,02Bh,01Eh
+	DB 026h,022h,024h,070h,0E3h
+
+	DB 02Eh,011h,015h
+	DB 001h,003h,00Dh,0FFh,02Fh,02Bh,02Ch,022h,025h,01Ah,01Dh,013h,014h,068h,023h
+
+	DB 02Fh,006h,004h
+	DB 000h,002h,003h,00Ch
+
+	DB 030h,016h,00Dh
+	DB 000h,002h,00Eh,0FFh,02Fh,033h,034h,02Ah,02Dh,022h,025h,01Ah,01Dh,02Bh,012h,015h
+	DB 00Bh,00Ch,0B8h,01Bh
+
+	DB 034h,018h,00Eh
+	DB 000h,002h,00Eh,0FFh,03Fh,01Ah,01Bh,01Ch,01Dh,05Ah,05Bh,05Ch,05Dh,097h,09Ah,09Bh
+	DB 09Ch,09Dh,0DAh,0DBh,0DCh,0DDh
+
+	DB 037h,00Dh,00Dh
+	DB 000h,002h,00Eh,0FFh,078h,014h,000h,02Ch,049h,025h,01Ah
+
+	DB 038h,019h,00Bh
+	DB 000h,015h,017h,00Eh,0FFh,005h,07Ah,0F2h,0DAh,0C2h,0C3h,0C4h,0B3h,0EAh,0E2h,0D2h
+	DB 0CAh,02Ch,02Ah,022h,01Ah,012h,00Ah
+
+	DB 03Fh,019h,003h
+	DB 004h,006h,00Fh,010h,0FFh,01Fh,018h,019h,01Ah,05Ah,01Dh,05Dh,01Eh,01Fh,02Dh,058h
+	DB 059h,09Ah,09Dh,05Eh,05Fh,0D0h,01Bh
+
+	DB 040h,013h,006h
+	DB 014h,015h,016h,017h,00Ch,0FFh,005h,03Fh,006h,0C3h,0C4h,0DFh,0E7h,068h,038h,080h
+	DB 0B8h
+
+	DB 041h,017h,014h
+	DB 001h,003h,00Dh,0FFh,005h,012h,014h,016h,02Ah,02Ch,02Eh,025h,052h,054h,056h,06Ah
+	DB 06Ch,06Eh,051h,015h,02Bh
+
+	DB 042h,015h,005h
+	DB 001h,003h,00Ch,0FFh,001h,01Bh,0DCh,0A9h,063h,0A4h,02Fh,012h,01Ah,022h,02Bh,02Ch
+	DB 025h,01Dh,014h
+
+	DB 043h,01Bh,016h
+	DB 001h,003h,00Dh,0FFh,007h,01Eh,026h,05Dh,065h,019h,021h,05Ah,062h,003h,02Bh,02Ch
+	DB 013h,014h,02Bh,06Bh,06Ch,053h,054h,060h,01Bh
+
+	DB 044h,007h,004h
+	DB 000h,001h,002h,003h,00Ch
+
+	DB 045h,01Dh,005h
+	DB 001h,003h,00Ch,0FFh,007h,023h,025h,013h,015h,063h,064h,065h,05Bh,003h,05Dh,053h
+	DB 054h,055h,09Bh,0A4h,09Bh,09Dh,094h,0B0h,09Ch,028h,01Ch
+
+	DB 046h,01Ch,016h
+	DB 001h,003h,00Dh,0FFh,007h,023h,01Bh,02Ch,06Ch,014h,054h,025h,01Dh,023h,065h,05Dh
+	DB 063h,05Bh,091h,024h,01Ch,0B3h,0A4h,0E4h,09Ch,0DCh
+
+	DB 047h,006h,003h
+	DB 000h,002h,003h,00Ch
+
+	DB 048h,017h,00Eh
+	DB 000h,015h,017h,00Eh,0FFh,007h,0C3h,0C4h,0CCh,02Ch,02Dh,025h,06Ch,06Dh,000h,0ACh
+	DB 029h,00Bh,014h,078h,08Ch
+
+	DB 04Fh,015h,006h
+	DB 004h,006h,00Fh,010h,0FFh,09Fh,0D8h,0D9h,0DAh,0DBh,0DCh,0DDh,0DEh,0DFh,09Bh,0C3h
+	DB 0C4h,0FBh,0FCh
+
+	DB 054h,016h,00Dh
+	DB 000h,002h,00Eh,0FFh,001h,00Ch,033h,02Bh,01Ah,05Ah,025h,065h,093h,013h,00Bh,02Ch
+	DB 024h,079h,014h,023h
+
+	DB 057h,014h,00Dh
+	DB 000h,002h,00Eh,0FFh,007h,02Dh,06Dh,0ADh,024h,064h,0A4h,01Bh,05Bh,003h,09Bh,012h
+	DB 052h,092h
+
+	DB 058h,00Bh,00Dh
+	DB 000h,015h,017h,00Eh,0FFh,048h,01Dh,080h,05Dh
+
+	DB 05Eh,012h,006h
+	DB 004h,005h,00Fh,010h,0FFh,01Fh,032h,035h,029h,02Eh,011h,016h,00Ah,00Dh,0C8h,02Dh
+
+	DB 05Fh,006h,003h
+	DB 004h,006h,007h,00Fh
+
+	DB 064h,012h,00Eh
+	DB 000h,015h,017h,00Eh,0FFh,007h,003h,004h,00Bh,00Ch,023h,024h,02Bh,02Ch,030h,063h
+
+	DB 067h,012h,00Ch
+	DB 000h,002h,00Eh,0FFh,001h,02Ah,02Dh,02Bh,06Ah,06Dh,01Ah,01Dh,0D0h,02Bh,068h,025h
+
+
+	DB 068h,019h,00Bh
+	DB 000h,002h,00Eh,0FFh,007h,03Ah,07Ah,0BAh,0FAh,03Dh,07Dh,0BDh,0FDh,003h,032h,033h
+	DB 034h,035h,029h,072h,075h,060h,0A3h
+
+	DB 06Ah,005h,006h
+	DB 000h,001h,00Ch
+
+	DB 06Bh,011h,014h
+	DB 014h,003h,016h,00Dh,0FFh,005h,024h,01Ch,064h,05Ch,0E7h,0DFh,051h,0D6h,0EDh
+
+	DB 06Ch,018h,013h
+	DB 001h,003h,00Dh,0FFh,037h,02Bh,023h,01Bh,013h,06Bh,063h,05Bh,053h,09Fh,0ABh,0A3h
+	DB 09Bh,093h,0EBh,0E3h,0DBh,0D3h
+
+	DB 06Dh,017h,006h
+	DB 005h,007h,00Fh,011h,0FFh,01Fh,014h,02Ch,054h,06Ch,094h,09Ch,0A4h,0ACh,021h,0D4h
+	DB 0ECh,038h,009h,040h,01Eh
+
+	DB 06Eh,007h,003h
+	DB 005h,006h,007h,00Fh,011h
+
+	DB 06Fh,014h,006h
+	DB 006h,007h,00Fh,011h,0FFh,01Ah,02Dh,02Eh,02Fh,022h,06Dh,06Eh,06Fh,09Bh,03Dh,035h
+	DB 07Dh,075h
+
+	DB 074h,018h,004h
+	DB 001h,002h,00Ch,0FFh,02Ah,039h,030h,031h,007h,03Ah,07Ah,032h,072h,028h,068h,029h
+	DB 069h,0B3h,0B8h,0B9h,0B0h,0B1h
+
+	DB 075h,00Eh,013h
+	DB 001h,003h,00Dh,0FFh,001h,023h,01Ch,029h,024h,01Bh,0C8h,02Bh
+
+	DB 076h,016h,016h
+	DB 014h,003h,016h,00Dh,0FFh,006h,0DFh,0E7h,0EFh,0AEh,06Dh,02Ch,0D7h,02Dh,016h,01Eh
+	DB 026h,015h,01Dh,025h
+
+	DB 077h,007h,003h
+	DB 000h,001h,002h,003h,00Ch
+
+	DB 078h,019h,004h
+	DB 000h,001h,002h,003h,00Ch,0FFh,02Fh,039h,03Fh,035h,028h,02Ch,02Fh,023h,01Dh,02Ch
+	DB 011h,013h,00Ah,00Dh,00Eh,068h,017h
+
+	DB 079h,016h,013h
+	DB 001h,003h,00Dh,0FFh,0B3h,022h,01Ah,025h,01Dh,02Fh,02Bh,02Ch,023h,024h,01Bh,01Ch
+	DB 013h,014h,060h,0DBh
+
+	DB 07Ah,016h,005h
+	DB 002h,003h,00Ch,0FFh,004h,028h,070h,0B8h,0B9h,0FFh,02Dh,0BAh,0BCh,0BEh,037h,02Fh
+	DB 027h,0A9h,0FBh,0FDh
+
+	DB 083h,005h,006h
+	DB 000h,001h,00Ch
+
+	DB 084h,017h,015h
+	DB 001h,003h,00Dh,0FFh,007h,02Ah,06Ah,02Dh,06Dh,012h,052h,015h,055h,023h,0AAh,0ADh
+	DB 092h,095h,011h,01Dh,09Ah
+
+	DB 085h,019h,014h
+	DB 014h,003h,016h,00Dh,0FFh,005h,028h,069h,0AAh,0EBh,0E7h,0DFh,02Fh,01Bh,023h,01Ch
+	DB 024h,01Dh,025h,01Eh,026h,078h,0DBh
+
+	DB 086h,00Bh,013h
+	DB 014h,003h,016h,00Dh,0FFh,080h,063h,0B8h,023h
+
+	DB 087h,018h,005h
+	DB 000h,001h,002h,003h,00Ch,0FFh,003h,02Ah,02Dh,012h,015h,02Bh,06Ah,06Dh,052h,055h
+	DB 0D1h,02Bh,013h,0D9h,01Ah,01Dh
+
+	DB 088h,013h,006h
+	DB 000h,001h,002h,003h,012h,013h,00Ch,0FFh,007h,032h,029h,035h,02Eh,016h,00Dh,011h
+	DB 00Ah
+
+	DB 089h,014h,015h
+	DB 001h,003h,00Dh,0FFh,007h,02Ch,06Ch,0ACh,024h,01Ch,014h,054h,094h,021h,0ECh,0D4h
+	DB 050h,064h
+
+	DB 08Ah,018h,013h
+	DB 001h,003h,00Dh,0FFh,05Fh,02Ah,022h,01Ah,012h,02Dh,025h,01Dh,015h,097h,0EAh,0E2h
+	DB 0DAh,0D2h,0EDh,0E5h,0DDh,0D5h
+
+	DB 08Bh,006h,005h
+	DB 000h,001h,003h,00Ch
+
+	DB 08Ch,019h,014h
+	DB 001h,003h,00Dh,0FFh,007h,02Ah,06Ah,02Dh,06Dh,012h,052h,015h,055h,02Bh,0AAh,0ADh
+	DB 092h,095h,0D9h,01Ah,01Dh,040h,01Bh
+
+	DB 08Dh,01Ah,005h
+	DB 001h,003h,00Ch,0FFh,007h,034h,074h,06Ch,0B4h,0BCh,0FBh,0FDh,0F3h,003h,0FCh,0F5h
+	DB 0EBh,0EDh,058h,03Ch,028h,024h,010h,0E4h
+
+	DB 08Eh,00Ch,013h
+	DB 014h,003h,016h,00Dh,0FFh,039h,023h,063h,048h,02Bh
+
+	DB 08Fh,005h,006h
+	DB 000h,003h,00Ch
+
+	DB 093h,014h,00Ch
+	DB 000h,002h,00Eh,0FFh,007h,01Ah,01Bh,01Ch,01Dh,05Ah,09Ah,05Dh,09Dh,021h,0DAh,0DDh
+	DB 0A0h,05Bh
+
+	DB 097h,010h,00Ch
+	DB 000h,002h,00Eh,0FFh,003h,01Ah,01Bh,01Ch,01Dh,023h,05Ah,05Bh,05Ch,05Dh
+
+	DB 098h,01Ah,00Bh
+	DB 000h,002h,00Eh,0FFh,001h,033h,00Ch,0A9h,06Bh,054h,02Fh,022h,023h,024h,025h,01Ah
+	DB 01Bh,01Ch,01Dh,0B3h,0A3h,0A4h,09Bh,09Ch
+
+	DB 09Bh,017h,00Bh
+	DB 000h,015h,017h,00Eh,0FFh,007h,03Dh,07Dh,035h,075h,0B5h,0F5h,0C3h,0C4h,078h,0DDh
+	DB 070h,0DBh,029h,01Ch,01Dh
+
+	DB 09Fh,018h,00Dh
+	DB 000h,002h,00Eh,0FFh,007h,01Ah,01Bh,01Ch,01Dh,05Ah,05Bh,05Ch,05Dh,003h,09Ah,09Bh
+	DB 09Ch,09Dh,02Ah,0DBh,0DCh,0DDh
+
+	DB 0A3h,01Ch,00Bh
+	DB 000h,015h,017h,00Eh,0FFh,005h,03Dh,07Dh,034h,074h,0C3h,0C4h,02Bh,012h,014h,023h
+	DB 025h,093h,052h,054h,063h,065h,0B8h,035h,080h,075h
+
+	DB 0A7h,005h,003h
+	DB 000h,002h,00Ch
+
+	DB 0A8h,018h,006h
+	DB 002h,00Ch,0FFh,007h,02Ah,06Ah,032h,072h,0B2h,0F2h,036h,076h,005h,0B6h,0F6h,016h
+	DB 056h,096h,0D6h,029h,035h,01Eh
+
+	DB 0AAh,018h,003h
+	DB 000h,001h,00Ch,0FFh,007h,000h,048h,090h,018h,058h,098h,0D8h,021h,002h,061h,028h
+	DB 068h,029h,0A8h,0A1h,0A8h,0E0h
+
+	DB 0ABh,006h,004h
+	DB 000h,002h,003h,00Ch
+
+	DB 0AFh,00Eh,00Ch
+	DB 000h,015h,017h,00Eh,0FFh,003h,01Bh,01Ch,033h,034h,030h,074h
+
+	DB 0B3h,006h,006h
+	DB 000h,001h,002h,00Ch
+
+	DB 0B4h,013h,004h
+	DB 003h,00Ch,0FFh,007h,013h,014h,015h,01Bh,023h,063h,0A3h,0E3h,030h,055h,039h,02Eh
+	DB 06Eh
+
+	DB 0B7h,00Eh,00Ch
+	DB 000h,002h,00Eh,0FFh,003h,033h,034h,00Bh,00Ch,049h,023h,01Ch
+
+	DB 0BAh,019h,005h
+	DB 001h,002h,00Ch,0FFh,005h,02Bh,06Bh,0ABh,01Bh,05Bh,09Bh,02Fh,02Ah,022h,062h,0A2h
+	DB 01Ah,02Ch,024h,064h,029h,0A4h,01Ch
+
+	DB 0BBh,00Bh,006h
+	DB 002h,003h,00Ch,0FFh,048h,024h,081h,064h,0A4h
+
+	DB 0BFh,01Dh,003h
+	DB 000h,015h,017h,00Ch,0FFh,004h,03Dh,07Eh,0BEh,0C3h,0C4h,02Fh,03Fh,037h,02Fh,02Eh
+	DB 02Dh,025h,01Dh,015h,029h,014h,00Ch,0B8h,07Fh,080h,0BFh
+
+	DB 0C3h,014h,00Bh
+	DB 000h,002h,00Eh,0FFh,007h,01Ah,01Bh,01Ch,01Dh,05Ah,05Bh,05Ch,05Dh,003h,09Ah,09Bh
+	DB 09Ch,09Dh
+
+	DB 0C7h,00Bh,005h
+	DB 000h,015h,017h,00Ch,0FFh,080h,05Bh,048h,01Bh
+
+	DB 0CFh,00Ah,00Ch
+	DB 000h,002h,008h,00Ah,00Eh,0FFh,048h,01Ch
+
+	DB 0D0h,019h,005h
+	DB 000h,001h,00Ch,0FFh,007h,003h,042h,081h,0C0h,0C8h,0D0h,0D8h,0E0h,003h,01Ch,05Ch
+	DB 09Ch,0DCh,02Bh,01Bh,024h,01Dh,014h
+
+	DB 0D1h,011h,014h
+	DB 001h,003h,00Dh,0FFh,068h,016h,02Fh,01Eh,026h,01Bh,01Ch,023h,024h,019h,021h
+
+	DB 0D2h,015h,005h
+	DB 000h,003h,00Ch,0FFh,007h,003h,027h,044h,05Fh,085h,097h,0C6h,0CFh,001h,0CEh,0C7h
+	DB 099h,00Fh,006h
+
+	DB 0D3h,012h,00Dh
+	DB 000h,002h,00Eh,0FFh,001h,02Ah,02Dh,02Bh,06Ah,06Dh,01Ah,01Dh,0D0h,02Bh,068h,025h
+
+	DB 0D6h,015h,006h
+	DB 004h,005h,00Fh,010h,0FFh,01Fh,02Ch,06Ch,0ACh,0ECh,024h,01Ch,014h,054h,018h,094h
+	DB 011h,05Dh,01Bh
+
+	DB 0D7h,00Eh,003h
+	DB 004h,005h,006h,007h,00Fh,0FFh,051h,01Bh,024h,0A1h,023h,01Ch
+
+	DB 0D8h,006h,003h
+	DB 004h,005h,007h,00Fh
+
+	DB 0D9h,005h,006h
+	DB 004h,007h,00Fh
+
+	DB 0DDh,014h,006h
+	DB 000h,014h,016h,00Ch,0FFh,001h,0E7h,0DFh,05Bh,02Fh,026h,01Eh,017h,03Bh,01Ah,05Ah
+	DB 09Ah,0DAh
+
+	DB 0DEh,005h,013h
+	DB 001h,003h,00Dh
+
+	DB 0DFh,016h,006h
+	DB 000h,002h,003h,00Ch,0FFh,004h,01Bh,05Bh,09Bh,0DBh,0E2h,02Bh,013h,01Ch,023h,01Ah
+	DB 0B2h,012h,054h,0A4h
+
+	DB 0E0h,011h,00Eh
+	DB 000h,002h,00Eh,0FFh,02Fh,03Ah,03Dh,02Bh,02Ch,013h,014h,002h,005h,0C8h,024h
+
+	DB 0E2h,016h,00Eh
+	DB 000h,002h,00Eh,0FFh,097h,005h,00Ah,00Ch,013h,015h,01Ah,01Ch,023h,095h,025h,02Ah
+	DB 02Ch,033h,035h,03Ah
+
+	DB 0E3h,01Bh,00Eh
+	DB 000h,002h,00Eh,0FFh,0AFh,002h,005h,04Ah,04Dh,092h,095h,0AAh,0ADh,0ABh,072h,075h
+	DB 03Ah,03Dh,0B3h,0DAh,0DDh,0E2h,0E5h,060h,01Bh
+
+	DB 0E6h,007h,003h
+	DB 004h,005h,006h,00Fh,010h
+
+	DB 0E7h,011h,006h
+	DB 004h,005h,006h,007h,00Fh,0FFh,02Fh,033h,034h,021h,019h,026h,01Eh,00Bh,00Ch
+
+	DB 0E8h,016h,006h
+	DB 004h,005h,006h,007h,00Fh,0FFh,01Fh,033h,021h,023h,063h,0A3h,0E3h,025h,013h,02Bh
+	DB 02Bh,024h,01Bh,022h
+
+	DB 0E9h,006h,003h
+	DB 004h,006h,007h,00Fh
+
+	DB 0EDh,014h,00Ch
+	DB 000h,002h,00Eh,0FFh,007h,01Ah,01Bh,01Ch,01Dh,05Ah,05Bh,05Ch,05Dh,003h,09Ah,09Bh
+	DB 09Ch,09Dh
+
+	DB 0EFh,005h,00Dh
+	DB 000h,002h,00Eh
+
+	DB 0F0h,01Bh,005h
+	DB 014h,015h,016h,017h,00Ch,0FFh,007h,0DFh,0E7h,0FFh,0FEh,078h,0A8h,0D0h,0C0h,003h
+	DB 0C1h,0C2h,0C3h,0C4h,029h,039h,03Bh,070h,0FBh
+
+	DB 0F1h,00Ah,013h
+	DB 001h,003h,009h,00Bh,00Dh,0FFh,0B8h,023h
+
+	DB 0F2h,006h,005h
+	DB 001h,002h,003h,00Ch
+
+	DB 0F3h,017h,003h
+	DB 002h,003h,00Ch,0FFh,007h,032h,03Ah,072h,07Ah,034h,03Ch,074h,07Ch,001h,0B3h,0BBh
+	DB 048h,033h,031h,02Bh,06Bh
+
+	DB 0F6h,013h,006h
+	DB 005h,006h,00Fh,010h,011h,0FFh,01Bh,01Bh,05Bh,09Bh,0DBh,0B0h,01Ch,030h,012h,038h
+	DB 034h
+
+	DB 0F7h,015h,003h
+	DB 005h,006h,007h,00Fh,011h,0FFh,01Fh,022h,023h,024h,01Ah,01Ch,012h,013h,014h,0B8h
+	DB 01Bh,030h,05Bh
+
+	DB 0F8h,007h,003h
+	DB 005h,006h,007h,00Fh,011h
+
+	DB 0F9h,013h,006h
+	DB 006h,007h,00Fh,011h,0FFh,09Fh,0FFh,0FEh,0F6h,0F7h,0FDh,0EFh,0C3h,0C4h,099h,0D8h
+	DB 0E0h
+
+	DB 0FDh,011h,006h
+	DB 001h,002h,00Ch,0FFh,007h,028h,029h,02Ah,032h,03Ah,070h,071h,079h,000h,0B8h
+
+	DB 0FEh,012h,013h
+	DB 001h,003h,00Dh,0FFh,02Bh,025h,01Dh,022h,01Ah,023h,02Bh,02Ch,013h,014h,060h,05Bh
+
+	DB 0FFh,00Bh,006h
+	DB 002h,003h,00Ch,0FFh,02Bh,02Eh,035h,037h,03Eh
+
+
+; Block Types
+6bd1	DW 06C0bh	;0	block 07 block
+	DW 06C3ch	;1	sprite b0 (Fire)
+	DW 06C43h	;2	sprite b2 (Ball)  [up/down]
+	DW 06C66h	;3	block 06 Rock
+	DW 06C6dh	;4	block 16 Gargoyle
+	DW 06C74h	;5	block 17 Spike
+	DW 06C90h	;6	sprite 55 (Chest)
+	DW 06C97h	;7	sprite 54 (table)
+	DW 06C9eh	;8	sprite 96/90 (guard) [west/east]
+	DW 06Cb8h	;9	sprite 52 (ghost)
+	DW 06Cbfh	;a	sprite b5 (fire) [north/south]
+	DW 06C12h	;b	block 07 block high
+	DW 06C4ah	;c	sprite b2 (ball) [up/down]
+	DW 06Cabh	;d	sprite 1e/90 (Guard) [square circuit]
+	DW 06C19h	;e	block 36 [west/east]
+	DW 06C20h	;f	block 37 [north/south]
+	DW 06C27h	;10	block 3e
+	DW 06C7bh	;11	block Spike - high!!!
+	DW 06C82h	;12	sprite 3f (Spike Ball)
+	DW 06C89h	;13	sprite 3f (Spike Ball) [falling]
+	DW 06Cc6h	;14	sprite 56 Fire [west/east]
+	DW 06C2eh	;15	Block 5b
+	DW 06C35h	;16	block 8f [Collapse]
+	DW 06C5fh	;17	sprite b6 (Ball)
+	DW 06C51h	;18	sprite b2 (Ball)
+	DW 06Ccdh	;19	sprite a4 (Spell) [repel player]
+	DW 06Cd4h	;1a	sprite 8 (Gate) [up/down]
+	DW 06Cdbh	;1b	sprite 8 (Gate) [up/down]
+	DW 06C58h	;1c	sprite b2 (Ball)
+	  
+;Block type data
+; +0 = sprite
+; +7 = sprite
+6C0B 	DB 007h,008h,008h,00Ch,010h,000h,000h
+6c12 	DB 007h,008h,008h,00Ch,010h,030h,000h
+6c19 	DB 036h,008h,008h,00Ch,010h,000h,000h
+6C20 	DB 037h,008h,008h,00Ch,010h,000h,000h
+6c27 	DB 03Eh,008h,008h,00Ch,014h,000h,000h
+6c2e 	DB 05Bh,008h,008h,00Ch,010h,000h,000h
+6c35   	DB 08Fh,008h,008h,00Ch,010h,000h,000h
+6C3C 	DB 0B0h,006h,006h,00Ch,010h,000h,000h
+6c43 	DB 0B2h,007h,007h,00Ch,010h,002h,000h
+6c4a 	DB 0B2h,007h,007h,00Ch,010h,003h,000h
+6c51   	DB 0B2h,007h,007h,00Ch,010h,000h,000h
+6c58   	DB 0B2h,007h,007h,00Ch,010h,001h,000h
+6c5f   	DB 0B6h,007h,007h,00Ch,010h,000h,000h
+6c66 	DB 006h,008h,008h,00Ch,010h,000h,000h
+6c6D 	DB 016h,006h,006h,00Ch,010h,000h,000h
+6c74 	DB 017h,006h,006h,00Ch,050h,000h,000h
+6c7b 	DB 017h,006h,006h,00Ch,050h,030h,000h
+6c82   	DB 03Fh,006h,006h,00Ch,010h,000h,000h
+6c89   	DB 03Fh,006h,006h,00Ch,010h,030h,000h
+6C90 	DB 055h,009h,006h,00Ch,014h,000h,000h
+6c97 	DB 054h,006h,00Ah,00Ch,014h,000h,000h
+6c9e 	DB 096h,006h,006h,018h,010h,002h,090h,006h,006h,000h,012h,002h,000h
+6cab 	DB 01Eh,006h,006h,018h,010h,000h,090h,006h,006h,000h,012h,000h,000h
+6cb8 	DB 052h,006h,006h,00Ch,010h,000h,000h
+6cbf 	DB 0B5h,006h,006h,00Ch,010h,000h,000h
+6cc6   	DB 056h,006h,006h,00Ch,010h,000h,000h
+6ccd 	DB 0A4h,005h,005h,00Ch,010h,000h,000h
+6cd4	DB 008h,00Ch,001h,020h,050h,001h,000h
+6cdb 	DB 008h,001h,00Ch,020h,010h,002h,000h
+
+; background types ptrs
+6ce2 	DW 06D12h	;0	Arch north
+	DW 06D23h	;1	arch east
+	DW 06D45h	;2	arch south
+	DW 06D67h	;3	arch west
+	DW 06D78h	;4	Tree arch north
+	DW 06D89h	;5	Tree arch east
+	DW 06D9ah	;6	Tree arch south
+	DW 06Dabh	;7	Tree arch west
+	DW 06Dbch	;8	Gate
+	DW 06Dc5h	;9	Gate 
+	DW 06Dceh	;A	Gate
+	DW 06Dd7h	;B	Gate
+	DW 06De0h	;C	walls size 0
+	DW 06E49h	;D	walls size 1
+	DW 06Ebah	;E	walls size 2
+	DW 06F2bh	;F	trees size 0
+	DW 06F8ch	;10	trees size 1
+	DW 06F9dh	;11	trees size 2
+	DW 06FAEh	;12	Wizard
+	DW 06Fbfh	;13	Pot
+	DW 06D34h	;14	High Arch north
+	DW 06D56h	;15	High Arch east
+	DW 06Fd0h	;16	High Arch south
+	DW 06F1eh	;17	High Arch west
+
+; background type makeup
+; +0 = sprite
+; +8 = sprite ...
+6d12 	DB 002h,08Dh,0C4h,080h,003h,005h,028h,050h,003h,073h,0C4h,080h,003h,005h,028h,050h,000h
+6d23 	DB 002h,0C4h,073h,080h,005h,003h,028h,010h,003h,0C4h,08Dh,080h,005h,003h,028h,010h,000h
+6d34 	DB 002h,0C4h,073h,0B0h,005h,003h,028h,010h,003h,0C4h,08Dh,0B0h,005h,003h,028h,010h,000h
+6d45 	DB 002h,08Dh,03Bh,080h,003h,005h,028h,050h,003h,073h,03Bh,080h,003h,005h,028h,050h,000h
+6d56 	DB 002h,08Dh,03Bh,0B0h,003h,005h,028h,050h,003h,073h,03Bh,0B0h,003h,005h,028h,050h,000h
+6d67 	DB 002h,03Bh,073h,080h,005h,003h,028h,010h,003h,03Bh,08Dh,080h,005h,003h,028h,010h,000h
+6d78 	DB 004h,08Dh,0C4h,080h,003h,005h,028h,050h,005h,073h,0C4h,080h,003h,005h,028h,050h,000h
+6d89 	DB 004h,0C4h,073h,080h,005h,003h,028h,010h,005h,0C4h,08Dh,080h,005h,003h,028h,010h,000h
+6d9a 	DB 004h,08Dh,03Bh,080h,003h,005h,028h,050h,005h,073h,03Bh,080h,003h,005h,028h,050h,000h
+6aab 	DB 004h,03Bh,073h,080h,005h,003h,028h,010h,005h,03Bh,08Dh,080h,005h,003h,028h,010h,000h
+
+6dbc 	DB 008h,080h,0BEh,0A0h,00Ch,001h,020h,050h,000h
+6dc5 	DB 008h,0BEh,080h,0A0h,001h,00Ch,020h,010h,000h
+6dce 	DB 008h,080h,041h,0A0h,00Ch,001h,020h,050h,000h
+6dd7 	DB 008h,041h,080h,0A0h,001h,00Ch,020h,010h,000h
+
+6DE0 	DB 00Dh,03Fh,0B8h,080h,000h,008h,028h,010h
+	DB 00Eh,047h,0C0h,080h,008h,000h,028h,010h
+	DB 00Fh,03Fh,049h,080h,000h,008h,02Ch,010h
+	DB 00Fh,0B8h,0C0h,080h,008h,000h,02Ch,050h
+	DB 00Fh,03Fh,049h,0ACh,000h,008h,02Ch,010h
+	DB 00Fh,0B8h,0C0h,0ACh,008h,000h,02Ch,050h
+	DB 00Ah,05Ch,0C0h,080h,014h,000h,014h,050h
+	DB 00Bh,03Fh,05Ch,098h,000h,00Ch,014h,010h
+	DB 00Ch,03Fh,0A0h,098h,000h,00Ch,00Ch,010h
+	DB 00Bh,0A4h,0C0h,098h,00Ch,000h,014h,050h
+	DB 00Ah,03Fh,06Dh,0B1h,000h,014h,014h,010h
+	DB 00Ch,060h,0C0h,0A0h,00Ch,000h,00Ch,050h
+	DB 00Ah,090h,0C0h,0B0h,014h,000h,014h,050h,000h
+	
+6e49 	DB 00Dh,03Fh,098h,080h,000h,008h,028h,010h
+	Db 00Eh,047h,0A0h,080h,008h,000h,028h,010h
+	DB 00Fh,03Fh,063h,080h,000h,008h,02Ch,010h
+	DB 00Fh,0B8h,0A0h,080h,008h,000h,02Ch,050h
+	DB 00Fh,03Fh,063h,0ACh,000h,008h,02Ch,010h
+	DB 00Fh,0B8h,0A0h,0ACh,008h,000h,02Ch,050h
+	DB 00Dh,03Fh,098h,0A8h,000h,008h,028h,010h
+	DB 00Eh,047h,0A0h,0A8h,008h,000h,028h,010h
+	DB 00Fh,0B8h,0A0h,0D0h,008h,000h,02Ch,050h
+	DB 00Ah,080h,0A0h,080h,014h,000h,014h,050h
+	DB 00Ah,03Fh,07Eh,0B0h,000h,014h,014h,010h
+	DB 00Bh,060h,0A0h,090h,00Ch,000h,014h,050h
+	DB 00Ah,060h,0A0h,0B8h,014h,000h,014h,050h
+	DB 00Ch,0A0h,0A0h,0B0h,00Ch,000h,00Ch,050h,000h
+
+6ebA	DB 00Dh,05Fh,0B8h,080h,000h,008h,028h,010h
+	DB 00Eh,067h,0C0h,080h,008h,000h,028h,010h
+	DB 00Fh,05Fh,048h,080h,000h,008h,02Ch,010h
+	DB 00Fh,09Dh,0C0h,080h,008h,000h,02Ch,050h
+	DB 00Dh,05Fh,0B8h,0A8h,000h,008h,028h,010h
+	DB 00Eh,067h,0C0h,0A8h,008h,000h,028h,010h
+	DB 00Fh,05Fh,048h,0ACh,000h,008h,02Ch,010h
+	DB 00Fh,09Dh,0C0h,0ACh,008h,000h,02Ch,050h
+	DB 00Fh,05Fh,048h,0D0h,000h,008h,02Ch,010h
+	DB 00Ah,05Fh,090h,080h,000h,014h,014h,010h
+	DB 00Ah,084h,0C0h,0B0h,014h,000h,014h,050h
+	DB 00Bh,05Fh,060h,090h,000h,00Ch,014h,010h
+	DB 00Ah,05Fh,068h,0B8h,000h,014h,014h,010h
+	DB 00Ch,05Fh,0A0h,0B0h,000h,00Ch,00Ch,010h,000h
+
+6f2b 	DB 080h,03Fh,049h,080h,000h,008h,02Ch,010h
+	DB 081h,03Fh,058h,080h,000h,008h,02Ch,010h
+	DB 082h,03Fh,068h,080h,000h,008h,02Ch,010h
+	DB 080h,03Fh,098h,080h,000h,008h,02Ch,010h
+	DB 081h,03Fh,0A8h,080h,000h,008h,02Ch,010h
+	DB 082h,03Fh,0B8h,080h,000h,008h,02Ch,010h
+	DB 080h,048h,0C0h,080h,008h,000h,02Ch,050h
+	DB 081h,058h,0C0h,080h,008h,000h,02Ch,050h
+	DB 082h,068h,0C0h,080h,008h,000h,02Ch,050h
+	DB 080h,098h,0C0h,080h,008h,000h,02Ch,050h
+	DB 081h,0A8h,0C0h,080h,008h,000h,02Ch,050h
+	DB 082h,0B8h,0C0h,080h,008h,000h,02Ch,050h,000h
+	
+6f8c	DB 080h,03Fh,078h,080h,000h,008h,02Ch,010h
+	DB 081h,03Fh,088h,080h,000h,008h,02Ch,010h,000h
+	
+6f9d	DB 080h,078h,0C0h,080h,008h,000h,02Ch,050h,
+	DB 081h,088h,0C0h,080h,008h,000h,02Ch,050h,000h
+
+6fae 	DB 09Eh,098h,068h,080h,005h,005h,018h,010h,090h,0A0h,060h,080h,005h,005h,000h,012h,000h
+6fbf 	DB 08Dh,080h,080h,080h,00Ah,00Ah,018h,010h,08Eh,080h,088h,080h,000h,000h,000h,012h,000h
+
+6FD0 	DB 007h,0C8h,078h,0A4h,008h,008h,00Ch,010h
+	Db 007h,0C8h,088h,0A4h,008h,008h,00Ch,010h,000h
+	
+6f1e	DB 007h,078h,038h,0A4h,008h,008h,00Ch,010h
+	DB 007h,088h,038h,0A4h,008h,008h,00Ch,010h,000h
+	
+6f2f DB 000h
+6F30 DB 008h,02Ch,010h,081h,03Fh,058h,080h,000h,008h,02Ch,010h,082h,03Fh,068h,080h,000h
+6F40 DB 008h,02Ch,010h,080h,03Fh,098h,080h,000h,008h,02Ch,010h,081h,03Fh,0A8h,080h,000h
+6F50 DB 008h,02Ch,010h,082h,03Fh,0B8h,080h,000h,008h,02Ch,010h,080h,048h,0C0h,080h,008h
+6F60 DB 000h,02Ch,050h,081h,058h,0C0h,080h,008h,000h,02Ch,050h,082h,068h,0C0h,080h,008h
+6F70 DB 000h,02Ch,050h,080h,098h,0C0h,080h,008h,000h,02Ch,050h,081h,0A8h,0C0h,080h,008h
+6F80 DB 000h,02Ch,050h,082h,0B8h,0C0h,080h,008h,000h,02Ch,050h,000h,080h,03Fh,078h,080h
+6F90 DB 000h,008h,02Ch,010h,081h,03Fh,088h,080h,000h,008h,02Ch,010h,000h,080h,078h,0C0h
+6FA0 DB 080h,008h,000h,02Ch,050h,081h,088h,0C0h,080h,008h,000h,02Ch,050h,000h,09Eh,098h
+6FB0 DB 068h,080h,005h,005h,018h,010h,090h,0A0h,060h,080h,005h,005h,000h,012h,000h,08Dh
+6FC0 DB 080h,080h,080h,00Ah,00Ah,018h,010h,08Eh,080h,088h,080h,000h,000h,000h,012h,000h
+6FD0 DB 007h,0C8h,078h,0A4h,008h,008h,00Ch,010h,007h,0C8h,088h,0A4h,008h,008h,00Ch,010h
+6FE0 DB 000h,007h,078h,038h,0A4h,008h,008h,00Ch,010h,007h,088h,038h,0A4h,008h,008h,00Ch
+6FF0 DB 010h,000h
+
+; Objects
+6ff2	DB 000h,088h,080h,0A4h,06Dh,000h,000h,000h,000h
+     	DB 000h,080h,080h,08Ch,027h,000h,000h,000h,000h
+	DB 000h,088h,078h,0B0h,0D0h,000h,000h,000h,000h
+	DB 000h,078h,088h,080h,00Ah,000h,000h,000h,000h
+	DB 000h,078h,088h,080h,0BAh,000h,000h,000h,000h
+	DB 000h,088h,078h,0B0h,042h,000h,000h,000h,000h
+	DB 000h,088h,0B8h,0BCh,08Dh,000h,000h,000h,000h
+	DB 000h,0A8h,0A8h,080h,0FFh,000h,000h,000h,000h
+	DB 000h,080h,080h,080h,087h,000h,000h,000h,000h
+	DB 000h,078h,0B8h,080h,0F3h,000h,000h,000h,000h
+	DB 000h,0A8h,068h,0B0h,0A8h,000h,000h,000h,000h
+	DB 000h,0B8h,048h,0B0h,0D2h,000h,000h,000h,000h
+	DB 000h,048h,048h,080h,000h,000h,000h,000h,000h
+	DB 000h,088h,0B8h,080h,022h,000h,000h,000h,000h
+	DB 000h,0B8h,0B8h,0B0h,07Ah,000h,000h,000h,000h
+	DB 000h,0B8h,0B8h,080h,0F9h,000h,000h,000h,000h
+	DB 000h,088h,098h,0B0h,0D6h,000h,000h,000h,000h
+	DB 000h,078h,088h,0B0h,0E8h,000h,000h,000h,000h
+	DB 000h,078h,078h,0B0h,0F6h,000h,000h,000h,000h
+	DB 000h,088h,078h,08Ch,00Fh,000h,000h,000h,000h
+	DB 000h,0B8h,0B8h,080h,06Fh,000h,000h,000h,000h
+	DB 000h,048h,0B8h,0A4h,0FDh,000h,000h,000h,000h
+	DB 000h,078h,078h,0B0h,008h,000h,000h,000h,000h
+	DB 000h,088h,088h,0A4h,0BBh,000h,000h,000h,000h
+	DB 000h,078h,078h,0B0h,0DFh,000h,000h,000h,000h
+	DB 000h,080h,080h,080h,05Eh,000h,000h,000h,000h
+	DB 000h,078h,088h,0B0h,0B4h,000h,000h,000h,000h
+	DB 000h,078h,078h,0B0h,004h,000h,000h,000h,000h
+	DB 000h,048h,0B8h,080h,074h,000h,000h,000h,000h
+	DB 000h,080h,080h,080h,040h,000h,000h,000h,000h
+	DB 000h,068h,078h,0B0h,038h,000h,000h,000h,000h
+	DB 000h,048h,0B8h,098h,0F0h,000h,000h,000h,000h
+
+
+
+Start:
+AF6C              LD   HL,5BA0
+AF6F              LD   BC,0568
+AF72              LD   A,(5C78)
+AF75              PUSH AF
+AF76              CALL ClrMem
+AF79              POP  AF
+AF7A              LD   (5BA0),A
+AF7D              JR   AF88
+
+StartMenu:
+AF7F              LD   HL,5BA8
+AF82              LD   BC,0560
+AF85              CALL ClrMem
+AF88              CALL D69E
+AF8B              XOR  A
+AF8C              LD   (5BB2),A
+AF8F              LD   (D16D),A
+AF92              LD   A,05
+AF94              LD   (Lives),A
+AF97              LD   HL,5BA0
+AF9A              LD   A,(5BA2)
+AF9D              ADD  A,(HL)
+AF9E              LD   (HL),A
+AF9F              CALL ClearScrn
+AFA2              CALL DoMenuSelection
+
+AFA5              LD   DE,B20E
+AFA8              CALL PlayAudio
+
+AFAB              CALL ShuffleObjectsRequired
+AFAE              CALL InitStartLocation
+AFB1              CALL PrintSun
+AFB4              CALL InitObjects
+AFB7              CALL LoseLife
+
+AFBA              CALL D1E6
+AFBD              LD   A,(5BA2)
+AFC0              LD   (5BBC),A
+
+AFC3              LD   IX,5C08
+AFC7              LD   SP,5BA0
+AFCA              LD   HL,5BBC
+AFCD              INC  (HL)
+
+AFCE              LD   HL,AFE4
+AFD1              PUSH HL
+AFD2              CALL CE49
+AFD5              LD   L,(IX+00)
+AFD8              LD   BC,B096
+
+AFDB              LD   H,00
+AFDD              ADD  HL,HL
+AFDE              ADD  HL,BC
+AFDF              LD   A,(HL)
+AFE0              INC  HL
+AFE1              LD   H,(HL)
+AFE2              LD   L,A
+AFE3              JP   (HL)
+
+AFE4              LD   A,R
+AFE6              LD   C,A
+AFE7              LD   A,(5BA5)
+AFEA              ADD  A,C
+AFEB              LD   (5BA5),A
+AFEE              LD   BC,0020
+AFF1              ADD  IX,BC
+AFF3              PUSH IX
+AFF5              POP  HL
+AFF6              LD   BC,6108
+AFF9              AND  A
+AFFA              SBC  HL,BC
+AFFC              JR   NC,B000
+AFFE              JR   AFC7
+
+B000              LD   HL,(5BA2)
+B003              INC  HL
+B004              LD   (5BA2),HL
+B007              LD   A,(5BA5)
+B00A              ADD  A,(HL)
+B00B              ADD  A,L
+B00C              ADD  A,H
+B00D              LD   (5BA5),A
+B010              LD   HL,5BB2
+B013              SET  0,(HL)
+B015              CALL D50E
+B018              CALL B8A9
+B01B              CALL CE62
+B01E              CALL D59F
+B021              LD   A,(5BC5)
+B024              AND  A
+B025              CALL NZ,B454
+B028              LD   A,(5BBE)
+B02B              NEG
+B02D              ADD  A,06
+B02F              LD   B,A
+B030              JP   M,B03F
+B033              JR   Z,B03F
+B035              LD   HL,0500
+B038              DEC  HL
+B039              LD   A,L
+B03A              OR   H
+B03B              JR   NZ,B038
+B03D              DJNZ B035
+B03F              LD   A,(5BB7)
+B042              AND  A
+B043              JR   Z,B074
+B045              XOR  A
+B046              LD   (5BB7),A
+B049              LD   A,(5BAD)
+B04C              CALL FillAttr
+B04F              CALL DisplayObjects
+B052              CALL ColourPanel
+B055              CALL ColourSunMoon
+B058              CALL DisplayPanel
+B05B              LD   IX,C44D
+B05F              CALL DisplayFrame
+B062              CALL DisplayDay
+B065              CALL PrintDays
+B068              CALL PrintLives
+B06B              CALL PrintLivesGFX
+B06E              CALL UpdateScreen
+B071              CALL ResetSomething
+B074              XOR  A
+B075              LD   (5BC5),A
+B078              LD   IX,5C08
+B07C              LD   A,(IX+00)
+B07F              OR   (IX+20)
+B082              JP   Z,AFB7
+B085              JP   AFBD
+
+ResetSomething:
+B088              LD   B,28
+B08A              LD   DE,0020
+B08D              LD   HL,5C0F
+B090              RES  5,(HL)
+B092              ADD  HL,DE
+B093              DJNZ B090
+B095              RET
+
+b096	dw C2CB,C2CB,C73C,C722,C73C,C722,C4E3,C4E3
+	dw C65E,C6BD,C4E8,C4ED,C4F2,C4F2,C4F2,C4F2
+	dw C823,C823,C823,C823,C823,C823,B7A3,B7E7
+	dw C823,C823,C823,C823,C823,C823,B9A5,B9A5
+	dw CDDA,CDDA,CDDA,CDDA,CDDA,CDDA,CDDA,CDDA
+	dw CDDA,CDDA,CDDA,CDDA,CDDA,CDDA,CDDA,CDDA
+	dw C828,C828,C828,C828,C828,C828,B6B9,B6B1
+	dw C828,C828,C828,C828,C828,C828,C4AA,B7A9
+	dw CDDF,CDDF,CDDF,CDDF,CDDF,CDDF,CDDF,CDDF
+	dw CDDF,CDDF,CDDF,CDDF,CDDF,CDDF,CDDF,CDDF
+	dw C5C8,C5C8,C5C8,C5C8,C4C3,C4B6,B7ED,B7ED
+	dw C506,C506,C506,B683,C337,C337,C337,C337
+	dw C28B,C28B,C28B,C28B,C28B,C28B,C28B,C1AB
+	dw C1F1,C1F1,C1F1,C1F1,C1F1,C1F1,C1F1,B95E
+	dw BF2B,BF2B,BF2B,BF2B,BF2B,BF2B,BF2B,BF3F
+	dw BEFE,BEFE,BEFE,BEFE,BEFE,BEFE,BEFE,BF11
+	dw C4D3,C4D3,C4D3,B566,B566,B566,C2CB,C2CB
+	dw C2CB,C2CB,C2CB,C2CB,C2CB,B99C,B99F,B6A2
+	dw B6F9,B6F9,B6F9,B6F9,B6F9,B6F9,B73C,B73C
+	dw B6F9,B6F9,B6F9,B6F9,B6F9,B6F9,B9A5,B9A5
+	dw B8DA,B8DA,B8DA,B8DA,B92C,B92C,B92C,B92C
+	dw B923,B923,B923,B923,B923,B923,B923,B923
+	dw B83F,B83F,B865,B865,B80F,B80F,B5FF,B5FF
+	dw BF2B,BF37,C2CB,BF37
+
+
+
+; *********************************************
+
+;
+; Audio Tunes
+;
+
+B20E	DB 059h,05ch,05Bh,054h
+	DB 019h,017h,014h,017h,0D9h,0FFh
+	
+b218	DB 02Eh,017h,027h,017h,02Eh,017h,027h,017h
+	DB 02Ch,019h,027h,019h,02Ch,019h,027h,019h
+	DB 02Ah,01Bh,027h,01Bh,02Ah,01Bh,027h,01Bh
+	DB 02Ah,01Bh,027h,01Bh,02Ah,01Bh,027h,01Bh,0FFh
+	
+B239	DB 01Bh,01Dh,01Eh,01Bh,01Dh,01Eh,020h
+	DB 01Dh,01Eh,020h,022h,01Eh,01Dh,01Eh,020h,
+	DB 01Dh,01Bh,01Dh,01Eh,01Bh,01Ah,01Bh,01Dh
+	DB 01Ah,09Bh,0FFh
+
+B253	DB 01Bh,027h,01Bh,027h,01Bh,02Ah,01Bh,02Eh
+	DB 016h,025h,016h,024h,016h,022h,016h,022h
+	DB 016h,025h,016h,024h,016h,022h,016h,022h
+	DB 016h,022h,017h,02Eh,017h,02Eh,017h,02Eh
+	DB 017h,02Eh,019h,02Eh,019h,02Eh,019h,02Eh
+	DB 019h,02Eh,01Bh,02Eh,01Bh,02Eh,01Bh,02Eh
+	DB 01Bh,02Eh,01Bh,02Eh,01Bh,02Eh,01Bh,02Eh
+	DB 01Bh,02Eh,0FFh
+	db 021h
+  
+PlayAudioWaitKey:
+B2B6              LD   HL,5BD1
+B2B9              LD   A,(HL)
+B2BA              AND  A
+B2BB              RET  NZ
+B2BC              SET  0,(HL)
+B2BE              XOR  A
+B2BF              CALL ReadKey
+B2C2              JR   Z,B2C5
+B2C4              RET
+
+B2C5              LD   A,(DE)
+B2C6              CP   FF
+B2C8              JR   Z,B2D9
+B2CA              CALL B2DA
+B2CD              JR   B2BE
+
+
+PlayAudio:
+B2CF              LD   A,(DE)
+B2D0              CP   FF
+B2D2              JR   Z,B2D9
+B2D4              CALL B2DA
+B2D7              JR   PlayAudio
+B2D9              RET
+
+
+B2DA              AND  3F
+B2DC              JR   Z,B31C
+B2DE              LD   L,A
+B2DF              LD   H,00
+B2E1              ADD  HL,HL
+B2E2              CALL Add_HL_A
+B2E5              LD   BC,B332
+B2E8              ADD  HL,BC
+B2E9              LD   B,(HL)
+B2EA              INC  HL
+B2EB              LD   C,(HL)
+B2EC              INC  HL
+B2ED              LD   L,(HL)
+B2EE              LD   H,00
+B2F0              LD   A,(DE)
+B2F1              RLCA
+B2F2              RLCA
+B2F3              AND  03
+B2F5              INC  A
+B2F6              PUSH DE
+B2F7              LD   E,L
+B2F8              LD   D,H
+B2F9              DEC  A
+B2FA              JR   Z,B2FF
+B2FC              ADD  HL,DE
+B2FD              JR   B2F9
+B2FF              POP  DE
+B300              PUSH BC
+B301              XOR  A
+B302              OUT  (FE),A
+B304              DJNZ B304
+B306              DEC  C
+B307              JR   NZ,B304
+B309              POP  BC
+B30A              PUSH BC
+B30B              LD   A,10
+B30D              OUT  (FE),A
+B30F              DJNZ B30F
+B311              DEC  C
+B312              JR   NZ,B30F
+B314              POP  BC
+B315              DEC  HL
+B316              LD   A,H
+B317              OR   L
+B318              JR   NZ,B300
+B31A              INC  DE
+B31B              RET
+
+B31C              LD   A,(DE)
+B31D              INC  DE
+B31E              RLCA
+B31F              RLCA
+B320              AND  03
+B322              INC  A
+B323              LD   L,A
+B324              LD   BC,430B
+B327              PUSH BC
+B328              DEC  BC
+B329              LD   A,B
+B32A              OR   C
+B32B              JR   NZ,B328
+B32D              POP  BC
+B32E              DEC  L
+B32F              JR   NZ,B327
+B331              RET
+
+
+;
+; Frequency Table??
+;
+B332 	DB 000h,000h,000h
+	DB 0F4h,00Ah,008h
+	DB 065h,00Ah,009h
+	DB 0DEh,009h,009h
+	DB 05Eh,009h,00Ah
+	DB 0E7h,008h,00Ah
+	DB 075h,008h,00Bh
+	DB 00Ah,008h,00Ch
+	DB 0A5h,007h,00Ch
+	DB 045h,007h,00Dh
+	DB 0EBh,006h,00Eh
+	DB 096h,006h,00Fh
+	DB 046h,006h,00Fh
+	DB 0FAh,005h,010h
+	DB 0B3h,005h,011h
+	DB 06Fh,005h,012h
+	DB 02Fh,005h,013h
+	DB 0F3h,004h,015h
+	DB 0F3h,004h,016h
+	DB 085h,004h,017h
+	DB 052h,004h,019h
+	DB 023h,004h,01Ah
+	DB 0F6h,003h,01Ch
+	DB 0CBh,003h,01Dh
+	DB 0A3h,003h,01Fh
+	DB 07Dh,003h,021h
+	DB 059h,003h,023h
+	DB 038h,003h,025h
+	DB 018h,003h,027h
+	DB 0FAh,002h,029h
+	DB 0DDh,002h,02Ch
+	DB 0C2h,002h,02Eh
+	DB 0A9h,002h,031h
+	DB 091h,002h,034h
+	DB 07Bh,002h,037h
+	DB 066h,002h,03Ah
+	DB 051h,002h,03Eh
+	DB 03Fh,002h,041h
+	DB 02Dh,002h,045h
+	DB 01Ch,002h,049h
+	DB 00Ch,002h,04Eh
+	DB 0FDh,001h,052h
+	DB 0EFh,001h,057h
+	DB 0E2h,001h,05Dh
+	DB 0D5h,001h,062h
+	DB 0C9h,001h,068h
+	DB 0BDh,001h,06Eh
+	DB 0B3h,001h,075h
+	DB 0A9h,001h,07Bh
+	DB 09Fh,001h,083h
+	DB 096h,001h,08Bh
+	DB 08Eh,001h,093h
+	DB 086h,001h,09Ch
+	DB 07Eh,001h,0A5h
+	DB 077h,001h,0AFh
+	DB 071h,001h,0B9h
+	DB 06Ah,001h,0C4h
+	DB 064h,001h,0D0h
+	DB 05Fh,001h,0DCh
+	DB 059h,001h,0E9h
+	DB 054h,001h,0F7h
+
+; *********************************************
+
+
+B3E9              LD   A, (5bA2)
+B3EC              AND  07
+B3EE              LD   L,A
+B3EF              LD   H,00
+B3F1              LD   BC,B3FB
+B3F4              ADD  HL,BC
+B3F5              LD   B,(HL)
+B3F6              LD   C,04
+B3F8              JP   B4E6
+
+B3fB		DB 0A0h,0B0h,0C0h,090h,0A0h,0E0h,080h,060h
+
+B403              LD   A,(IX+00)
+B406              CPL
+B407              AND  1F
+B409              LD   E,A
+B40A              LD   HL,1234
+B40D              LD   A,(HL)
+B40E              INC  HL
+B40F              LD   B,A
+B410              LD   C,02
+B412              CALL B4E6
+B415              DEC  E
+B416              JR   NZ,B40D
+B418              RET
+
+B419              LD   A,(IX+00)
+B41C              RLCA
+B41D              RLCA
+B41E              AND  1F
+B420              OR   03
+B422              LD   C,A
+B423              LD   A,C
+B424              RLCA
+B425              RLCA
+B426              LD   B,A
+B427              CALL B4ED
+B42A              DEC  C
+B42B              JR   NZ,B423
+B42D              RET
+
+B42E              LD   HL,0000
+B431              LD   E,04
+B433              LD   C,03
+B435              LD   A,(HL)
+B436              INC  HL
+B437              OR   C0
+B439              LD   B,A
+B43A              CALL B4E6
+B43D              DEC  E
+B43E              JR   NZ,B433
+B440              RET
+
+B441              LD   C,20
+B443              LD   A,C
+B444              RRCA
+B445              RRCA
+B446              RRCA
+B447              RRCA
+B448              RRCA
+B449              LD   B,A
+B44A              CALL B4ED
+B44D              DEC  C
+B44E              JR   NZ,B443
+B450              RET
+
+B451              LD   A,(IX+03)
+B454              CPL
+B455              RLCA
+B456              RLCA
+B457              LD   B,A
+B458              LD   C,06
+B45A              JP   B4E6
+
+B45D              LD   A,(IX+01)
+B460              JR   B454
+
+B462              LD   A,(IX+02)
+B465              JR   B454
+
+B467              LD   A,(IX+01)
+B46A              ADD  A,(IX+02)
+B46D              ADD  A,(IX+03)
+B470              JR   B454
+
+B472              LD   A,(IX+00)
+B475              RLCA
+B476              RLCA
+B477              RLCA
+B478              AND  18
+B47A              ADD  A,10
+B47C              LD   C,A
+B47D              LD   A,C
+B47E              XOR  55
+B480              ADD  A,C
+B481              LD   B,A
+B482              CALL B4ED
+B485              DEC  C
+B486              JR   NZ,B47D
+B488              RET
+
+B489              LD   A,(5BA5)
+B48C              LD   L,A
+B48D              LD   A,(5BA2)
+B490              AND  1F
+B492              LD   H,A
+B493              LD   E,10
+B495              LD   A,(HL)
+B496              INC  HL
+B497              AND  7F
+B499              LD   B,A
+B49A              LD   C,02
+B49C              CALL B4E6
+B49F              DEC  E
+B4A0              JR   NZ,B495
+B4A2              RET
+
+B4A3              LD   BC,8010
+B4A6              JR   B4E6
+
+B4A8              LD   BC,5018
+B4AB              JR   B4E6
+
+B4AD              LD   A,(IX+00)
+B4B0              AND  01
+B4B2              RET  NZ
+B4B3              LD   B,80
+B4B5              LD   A,(5BA2)
+B4B8              CPL
+B4B9              JR   B4C6
+
+B4BB              LD   A,(IX+00)
+B4BE              AND  01
+B4C0              RET  NZ
+B4C1              LD   B,60
+B4C3              LD   A,(5BA2)
+B4C6              BIT  1,A
+B4C8              JR   Z,B4D1
+B4CA              LD   A,(IX+03)
+B4CD              CPL
+B4CE              SRL  A
+B4D0              LD   B,A
+B4D1              LD   A,(IX+01)
+B4D4              SRL  A
+B4D6              LD   C,A
+B4D7              LD   A,(IX+02)
+B4DA              NEG
+B4DC              SRL  A
+B4DE              ADD  A,C
+B4DF              RRCA
+B4E0              RRCA
+B4E1              RRCA
+B4E2              RRCA
+B4E3              AND  0F
+B4E5              LD   C,A
+B4E6              CALL B4ED
+B4E9              DEC  C
+B4EA              JR   NZ,B4E6
+B4EC              RET
+
+B4ED              LD   A,10
+B4EF              OUT  (FE),A
+B4F1              LD   A,B
+B4F2              DJNZ B4F2
+B4F4              LD   B,A
+B4F5              XOR  A
+B4F6              OUT  (FE),A
+B4F8              LD   A,B
+B4F9              DJNZ B4F9
+B4FB              LD   B,A
+B4FC              RET
+
+B4FD              PUSH BC
+B4FE              PUSH DE
+B4FF              PUSH HL
+B500              PUSH IY
+B502              LD   IY,5C08
+B506              LD   B,28
+B508              LD   C,00
+B50A              LD   L,C
+B50B              LD   H,C
+B50C              SET  1,(IX+07)
+B510              CALL B538
+B513              JR   Z,B52E
+B515              CALL CC9D
+B518              JR   NC,B52E
+B51A              CALL CCB2
+B51D              JR   NC,B52E
+B51F              CALL CCC7
+B522              JR   NC,B52E
+B524              POP  IY
+B526              POP  HL
+B527              POP  DE
+B528              POP  BC
+B529              RES  1,(IX+07)
+B52D              RET
+
+B52E              LD   DE,0020
+B531              ADD  IY,DE
+B533              DJNZ B510
+B535              AND  A
+B536              JR   B524
+
+B538              LD   A,(IY+00)
+B53B              AND  A
+B53C              RET  Z
+B53D              LD   A,(IY+07)
+B540              CPL
+B541              AND  02
+B543              RET
+
+ShuffleObjectsRequired:
+B544              LD   A,(5BA0)
+B547              AND  03
+B549              OR   04
+B54B              LD   C,A
+B54C              LD   B,0D
+B54E              LD   IY,C27D
+B552              LD   E,(IY+00)
+B555              LD   A,(IY+01)
+B558              LD   (IY+00),A
+B55B              INC  IY
+B55D              DJNZ B555
+B55F              LD   (IY+0),E
+B562              DEC  C
+B563              JR   NZ,B54C
+B565              RET
+
+B566              CALL C4D8
+B569              LD   A,(IX+03)
+B56C              CP   A4
+B56E              JR   NC,B5C4
+B570              LD   (IX+0B),03
+B574              LD   A,(IX+01)
+B577              RLCA
+B578              AND  01
+B57A              LD   L,A
+B57B              LD   A,(IX+02)
+B57E              AND  80
+B580              OR   L
+B581              RLCA
+B582              AND  03
+B584              LD   L,A
+B585              LD   BC,B58B
+B588              JP   AFDB
+
+B58B	DW 0b593,0b5b5,0b5ba,0b5bf
+
+B593              LD   HL,04FC
+B596              LD   (IX+09),L
+B599              LD   (IX+0A),H
+B59C              LD   A,(5BA5)
+B59F              AND  03
+B5A1              JR   NZ,B5A4
+B5A3              INC  A
+B5A4              ADD  A,82
+B5A6              LD   (IX+00),A
+B5A9              LD   A,(IX+03)
+B5AC              LD   (5BC5),A
+B5AF              CALL C700
+B5B2              JP   C692
+
+B5B5              LD   HL,0404
+B5B8              JR   B596
+
+B5BA              LD   HL,FCFC
+B5BD              JR   B596
+
+B5BF              LD   HL,FC04
+B5C2              JR   B596
+
+B5C4              LD   A,(5C09)
+B5C7              SUB  (IX+01)
+B5CA              JP   P,B5CF
+B5CD              NEG
+B5CF              CP   06
+B5D1              JR   NC,B5E3
+B5D3              LD   A,(5C0A)
+B5D6              SUB  (IX+02)
+B5D9              JP   P,B5DE
+B5DC              NEG
+B5DE              CP   06
+B5E0              JP   C,GameOver
+B5E3              SET  7,(IX+0D)
+B5E7              SET  1,(IX+07)
+B5EB              LD   (IX+0B),01
+B5EF              LD   BC,0404
+B5F2              CALL B965
+B5F5              JR   B5A9
+
+ReadKey:
+B5F7              OUT  (FD),A			; select keyboard row
+B5F9              IN   A,(FE)			; read status
+B5FB              CPL
+B5FC              AND  1F
+B5FE              RET
+
+B5FF              CALL C4F2
+B602              LD   L,(IX+09)
+B605              LD   H,(IX+0A)
+B608              PUSH HL
+B609              LD   A,(IX+0B)
+B60C              LD   (5BC2),A
+B60F              CALL C700
+B612              POP  HL
+B613              LD   (IX+09),L
+B616              LD   (IX+0A),H
+B619              LD   A,(5C08)
+B61C              SUB  10
+B61E              CP   20
+B620              LD   A,30
+B622              JR   NC,B626
+B624              ADD  A,08
+B626              LD   (B65D),A
+B629              LD   (B676),A
+B62C              LD   A,(5C10)
+B62F              AND  01
+B631              LD   A,04
+B633              JR   Z,B63C
+B635              LD   B,A
+B636              LD   A,(5BA5)
+B639              AND  03
+B63B              ADD  A,B
+B63C              BIT  2,(IX+0C)
+B640              JR   Z,B668
+B642              LD   (IX+0B),A
+B645              LD   A,(5BC2)
+B648              AND  A
+B649              JP   P,B64F
+B64C              CALL B42E
+B64F              LD   A,R
+B651              AND  01
+B653              JR   Z,B66E
+B655              LD   A,(5C0A)
+B658              CP   (IX+02)
+B65B              LD   A,02
+B65D              JR   NC,B661
+B65F              NEG
+B661              LD   (IX+0A),A
+B664              LD   (IX+09),00
+B668              CALL B985
+B66B              JP   B856
+
+B66E              LD   A,(5C09)
+B671              CP   (IX+01)
+B674              LD   A,02
+B676              JR   NC,B67A
+B678              NEG
+B67A              LD   (IX+09),A
+B67D              LD   (IX+0A),00
+B681              JR   B668
+
+B683              CALL C4E3
+B686              BIT  3,(IX+0D)
+B68A              RET  Z
+B68B              RES  3,(IX+0D)
+B68F              LD   (IX+0B),00
+B693              CALL C700
+B696              BIT  2,(IX+0C)
+B69A              JR   NZ,B69F
+B69C              CALL B451
+B69F              JP   C692
+
+B6A2              CALL C4E3
+B6A5              BIT  3,(IX+0D)
+B6A9              RET  Z
+B6AA              LD   (IX+00),B8
+B6AE              JP   BF2B
+
+B6B1              CALL B462
+B6B4              LD   HL,020A
+B6B7              JR   B6BF
+
+B6B9              CALL B45D
+B6BC              LD   HL,0109
+B6BF              LD   A,H
+B6C0              LD   (B6E0),A
+B6C3              LD   A,L
+B6C4              LD   (B6F1),A
+B6C7              CALL C4E3
+B6CA              PUSH IX
+B6CC              POP  BC
+B6CD              LD   A,C
+B6CE              RRCA
+B6CF              AND  10
+B6D1              LD   C,A
+B6D2              LD   A,(5BA2)
+B6D5              ADD  A,C
+B6D6              BIT  4,A
+B6D8              JR   Z,B6DB
+B6DA              CPL
+B6DB              AND  0F
+B6DD              LD   C,A
+B6DE              LD   A,(IX+01)
+B6E1              ADD  A,08
+B6E3              AND  0F
+B6E5              CP   C
+B6E6              JP   Z,C692
+B6E9              LD   A,01
+B6EB              JR   C,B6EF
+B6ED              NEG
+B6EF              LD   (IX+09),A
+B6F2              LD   (IX+0B),01
+B6F6              JP   B5AF
+
+B6F9              CALL C4DD
+B6FC              LD   A,(IX+09)
+B6FF              OR   (IX+0A)
+B702              RET  Z
+B703              CALL B4AD
+B706              LD   A,(IX+09)
+B709              CP   (IX+0A)
+B70C              JR   C,B726
+B70E              BIT  7,A
+B710              JR   NZ,B720
+B712              SET  3,(IX+00)
+B716              RES  6,(IX+07)
+B71A              CALL C97F
+B71D              JP   C692
+
+B720              RES  3,(IX+00)
+B724              JR   B716
+
+B726              BIT  7,(IX+0A)
+B72A              JR   Z,B736
+B72C              SET  3,(IX+00)
+B730              SET  6,(IX+07)
+B734              JR   B71A
+
+B736              RES  3,(IX+00)
+B73A              JR   B730
+
+B73C              CALL C50B
+B73F              BIT  0,(IX+0D)
+B743              LD   A,02
+B745              JR   NZ,B749
+B747              NEG
+B749              LD   (IX+09),A
+B74C              LD   (IX+29),A
+B74F              CALL B76C
+B752              CALL C700
+B755              BIT  0,(IX+0C)
+B759              JR   Z,B763
+B75B              LD   A,(IX+0D)
+B75E              XOR  01
+B760              LD   (IX+0D),A
+B763              LD   A,(IX+01)
+B766              LD   (IX+21),A
+B769              JP   B856
+
+B76C              LD   A,(IX+09)
+B76F              OR   (IX+0A)
+B772              RET  Z
+B773              LD   A,(IX+09)
+B776              CP   (IX+0A)
+B779              JR   C,B78E
+
+B77B              BIT  7,A
+B77D              JR   NZ,B788
+B77F              SET  0,(IX+00)
+B783              RES  6,(IX+07)
+B787              RET
+
+B788              RES  0,(IX+00)
+B78C              JR   B783
+
+B78E              BIT  7,(IX+0A)
+B792              JR   Z,B79D
+B794              SET  0,(IX+00)
+B798              SET  6,(IX+07)
+B79C              RET
+
+B79D              RES  0,(IX+00)
+B7A1              JR   B798
+
+B7A3              CALL B85C
+B7A6              JP   C4FC
+
+B7A9              CALL B85C
+B7AC              CALL C4E3
+B7AF              LD   A,(5BC0)
+B7B2              AND  A
+B7B3              RET  NZ
+B7B4              BIT  2,(IX+0D)
+B7B8              JR   NZ,B7CD
+B7BA              LD   HL,5BBF
+B7BD              LD   A,(HL)
+B7BE              AND  A
+B7BF              RET  NZ
+B7C0              LD   A,(5BA5)
+B7C3              CP   10
+B7C5              RET  NC
+B7C6              SET  2,(IX+0D)
+B7CA              LD   (HL),01
+B7CC              RET
+
+B7CD              CALL C700
+B7D0              BIT  2,(IX+0C)
+B7D4              JR   NZ,B7DC
+B7D6              CALL B451
+B7D9              JP   C692
+
+B7DC              RES  2,(IX+0D)
+B7E0              LD   HL,5BBF
+B7E3              LD   (HL),00
+B7E5              JR   B7D9
+
+B7E7              CALL B85C
+B7EA              JP   C4E3
+
+B7ED              CALL C4F2
+B7F0              LD   (IX+0B),01
+B7F4              BIT  0,(IX+0D)
+B7F8              LD   A,02
+B7FA              JR   NZ,B7FE
+B7FC              NEG
+B7FE              LD   (IX+09),A
+B801              CALL B45D
+B804              CALL C700
+B807              BIT  0,(IX+0C)
+B80B              LD   A,01
+B80D              JR   B82F
+
+B80F              CALL C4F2
+B812              LD   (IX+0B),01
+B816              BIT  1,(IX+0D)
+B81A              LD   A,02
+B81C              JR   NZ,B820
+B81E              NEG
+B820              LD   (IX+0A),A
+B823              CALL B462
+B826              CALL C700
+B829              BIT  1,(IX+0C)
+B82D              LD   A,02
+B82F              JR   Z,B83A
+B831              XOR  (IX+0D)
+B834              LD   (IX+0D),A
+B837              CALL B42E
+B83A              CALL B985
+B83D              JR   B856
+
+B83F              CALL C4F2
+B842              LD   A,(5BBC)
+B845              AND  01
+B847              RET  Z
+B848              LD   A,(5BA5)
+B84B              AND  40
+B84D              XOR  (IX+07)
+B850              LD   (IX+07),A
+B853              CALL B985
+B856              CALL B85C
+B859              JP   C692
+
+B85C              LD   A,(IX+0D)
+B85F              OR   A0
+B861              LD   (IX+0D),A
+B864              RET
+
+B865              CALL C4F2
+B868              LD   A,(5BBD)
+B86B              AND  A
+B86C              JR   NZ,B876
+B86E              LD   A,(IX+03)
+B871              ADD  A,20
+B873              LD   (5BBD),A
+B876              CALL B985
+B879              CALL B451
+B87C              BIT  2,(IX+0D)
+B880              JR   NZ,B894
+B882              CALL C700
+B885              BIT  2,(IX+0C)
+B889              JR   Z,B892
+B88B              SET  2,(IX+0D)
+B88F              CALL B42E
+B892              JR   B856
+
+B894              LD   (IX+0B),03
+B898              CALL C700
+B89B              LD   A,(5BBD)
+B89E              CP   (IX+03)
+B8A1              JR   NC,B892
+B8A3              RES  2,(IX+0D)
+B8A7              JR   B892
+
+B8A9              LD   A,(5C10)
+B8AC              CP   88
+B8AE              RET  NZ
+B8AF              LD   DE,5C68
+B8B2              LD   A,(DE)
+B8B3              AND  A
+B8B4              RET  NZ
+B8B5              LD   A,(5BC3)
+B8B8              AND  A
+B8B9              RET  NZ
+B8BA              LD   HL,B8C8
+B8BD              LD   BC,0012
+B8C0              PUSH DE
+B8C1              POP  IX
+B8C3              LDIR
+B8C5              JP   C4D8
+
+B8C8 		DB 0A0h,080h,080h,080h,005h,005h
+		DB 00Ch,010h,0B4h,000h,000h,000h
+		DB 000h,0A0h,000h,000h,000h,000h
+
+B8DA              CALL C4D8
+B8DD              LD   A,(5C48)
+B8E0              AND  A
+B8E1              JP   NZ,B95E
+B8E4              SET  1,(IX+07)
+B8E8              CALL C700
+B8EB              CALL B98C
+B8EE              LD   A,(IX+03)
+B8F1              CP   A0
+B8F3              LD   (IX+0B),02
+B8F7              JR   C,B916
+B8F9              LD   (IX+0B),01
+B8FD              LD   A,(5C08)
+B900              SUB  30
+B902              CP   10
+B904              JR   C,B919
+B906              LD   A,(IX+00)
+B909              AND  03
+B90B              JR   NZ,B916
+B90D              CALL ReturnNextObjectRequired
+B910              LD   A,(HL)
+B911              OR   A8
+B913              LD   (IX+00),A
+B916              JP   C692
+
+B919              SET  2,(IX+00)
+B91D              RES  1,(IX+07)
+B921              JR   B916
+
+B923              CALL C4D8
+B926              LD   (IX+00),A0
+B92A              JR   B916
+
+B92C              CALL C4D8
+B92F              LD   A,(IX+08)
+B932              CP   88
+B934              JR   Z,B942
+B936              LD   A,(5C0F)
+B939              BIT  0,A
+B93B              JR   Z,B942
+B93D              LD   BC,0101
+B940              JR   B945
+
+B942              LD   BC,0404
+B945              CALL B965
+B948              CALL C700
+B94B              CALL B98C
+B94E              LD   A,(IX+08)
+B951              CP   88
+B953              JR   NZ,B962
+B955              LD   A,(5C08)
+B958              SUB  10
+B95A              CP   40
+B95C              JR   C,B962
+
+B95E              LD   (IX+00),01
+B962              JP   C232
+
+B965              LD   HL,5C09
+B968              LD   A,(IX+01)
+B96B              SUB  (HL)
+B96C              INC  HL
+B96D              LD   A,C
+B96E              JP   M,B973
+B971              NEG
+B973              LD   (IX+09),A
+B976              LD   A,(IX+02)
+B979              SUB  (HL)
+B97A              INC  HL
+B97B              LD   A,B
+B97C              JP   M,B981
+B97F              NEG
+B981              LD   (IX+0A),A
+B984              RET
+
+B985              LD   A,(IX+00)
+B988              XOR  01
+B98A              JR   B998
+
+B98C              LD   A,(IX+00)
+B98F              LD   C,A
+B990              AND  FC
+B992              LD   B,A
+B993              LD   A,C
+B994              INC  A
+B995              AND  03
+B997              OR   B
+B998              LD   (IX+00),A
+B99B              RET
+
+B99C              JP   C506
+
+B99F              LD   HL,0CE8
+B9A2              JP   C72B
+
+B9A5              CALL C510
+B9A8              CALL C700
+B9AB              CALL B9CC
+B9AE              LD   (IX+09),L
+B9B1              LD   (IX+29),L
+B9B4              LD   (IX+0A),H
+B9B7              LD   (IX+2A),H
+B9BA              LD   A,(IX+01)
+B9BD              LD   (IX+21),A
+B9C0              LD   A,(IX+02)
+B9C3              LD   (IX+22),A
+B9C6              CALL B76C
+B9C9              JP   B856
+
+B9CC              LD   BC,B9D8
+B9CF              LD   A,(IX+0D)
+B9D2              AND  03
+B9D4              LD   L,A
+B9D5              JP   AFDB
+
+	DB 0B9E0h,0B9FBh,0BA08h,0BA15h
+
+B9E0              LD   HL,00FE
+B9E3              BIT  0,(IX+0C)
+B9E7              RET  Z
+B9E8              LD   HL,0200
+
+B9EB              LD   A,(IX+0D)
+B9EE              LD   C,A
+B9EF              INC  A
+B9F0              AND  03
+B9F2              LD   B,A
+B9F3              LD   A,C
+B9F4              AND  FC
+B9F6              OR   B
+B9F7              LD   (IX+0D),A
+B9FA              RET
+
+B9FB              LD   HL,0200
+B9FE              BIT  1,(IX+0C)
+BA02              RET  Z
+BA03              LD   HL,0002
+BA06              JR   B9EB
+BA08              LD   HL,0002
+BA0B              BIT  0,(IX+0C)
+BA0F              RET  Z
+
+BA10              LD   HL,FE00
+BA13              JR   B9EB
+BA15              LD   HL,FE00
+BA18              BIT  1,(IX+0C)
+BA1C              RET  Z
+BA1D              LD   HL,00FE
+BA20              JR   B9EB
+
+; *********************************************
+
+GameOver:
+BA22              LD   A,(5BC3)
+BA25              AND  A
+BA26              JP   NZ,GameCompletedMSG
+
+BA29              CALL ClrWrkScr
+BA2C              CALL ClearScrn
+BA2F              LD   DE,BB4C
+BA32              EXX
+BA33              LD   HL,BB52
+BA36              LD   DE,BB5E
+BA39              LD   B,06
+BA3B              CALL DisplayTextList
+
+BA3E              LD   HL,E8E2
+BA41              LD   DE,Days
+BA44              LD   B,01
+BA46              CALL PrintNumber
+BA49              CALL BC10
+
+BA4C              LD   A,(5BC6)
+BA4F              RLCA
+BA50              AND  C0
+BA52              LD   C,A
+BA53              LD   A,(5BC3)
+BA56              AND  01
+BA58              OR   C
+BA59              RLCA
+BA5A              RLCA
+BA5B              RLCA
+BA5C              AND  0E
+BA5E              LD   L,A
+BA5F              LD   H,00
+BA61              LD   BC,BBB7
+BA64              ADD  HL,BC
+BA65              LD   E,(HL)
+BA66              INC  HL
+BA67              LD   D,(HL)
+BA68              LD   HL,2758
+BA6B              CALL PrintText
+
+BA6E              LD   DE,5BBB
+BA71              LD   A,(DE)
+BA72              SUB  0A
+BA74              JR   C,BA79
+BA76              OR   10
+BA78              LD   (DE),A
+BA79              LD   HL,E2EA
+BA7C              LD   B,01
+BA7E              CALL PrintNumber
+
+BA81              CALL PrintBorder
+BA84              CALL UpdateScreen
+
+BA87              XOR  A
+BA88              CALL ReadKey
+BA8B              JR   NZ,BA87
+BA8D              LD   DE,B218
+BA90              CALL B2BE
+BA93              LD   B,08
+BA95              CALL BA9B
+BA98              JP   StartMenu
+
+BA9B              LD   HL,0000
+BA9E              XOR  A
+BA9F              CALL ReadKey
+BAA2              RET  NZ
+BAA3              DEC  HL
+BAA4              LD   A,H
+BAA5              OR   L
+BAA6              JR   NZ,BA9E
+BAA8              DJNZ BA9E
+BAAA              RET
+
+GameCompletedMSG:
+BAAB              CALL ClrWrkScr
+BAAE              CALL ClearScrn
+BAB1              LD   DE,BAD2
+BAB4              EXX
+BAB5              LD   HL,BAD8
+BAB8              LD   DE,BAE4
+BABB              LD   B,06
+BABD              XOR  A
+BABE              LD   (5BB8),A
+BAC1              CALL DisplayTextList
+BAC4              LD   DE,B239
+BAC7              CALL PlayAudio
+BACA              LD   B,08
+BACC              CALL BA9B
+BACF              JP   BA29
+
+
+BAD2 	DB 047h,046h,045h,044h,043h,042h
+BAD8	DB 040h,087h,040h,077h,030h,067h,030h,057h,050h,047h,030h,037h,
+
+	; The Potion Casts
+BAE4 	DB 01Dh,011h,00Eh,026h,019h,018h,01Dh,012h,018h,017h,026h,00Ch,00Ah,01Ch,01Dh,09Ch
+
+	; Its Magic Strong
+	DB 012h,01Dh,01Ch,026h,016h,00Ah,010h,012h,00Ch,026h,01Ch,01Dh,01Bh,018h,017h,090h
+
+	; All Evil Must Beware
+	DB 00Ah,015h,015h,026h,00Eh,01Fh,012h,015h,026h,016h,01Eh,01Ch,01Dh,026h,00Bh,00Eh,020h,00Ah,01Bh,08Eh
+	
+	; The Spell Has Broken
+	DB 01Dh,011h,00Eh,026h,01Ch,019h,00Eh,015h,015h,026h,011h,00Ah,01Ch,026h,00Bh,01Bh,018h,014h,00Eh,097h
+
+	; You Are Free
+	DB 022h,018h,01Eh,026h,00Ah,01Bh,00Eh,026h,00Fh,01Bh,00Eh,08Eh
+	
+	; Go forth to Mire Mare
+	DB 010h,018h,026h,00Fh,018h,01Bh,01Dh,011h,026h,01Dh,018h,026h,016h,012h,01Bh,00Eh,016h,00Ah,01Bh,08Eh
+
+;
+; Game Over Status Screen
+;
+
+BB4C 	DB 047h,046h,045h,045h,043h,044h
+BB52 	DB 058h,09Fh,050h,07Fh,030h,06Fh,040h,05Fh,030h,04Fh,048h,037h
+
+	; Game Over
+BB5E 	DB 010h,00Ah,016h,00Eh,026h,026h,018h,01Fh,00Eh,09Bh
+
+	; Time    Days
+	DB 01Dh,012h,016h,00Eh,026h,026h,026h,026h,00Dh,00Ah,022h,09Ch
+
+	; Percentage Of Quest
+	DB 019h,00Eh,01Bh,00Ch,00Eh,017h,01Dh,00Ah,010h,00Eh,026h,018h,00Fh,026h,01Ah,01Eh,00Eh,01Ch,09Dh
+
+	; Completed     %
+	DB 00Ch,018h,016h,019h,015h,00Eh,01Dh,00Eh,00Dh,026h,026h,026h,026h,026h,0A7h
+
+	; Charms Collected   
+	DB 00Ch,011h,00Ah,01Bh,016h,01Ch,026h,00Ch,018h,015h,015h,00Eh,00Ch,01Dh,00Eh,00Dh,026h,026h,0A6h
+
+	; Overall Rating
+	DB 018h,01Fh,00Eh,01Bh,00Ah,015h,015h,026h,01Bh,00Ah,01Dh,012h,017h,090h
+
+BBB7 	DW LBBC7
+	DW LBBCF
+	DW LBBD8
+	DW LBBE0
+	DW LBBE8
+	DW LBBF2
+	DW LBBFD
+	DW LBC05
+
+	; POOR
+LBBC7 	DB 042h,026h,026h,026h,019h,018h,018h,09Bh
+
+	; AVERAGE
+LBBCF 	DB 042h,026h,00Ah,01Fh,00Eh,01Bh,00Ah,010h,08Eh
+
+	; FAIR
+LBBD8 	DB 042h,026h,026h,026h,00Fh,00Ah,012h,09Bh
+
+	; GOOD
+LBBE0 	DB 042h,026h,026h,026h,010h,018h,018h,08Dh
+
+	; EXCELLENT
+LBBE8 	DB 042h,00Eh,021h,00Ch,00Eh,015h,015h,00Eh,017h,09Dh
+
+	; MARVELLOUS
+LBBF2 	DB 042h,016h,00Ah,01Bh,01Fh,00Eh,015h,015h,018h,01Eh,09Ch
+
+	; HERO
+LBBFD 	DB 042h,026h,026h,026h,011h,00Eh,01Bh,098h
+
+	; ADVENTURER
+LBC05 	DB 042h,00Ah,00Dh,01Fh,00Eh,017h,01Dh,01Eh,01Bh,00Eh,09Bh
+
+
+
+BC10              LD   E,00
+BC12              LD   BC,0820
+BC15              LD   HL,5BE8
+BC18              PUSH BC
+BC19              LD   A,(HL)
+BC1A              INC  HL
+BC1B              RRCA
+BC1C              JR   NC,BC1F
+BC1E              INC  E
+BC1F              DJNZ BC1B
+BC21              POP  BC
+BC22              DEC  C
+BC23              JR   NZ,BC18
+BC25              LD   A,E
+BC26              DEC  A
+BC27              LD   (5BC6),A
+BC2A              LD   A,(5BBB)
+BC2D              SLA  A
+BC2F              ADD  A,E
+BC30              LD   E,A
+BC31              LD   BC,A41A
+BC34              LD   HL,0000
+BC37              XOR  A
+BC38              ADD  HL,BC
+BC39              ADC  A,00
+BC3B              DAA
+BC3C              DEC  E
+BC3D              JR   NZ,BC38
+BC3F              LD   BC,0028
+BC42              ADD  HL,BC
+BC43              ADC  A,00
+BC45              DAA
+BC46              LD   (5BCA),A
+BC49              LD   A,00
+BC4B              ADC  A,00
+BC4D              DAA
+BC4E              LD   (5BC9),A
+BC51              LD   HL,E4E6
+BC54              LD   DE,5BC9
+BC57              LD   B,01
+BC59              LD   A,(DE)
+BC5A              AND  A
+BC5B              JR   Z,BC61
+BC5D              INC  B
+BC5E              JP   BCC0
+
+BC61              INC  HL
+BC62              INC  DE
+BC63              JP   PrintNumber
+
+PrintDays:
+BC66              LD   HL,D9E2
+BC69              LD   DE,Days
+BC6C              LD   B,01
+BC6E              CALL PrintNumber
+BC71              LD   HL,5AEF
+BC74              LD   (HL),47
+BC76              INC  L
+BC77              LD   (HL),47
+BC79              RET
+
+PrintLivesGFX:
+BC7A              LD   IX,BFDB
+BC7E              LD   (IX+00),8C
+BC82              LD   (IX+07),00
+BC86              LD   (IX+1A),10
+BC8A              LD   (IX+1B),20
+BC8E              CALL PrintSprite
+BC91              LD   A,47
+BC93              LD   DE,5A42
+BC96              LD   B,02
+BC98              CALL Fill_DE
+BC9B              LD   DE,5A62
+BC9E              LD   B,04
+BCA0              JP   Fill_DE
+
+PrintLives:
+BCA3              LD   DE,Lives
+BCA6              LD   B,01
+BCA8              LD   HL,DDD7
+BCAB              JP   PrintNumber
+
+PrintNumber:
+BCAE              PUSH HL
+BCAF              LD   HL,6108
+BCB2              LD   (_8x8GfxBase),HL
+BCB5              POP  HL
+BCB6              LD   A,(DE)
+BCB7              RRCA
+BCB8              RRCA
+BCB9              RRCA
+BCBA              RRCA
+BCBB              AND  0F
+BCBD              CALL Print8x8
+BCC0              LD   A,(DE)
+BCC1              AND  0F
+BCC3              CALL Print8x8
+BCC6              INC  DE
+BCC7              DJNZ BCB6
+BCC9              RET
+
+; *********************************************
+
+DisplayDAY:
+BCCA              LD   A,(5BAD)
+BCCD              CPL
+BCCE              ADD  A,02
+BCD0              AND  07
+BCD2              OR   40
+BCD4              LD   (BCE7),A
+BCD7              LD   HL,BCEC
+BCDA              LD   (_8x8GfxBase),HL
+BCDD              LD   DE,BCE7
+BCE0              LD   HL,0F70
+BCE3              PUSH HL
+BCE4              JP   BE4C
+
+; Days text
+
+BCE7 		DB 000h,000h,001h,002h,083h
+
+;
+; Days Graphic
+;
+BCEC 		DB 006h,007h,006h,006h,006h,006h,006h,00Fh,000h,001h,082h,0C6h,064h,06Ch,06Dh,0C6h
+     		DB 0C8h,0C6h,0E1h,060h,060h,0E0h,064h,063h,060h,060h,060h,0E0h,060h,040h,0C0h,080h
+
+
+		
+; *********************************************
+
+DoMenuSelection:
+BD0C              XOR  A
+BD0D              LD   (5BB8),A
+BD10              LD   HL,BDA2
+BD13              LD   B,08
+BD15              RES  7,(HL)
+BD17              INC  HL
+BD18              DJNZ BD15
+BD1A              CALL ClrWrkScr
+BD1D              CALL DisplayMenu
+BD20              CALL BD89
+BD23              CALL DisplayMenu
+
+BD26              LD   DE,B253
+BD29              CALL PlayAudioWaitKey
+BD2C              LD   A,F7               ; check row 3
+BD2E              CALL ReadKey
+BD31              LD   E,A
+BD32              LD   A,(UserInputMethod)
+BD35              LD   (OldUserInputMethod),A
+BD38              BIT  0,E                ; '1'
+BD3A              JR   Z,BD3E
+BD3C              AND  F9
+BD3E              BIT  1,E                ; '2'
+BD40              JR   Z,BD46
+BD42              AND  F9
+BD44              OR   02
+BD46              BIT  2,E                ; '3'
+BD48              JR   Z,BD4E
+BD4A              AND  F9
+BD4C              OR   04
+BD4E              BIT  3,E                ; '4'
+BD50              JR   Z,BD54
+BD52              OR   06
+BD54              LD   (UserInputMethod),A
+
+BD57              LD   HL,5BD2
+BD5A              BIT  4,E                ; '5'
+BD5C              JR   Z,BD85
+BD5E              BIT  0,(HL)
+BD60              JR   NZ,BD6C
+BD62              SET  0,(HL)
+BD64              LD   A,(UserInputMethod)
+BD67              XOR  08
+BD69              LD   (UserInputMethod),A
+BD6C              LD   HL,OldUserInputMethod
+BD6F              CP   (HL)
+BD70              CALL NZ,B4A3
+BD73              LD   A,EF               ; check row 4
+BD75              CALL ReadKey
+BD78              BIT  0,A                ; '0'
+BD7A              RET  NZ
+BD7B              LD   HL,5BA0
+BD7E              INC  (HL)
+BD7F              CALL BD89
+BD82              JP   BD23
+
+BD85              RES  0,(HL)
+BD87              JR   BD6C
+
+BD89              LD   HL,BDA3
+BD8C              LD   A,(UserInputMethod)
+BD8F              RRCA
+BD90              AND  03
+BD92              LD   B,04
+BD94              CALL ToggleSelected
+BD97              RES  7,(HL)
+BD99              LD   A,(UserInputMethod)
+BD9C              AND  08
+BD9E              RET  Z
+BD9F              SET  7,(HL)
+BDA1              RET
+
+
+; Colours
+BDA2 	DB 043h
+BDA3	DB 0C4h,044h,044h,044h,045h,047h,047h,
+
+;XY Positions
+BDAA	DB 058h,09Fh,030h,08Fh,030h,07Fh,030h,06Fh,030h,05Fh,030h,04Fh,030h,03Fh,050h,027h
+	
+	; Knight Lore
+BDBA	DB 014h,017h,012h,010h,011h,01Dh,026h,015h,018h,01Bh,08Eh,
+	; 1 Keyboard
+	DB 001h,026h,014h,00Eh,022h,00Bh,018h,00Ah,01Bh,08Dh,
+	; 2 Kempston Joystick
+	DB 002h,026h,014h,00Eh,016h,019h,01Ch,01Dh,018h,017h,026h,013h,018h,022h,01Ch,01Dh,012h,00Ch,094h
+	; 3 Cursor   Joystick
+	DB 003h,026h,00Ch,01Eh,01Bh,01Ch,018h,01Bh,026h,026h,026h,013h,018h,022h,01Ch,01Dh,012h,00Ch,094h
+	; 4 Interface II
+	DB 004h,026h,012h,017h,01Dh,00Eh,01Bh,00Fh,00Ah,00Ch,00Eh,026h,012h,092h
+	; 5 Directional Control
+	DB 005h,026h,00Dh,012h,01Bh,00Eh,00Ch,01Dh,012h,018h,017h,00Ah,015h,026h,00Ch,018h,017h,01Dh,01Bh,018h,095h
+	; 0 Start Game
+	DB 000h,026h,01Ch,01Dh,00Ah,01Bh,01Dh,026h,010h,00Ah,016h,08Eh
+	; (c) 1984 A.C.G.
+	DB 025h,026h,001h,009h,008h,004h,026h,00Ah,024h,00Ch,024h,010h,0A4h
+
+PrintTextInColor?:
+BE31              PUSH HL
+BE32              LD   HL,6108
+BE35              LD   (_8x8GfxBase),HL
+BE38              POP  BC
+BE39              PUSH BC
+BE3A              CALL BCtoScradr
+BE3D              LD   L,C
+BE3E              LD   H,B
+BE3F              LD   A,(5BB6)
+BE42              EX   AF,AF'
+BE43              JR   BE56
+
+PrintText:
+BE45              PUSH HL
+BE46              LD   HL,6108
+BE49              LD   (_8x8GfxBase),HL
+BE4C              POP  BC
+BE4D              PUSH BC
+BE4E              CALL BCtoScradr
+BE51              LD   L,C
+BE52              LD   H,B
+BE53              LD   A,(DE)
+BE54              EX   AF,AF'
+BE55              INC  DE
+BE56              EXX
+BE57              POP  HL
+BE58              PUSH DE
+BE59              CALL D848
+BE5C              LD   L,E
+BE5D              LD   H,D
+BE5E              POP  DE
+BE5F              EXX
+BE60              LD   A,(DE)
+BE61              BIT  7,A
+BE63              JR   NZ,BE72
+BE65              PUSH DE
+BE66              CALL Print8x8
+BE69              POP  DE
+BE6A              INC  DE
+BE6B              EXX
+BE6C              EX   AF,AF'
+BE6D              LD   (HL),A
+BE6E              INC  L
+BE6F              EX   AF,AF'
+BE70              JR   BE5F
+BE72              AND  7F
+BE74              PUSH DE
+BE75              CALL Print8x8
+BE78              POP  DE
+BE79              INC  DE
+BE7A              EXX
+BE7B              EX   AF,AF'
+BE7C              LD   (HL),A
+BE7D              EXX
+BE7E              RET
+
+Print8X8:
+BE7F              PUSH BC
+BE80              PUSH DE
+BE81              PUSH HL
+BE82              LD   L,A
+BE83              LD   H,00
+BE85              ADD  HL,HL
+BE86              ADD  HL,HL
+BE87              ADD  HL,HL
+BE88              LD   DE,(_8x8GfxBase)
+BE8C              ADD  HL,DE
+BE8D              EX   DE,HL
+BE8E              POP  HL
+BE8F              LD   B,08
+BE91              LD   A,(DE)
+BE92              LD   (HL),A
+BE93              INC  DE
+BE94              PUSH BC
+BE95              LD   BC,FFE0	;-32
+BE98              ADD  HL,BC
+BE99              POP  BC
+BE9A              DJNZ BE91
+BE9C              POP  DE
+BE9D              LD   BC,0101
+BEA0              ADD  HL,BC
+BEA1              POP  BC
+BEA2              RET
+
+ToggleSelected:
+BEA3              AND  A
+BEA4              JR   NZ,BEAD
+BEA6              SET  7,(HL)
+BEA8              JR   BEAF
+BEAA              DEC  A
+BEAB              JR   Z,BEA6
+BEAD              RES  7,(HL)
+BEAF              INC  HL
+BEB0              DJNZ BEAA
+BEB2              RET
+
+DisplayMenu:
+BEB3              LD   DE,BDA2
+BEB6              EXX
+BEB7              LD   HL,BDAA
+BEBA              LD   DE,BDBA
+BEBD              LD   B,08
+
+;
+; DE = Attributes
+; HL = Coordinates
+; DE = Text entries
+;  B = Number to display
+
+DisplayTextList:
+BEBF              EXX
+BEC0              LD   A,(DE)
+BEC1              LD   (5BB6),A
+BEC4              INC  DE
+BEC5              EXX
+BEC6              PUSH BC
+BEC7              LD   A,(HL)
+BEC8              INC  HL
+BEC9              INC  HL
+BECA              PUSH HL
+BECB              DEC  HL
+BECC              LD   H,(HL)
+BECD              LD   L,A
+BECE              CALL PrintTextInColor?
+BED1              POP  HL
+BED2              POP  BC
+BED3              DJNZ DisplayTextList
+BED5              LD   A,(5BB8)
+BED8              AND  A
+BED9              RET  NZ
+BEDA              INC  A
+BEDB              LD   (5BB8),A
+BEDE              CALL PrintBorder
+BEE1              JP   UpdateScreen
+
+; *********************************************
+
+
+MultiplePrintSprite:
+BEE4              PUSH BC
+BEE5              PUSH DE
+BEE6              PUSH HL
+BEE7              CALL PrintSprite
+BEEA              POP  HL
+BEEB              POP  DE
+BEEC              POP  BC
+BEED              LD   A,(IX+1A)
+BEF0              ADD  A,E
+BEF1              LD   (IX+1A),A
+BEF4              LD   A,(IX+1B)
+BEF7              ADD  A,D
+BEF8              LD   (IX+1B),A
+BEFB              DJNZ MultiplePrintSprite
+BEFD              RET
+
+BEFE              CALL C4D8
+BF01              LD   A,(5BA2)
+BF04              CPL
+BF05              AND  01
+BF07              RET  NZ
+BF08              INC  (IX+00)
+BF0B              CALL B419
+BF0E              JP   C692
+
+BF11              CALL C4D8
+BF14              RES  6,(IX+0D)
+BF18              LD   A,(IX+10)
+BF1B              LD   (IX+00),A
+BF1E              JP   AFD5
+
+BF21              LD   (IX+00),70
+BF25              SET  1,(IX+07)
+BF29              JR   BF31
+
+BF2B              CALL C4D8
+BF2E              INC  (IX+00)
+BF31              CALL B403
+BF34              JP   C692
+
+BF37              LD   L,(IX+10)
+BF3A              LD   H,(IX+11)
+BF3D              LD   (HL),00
+BF3F              CALL C4D8
+BF42              JP   B95E
+
+DisplayObjectsCarried:
+BF45              LD   A,(5BB4)
+BF48              AND  A
+BF49              RET  Z
+BF4A              XOR  A
+BF4B              LD   (5BB4),A
+DisplayObjects:
+BF4E              PUSH IX
+BF50              LD   IX,BFDB
+BF54              LD   B,03
+BF56              LD   HL,5BDC
+BF59              PUSH BC
+BF5A              PUSH HL
+BF5B              LD   A,B
+BF5C              NEG
+BF5E              ADD  A,03
+BF60              SLA  A
+BF62              SLA  A
+BF64              SLA  A
+BF66              LD   C,A
+BF67              SLA  A
+BF69              ADD  A,C
+BF6A              ADD  A,10
+BF6C              LD   (IX+1A),A
+BF6F              LD   (IX+1B),00
+BF73              LD   C,(IX+1A)
+BF76              LD   B,(IX+1B)
+BF79              PUSH HL
+BF7A              CALL BCtoScradr
+BF7D              LD   L,C
+BF7E              LD   H,B
+BF7F              LD   BC,0318
+BF82              XOR  A
+BF83              CALL FillWindow
+BF86              POP  HL
+BF87              LD   A,(HL)
+BF88              AND  A
+BF89              JR   Z,BF91
+BF8B              LD   (IX+00),A
+BF8E              CALL PrintSprite
+BF91              LD   C,(IX+1A)
+BF94              LD   B,(IX+1B)
+BF97              CALL BCtoAttradrInDE
+BF9A              CALL BCtoScradr
+BF9D              LD   L,C
+BF9E              LD   H,B
+BF9F              LD   BC,1803
+BFA2              CALL D67C
+BFA5              POP  HL
+BFA6              POP  BC
+BFA7              PUSH BC
+BFA8              PUSH HL
+BFA9              LD   A,(HL)
+BFAA              AND  0F
+BFAC              LD   E,A
+BFAD              LD   D,00
+BFAF              LD   HL,BFD3
+BFB2              ADD  HL,DE
+BFB3              LD   C,(HL)
+BFB4              LD   L,(IX+1A)
+BFB7              LD   A,(IX+1B)
+BFBA              ADD  A,17
+BFBC              LD   H,A
+BFBD              CALL D848
+BFC0              EX   DE,HL
+BFC1              LD   A,C
+BFC2              LD   BC,0303
+BFC5              CALL FillWindow
+BFC8              POP  HL
+BFC9              POP  BC
+BFCA              INC  HL
+BFCB              INC  HL
+BFCC              INC  HL
+BFCD              INC  HL
+BFCE              DJNZ BF59
+BFD0              POP  IX
+BFD2              RET
+
+BFD3 	DB 042h,043h,044h,045h,046h,047h,042h,047h
+
+BFDB	DB 08Ah,000h,000h,000h,000h,000h,000h,000h
+	DB 000h,000h,000h,000h,000h,000h,000h,000h
+	DB 000h,000h,000h,000h,000h,000h,000h,000h
+	DB 003h,001h,0E8h,0A0h,000h,000h,000h,000h
+
+BFFB              LD   HL,UserInputMethod
+BFFE              LD   A,(HL)
+BFFF              AND  06
+C001              LD   A,(UserInput)
+C004              JR   Z,C00B
+C006              BIT  3,(HL)
+C008              JR   Z,C00B
+C00A              RRCA
+C00B              AND  10
+C00D              RET
+
+C00E              LD   A,(5BB3)
+C011              AND  A
+C012              JP   NZ,C0A9
+C015              CALL BFFB
+C018              RET  Z
+C019              CALL C87A
+C01C              RET  NC
+C01D              BIT  3,(IX+0C)
+C021              RET  NZ
+C022              BIT  2,(IX+0C)
+C026              RET  Z
+C027              XOR  A
+C028              LD   (5BD3),A
+C02B              LD   A,(IX+03)
+C02E              LD   B,A
+C02F              ADD  A,0C
+C031              LD   (IX+03),A
+C034              CALL B4FD
+C037              LD   (IX+03),B
+C03A              JR   NC,C041
+C03C              LD   A,01
+C03E              LD   (5BD3),A
+C041              CALL B4A3
+C044              LD   A,01
+C046              LD   (5BB3),A
+C049              LD   (5BB4),A
+C04C              LD   B,02
+C04E              LD   L,(IX+04)
+C051              LD   A,L
+C052              ADD  A,04
+C054              LD   (IX+04),A
+C057              LD   H,(IX+05)
+C05A              LD   A,H
+C05B              ADD  A,04
+C05D              LD   (IX+05),A
+C060              PUSH HL
+C061              LD   L,(IX+06)
+C064              LD   A,L
+C065              ADD  A,04
+C067              LD   (IX+06),A
+C06A              PUSH HL
+C06B              LD   IY,5C48
+C06F              CALL C172
+C072              JP   C,C141
+C075              LD   DE,0020
+C078              ADD  IY,DE
+C07A              DJNZ C06F
+C07C              CALL BFFB
+C07F              JR   Z,C09D
+C081              LD   B,02
+C083              LD   A,(IX+08)
+C086              CP   88
+C088              JR   NZ,C08C
+C08A              LD   B,01
+C08C              LD   IY,5C48
+C090              LD   DE,0020
+C093              LD   A,(IY+00)
+C096              AND  A
+C097              JR   Z,C0B2
+C099              ADD  IY,DE
+C09B              DJNZ C093
+C09D              POP  HL
+C09E              LD   (IX+06),L
+C0A1              POP  HL
+C0A2              LD   (IX+04),L
+C0A5              LD   (IX+05),H
+C0A8              RET
+
+C0A9              CALL BFFB
+C0AC              RET  NZ
+C0AD              XOR  A
+C0AE              LD   (5BB3),A
+C0B1              RET
+
+C0B2              LD   HL,5BE4
+C0B5              LD   A,(HL)
+C0B6              INC  HL
+C0B7              AND  A
+C0B8              JR   Z,C12B
+C0BA              LD   A,(5BD3)
+C0BD              AND  A
+C0BE              JR   NZ,C09D
+C0C0              DEC  HL
+C0C1              LD   A,(HL)
+C0C2              INC  HL
+C0C3              LD   (IY+00),A
+C0C6              LD   A,(IX+08)
+C0C9              CP   88
+C0CB              JR   NZ,C0DD
+C0CD              LD   A,(IX+03)
+C0D0              CP   98
+C0D2              JR   C,C0DD
+C0D4              SET  3,(IY+00)
+C0D8              LD   A,1
+C0DA              LD   (5BC4),A
+C0DD              PUSH HL
+C0DE              LD   BC,0003
+C0E1              PUSH IX
+C0E3              POP  HL
+C0E4              PUSH IY
+C0E6              POP  DE
+C0E7              INC  DE
+C0E8              INC  HL
+C0E9              LDIR
+C0EB              LD   A,(IX+03)
+C0EE              ADD  A,0C
+C0F0              LD   (IX+03),A
+C0F3              LD   A,(IX+23)
+C0F6              ADD  A,0C
+C0F8              LD   (IX+23),A
+C0FB              PUSH IX
+C0FD              PUSH IY
+C0FF              POP  IX
+C101              CALL D6C9
+C104              POP  IX
+C106              LD   (IY+04),05
+C10A              LD   (IY+05),05
+C10E              LD   (IY+06),0C
+C112              POP  HL
+C113              LD   A,(HL)
+C114              INC  HL
+C115              LD   (IY+07),A
+C118              LD   A,(IX+08)
+C11B              LD   (IY+08),A
+C11E              LD   A,(HL)
+C11F              INC  HL
+C120              LD   (IY+10),A
+C123              LD   A,(HL)
+C124              LD   (IY+11),A
+C127              SET  0,(IY+0D)
+C12B              LD   HL,5BE3
+C12E              LD   DE,5BE7
+C131              LD   BC,000C
+C134              LDDR
+C136              LD   DE,5BD8
+C139              LD   B,04
+C13B              CALL Zero_DE
+C13E              JP   C09D
+
+C141              LD   HL,5BD8
+C144              XOR  A
+C145              LD   (5BC0),A
+C148              LD   A,(IY+00)
+C14B              LD   (HL),A
+C14C              INC  HL
+C14D              LD   A,(IY+07)
+C150              LD   (HL),A
+C151              INC  HL
+C152              LD   E,(IY+10)
+C156              LD   D,(IY+11)
+C158              XOR  A
+C159              LD   (DE),A
+C15A              LD   (HL),E
+C15B              INC  HL
+C15C              LD   (HL),D
+C15D              CALL C69D
+C160              LD   (IY+00),01
+C164              LD   HL,5BE4
+C167              LD   A,(HL)
+C168              INC  HL
+C169              AND  A
+C16A              JR   Z,C12B
+C16C              LD   (IY+00),A
+C16F              PUSH HL
+C170              JR   C106
+
+C172              LD   A,(IY+00)
+C175              SUB  60
+C177              CP   07
+C179              RET  NC
+C17A              PUSH BC
+C17B              LD   BC,0000
+C17E              LD   L,C
+C17F              LD   H,C
+C180              CALL CC9D
+C183              JR   NC,C19F
+C185              CALL CCB2
+C188              JR   NC,C19F
+C18A              LD   A,(IX+03)
+C18D              SUB  04
+C18F              LD   (IX+03),A
+C192              CALL CCC7
+C195              PUSH AF
+C196              LD   A,(IX+03)
+C199              ADD  A,04
+C19B              LD   (IX+03),A
+C19E              POP  AF
+C19F              POP  BC
+C1A0              RET
+
+C1A1              LD   A,(IX+09)
+C1A4              OR   (IX+0A)
+C1A7              OR   (IX+0B)
+C1AA              RET
+
+C1AB              CALL C4D3
+C1AE              PUSH IX
+C1B0              POP  IY
+C1B2              LD   IX,5C08
+C1B6              INC  (IX+04)
+C1B9              INC  (IX+05)
+C1BC              CALL C17A
+C1BF              DEC  (IX+04)
+C1C2              DEC  (IX+05)
+C1C5              PUSH IY
+C1C7              POP  IX
+C1C9              JR   NC,C1EE
+C1CB              SET  3,(IX+00)
+C1CF              CALL C4D8
+C1D2              LD   L,(IX+10)
+C1D5              LD   H,(IX+11)
+C1D8              LD   (HL),00
+C1DA              LD   HL,Lives
+C1DD              INC  (HL)
+C1DE              XOR  A
+C1DF              LD   (5BC0),A
+C1E2              CALL B4A3
+C1E5              CALL PrintLives
+C1E8              LD   BC,2020
+C1EB              CALL C432
+C1EE              JP   C4C6
+
+C1F1              CALL C4D8
+C1F4              LD   A,(IX+01)
+C1F7              SUB  80
+C1F9              JR   Z,C202
+C1FB              LD   A,01
+C1FD              JP   M,C202
+C200              NEG
+C202              LD   (IX+09),A
+C205              LD   A,(IX+02)
+C208              SUB  80
+C20A              JR   Z,C213
+C20C              LD   A,01
+C20E              JP   M,C213
+C211              NEG
+C213              LD   (IX+0A),A
+C216              LD   A,(IX+01)
+C219              CP   80
+C21B              JR   NZ,C222
+C21D              XOR  (IX+02)
+C220              JR   Z,C238
+C222              LD   A,(IX+03)
+C225              CP   98
+C227              LD   A,01
+C229              JR   NC,C22C
+C22B              INC  A
+C22C              LD   (IX+0B),A
+C22F              CALL C700
+C232              CALL B467
+C235              JP   C692
+
+C238              LD   A,80
+C23A              CP   (IX+03)
+C23D              JR   NC,C245
+C23F              SET  1,(IX+07)
+C243              JR   C22F
+
+C245              LD   (IX+03),80
+C249              CALL ReturnNextObjectRequired
+C24C              LD   A,(IX+00)
+C24F              AND  07
+C251              CP   (HL)
+C252              JR   NZ,C265
+C254              LD   HL,5BBB
+C257              INC  (HL)
+C258              CALL C2A5
+C25B              LD   A,(5BBB)
+C25E              CP   0E
+C260              JR   NZ,C265
+C262              CALL C2CC
+C265              XOR  A
+C266              LD   (5BC4),A
+C269              LD   L,(IX+10)
+C26C              LD   H,(IX+11)
+C26F              LD   (HL),00
+C271              JP   B95E
+
+ReturnNextObjectRequired:
+C274              LD   A,(5BBB)
+C277              LD   HL,C27D
+C27A              JP   Add_HL_A
+
+C27D	 DB 000h,001h,002h,003h,004h,005h,006h,003h,005h,000h,006h,001h,002h,004h
+
+
+C28B              CALL C4D8
+C28E              CALL C700
+C291              BIT  0,(IX+0D)
+C295              JR   NZ,C29B
+C297              CALL C1A1
+C29A              RET  Z
+C29B              RES  0,(IX+0D)
+C29F              CALL C9F3
+C2A2              JP   C232
+
+C2A5              LD   D,10
+C2A7              LD   HL,Attributes
+C2AA              LD   BC,0300
+C2AD              LD   A,(HL)
+C2AE              AND  F8
+C2B0              LD   E,A
+C2B1              LD   A,(HL)
+C2B2              INC  A
+C2B3              AND  07
+C2B5              OR   E
+C2B6              LD   (HL),A
+C2B7              INC  HL
+C2B8              DEC  BC
+C2B9              LD   A,B
+C2BA              OR   C
+C2BB              JR   NZ,C2AD
+C2BD              CALL B403
+C2C0              LD   BC,2000
+C2C3              DEC  BC
+C2C4              LD   A,B
+C2C5              OR   C
+C2C6              JR   NZ,C2C3
+C2C8              DEC  D
+C2C9              JR   NZ,C2A7
+C2CB              RET
+
+C2CC              LD   A,01
+C2CE              LD   (5BC3),A
+C2D1              PUSH IX
+C2D3              LD   IX,5C68
+C2D7              LD   DE,0020
+C2DA              LD   B,0B
+C2DC              PUSH BC
+C2DD              PUSH DE
+C2DE              CALL C692
+C2E1              POP  DE
+C2E2              POP  BC
+C2E3              LD   (IX+00),01
+C2E7              ADD  IX,DE
+C2E9              DJNZ C2DC
+C2EB              LD   BC,6108
+C2EE              LD   A,(IX+00)
+C2F1              CP   07
+C2F3              JR   NZ,C2F9
+C2F5              LD   (IX+00),83
+C2F9              ADD  IX,DE
+C2FB              PUSH IX
+C2FD              POP  HL
+C2FE              AND  A
+C2FF              SBC  HL,BC
+C301              JR   C,C2EE
+C303              POP  IX
+C305              RET
+
+C306              LD   A,(5BB1)
+C309              AND  A
+C30A              RET  Z
+C30B              LD   A,(IX+0C)
+C30E              AND  F0
+C310              RET  NZ
+C311              BIT  3,(IX+0C)
+C315              RET  NZ
+C316              INC  SP
+C317              INC  SP
+C318              LD   A,(IX+00)
+C31B              LD   (5BB1),A
+C31E              LD   (IX+10),08
+C322              PUSH IX
+C324              LD   DE,0020
+C327              ADD  IX,DE
+C329              LD   (IX+00),01
+C32D              CALL C692
+C330              POP  IX
+C332              CALL C4ED
+C335              JR   C357
+
+C337              CALL C4ED
+C33A              BIT  6,(IX+0D)
+C33E              JR   Z,C349
+C340              LD   A,(5BC3)
+C343              AND  A
+C344              JR   NZ,C349
+C346              JP   BF21
+
+C349              LD   A,(5BA2)
+C34C              AND  03
+C34E              RET  NZ
+C34F              CALL B472
+C352              DEC  (IX+10)
+C355              JR   Z,C377
+C357              LD   A,R
+C359              LD   C,A
+C35A              LD   A,(5BA5)
+C35D              ADD  A,C
+C35E              AND  03
+C360              OR   5C
+C362              CP   (IX+00)
+C365              JR   NZ,C369
+C367              XOR  01
+C369              LD   (IX+00),A
+C36C              LD   A,(IX+07)
+C36F              XOR  40
+C371              LD   (IX+07),A
+C374              JP   C692
+
+C377              LD   A,(5BB1)
+C37A              XOR  20
+C37C              LD   (IX+00),A
+C37F              ADD  A,10
+C381              LD   (IX+20),A
+C384              XOR  A
+C385              LD   (5BB1),A
+C388              CALL C4DD
+C38B              BIT  5,(IX+00)
+C38F              JR   Z,C394
+C391              DEC  (IX+13)
+C394              JP   C692
+
+
+PrintSunMoon:
+C397              LD   A,(5BA2)
+C39A              AND  07
+C39C              RET  NZ
+C39D              LD   IX,C44D
+C3A1              INC  (IX+1A)
+
+DisplayFrame:
+C3A4              LD   A,(5BC3)
+C3A7              AND  A
+C3A8              RET  NZ
+C3A9              LD   A,(IX+1A)
+C3AC              CP   E1
+C3AE              JR   Z,C3FF
+C3B0              LD   A,(IX+1A)
+C3B3              ADD  A,10
+C3B5              LD   HL,C440
+C3B8              RRCA
+C3B9              RRCA
+C3BA              AND  0F
+C3BC              CALL Add_HL_A
+C3BF              LD   A,(HL)
+C3C0              LD   (IX+1B),A
+C3C3              LD   BC,1F06
+C3C6              LD   HL,D90A
+C3C9              PUSH BC
+C3CA              PUSH HL
+C3CB              LD   A,C
+C3CC              LD   C,B
+C3CD              LD   B,A
+C3CE              XOR  A
+C3CF              CALL FillWindow
+C3D2              CALL PrintSprite
+C3D5              LD   IX,BFDB
+C3D9              LD   (IX+07),00
+C3DD              LD   (IX+00),5A
+C3E1              LD   (IX+1A),B8
+C3E5              LD   (IX+1B),00
+C3E9              CALL PrintSprite
+C3EC              LD   (IX+1A),D0
+C3F0              LD   (IX+00),BA
+C3F4              CALL PrintSprite
+C3F7              POP  HL
+C3F8              POP  BC
+C3F9              LD   DE,57F7
+C3FC              JP   D67C
+
+C3FF              LD   A,(IX+00)
+C402              XOR  01
+C404              LD   (IX+00),A
+C407              CALL D30D
+C40A              LD   (IX+1A),B0
+C40E              LD   A,01
+C410              LD   (5BB1),A
+C413              LD   A,(C44D)
+C416              AND  01
+C418              RET  NZ
+
+IncDays:
+C419              LD   HL,Days
+C41C              LD   A,(HL)
+C41D              ADD  A,01
+C41F              DAA
+C420              LD   (HL),A
+C421              CP   40
+C423              JP   Z,GameOver
+
+C426              CALL PrintDays
+C429              LD   BC,0078
+C42C              CALL C432
+C42F              JP   C3C3
+
+C432              CALL BCtoAttradrInDE
+C435              CALL BCtoScradr
+C438              LD   L,C
+C439              LD   H,B
+C43A              LD   BC,0802
+C43D              JP   D67C
+
+C440 	DB 005h,006h,007h,008h,009h,00Ah,00Ah,009h
+	DB 008h,007h,006h,005h,005h
+	
+C44D	DB 000h,000h,000h,000h,000h,000h,000h,000h
+	DB 000h,000h,000h,000h,000h,000h,000h,000h
+	DB 000h,000h,000h,000h,000h,000h,000h,000h
+	DB 000h,000h,000h,000h,000h,000h,000h,000h
+
+PrintSun:
+C46D              LD   IX,C44D
+C471              LD   (IX+00),58
+C475              LD   (IX+1A),B0
+C479              LD   (IX+1B),09
+C47D              RET
+
+InitObjects:
+C47E              LD   HL,6FF2
+C481              LD   A,(5BA0)
+C484              LD   E,A
+C485              LD   A,R
+C487              ADD  A,E
+C488              LD   E,A
+C489              LD   A,E
+C48A              AND  07
+C48C              OR   60
+C48E              LD   (HL),A
+C48F              INC  HL
+C490              INC  E
+C491              PUSH DE
+C492              EX   DE,HL
+C493              LD   HL,0004
+C496              ADD  HL,DE
+C497              EX   DE,HL
+C498              LD   BC,0004
+C49B              LDIR
+C49D              EX   DE,HL
+C49E              PUSH HL
+C49F              LD   BC,7112
+C4A2              AND  A
+C4A3              SBC  HL,BC
+C4A5              POP  HL
+C4A6              POP  DE
+C4A7              JR   C,C489
+C4A9              RET
+
+C4AA              CALL C4E3
+C4AD              CALL C9F3
+C4B0              CALL B3E9
+C4B3              JP   B5AF
+
+C4B6              CALL C4E3
+C4B9              CALL C700
+C4BC              CALL C1A1
+C4BF              RET  Z
+C4C0              JP   C232
+
+C4C3              CALL C4E3
+C4C6              CALL C700
+C4C9              CALL C1A1
+C4CC              RET  Z
+C4CD              CALL C9F3
+C4D0              JP   C232
+
+C4D3              LD   HL,FEF8
+C4D6              JR   C4E0
+
+C4D8              LD   HL,FCF4
+C4DB              JR   C4E0
+
+C4DD              LD   HL,FAF4
+C4E0              JP   C72B
+
+C4E3              LD   HL,F8F0
+C4E6              JR   C4E0
+
+C4E8              LD   HL,FFEC
+C4EB              JR   C4E0
+
+C4ED              LD   HL,FEF4
+C4F0              JR   C4E0
+
+C4F2              LD   HL,FCF8
+C4F5              JR   C4E0
+
+C4F7              LD   HL,F8F4
+C4FA              JR   C4E0
+
+C4FC              LD   HL,F9F4
+C4FF              JR   C4E0
+
+C501              LD   HL,F4F4
+C504              JR   C4E0
+
+C506              LD   HL,F4F0
+C509              JR   C4E0
+
+C50B              LD   HL,07F4
+C50E              JR   C4E0
+
+C510              LD   HL,03F4
+C513              JR   C4E0
+
+FillWindow:
+C515              LD   DE,0020
+C518              PUSH BC
+C519              PUSH HL
+C51A              LD   (HL),A
+C51B              INC  HL
+C51C              DJNZ C51A
+C51E              POP  HL
+C51F              ADD  HL,DE
+C520              POP  BC
+C521              DEC  C
+C522              JR   NZ,C518
+C524              RET
+
+ObjectsInLocation:
+C525              LD   DE,5C48
+C528              EXX
+C529              LD   IY,6FF2
+C52D              LD   B,(IX+08)
+C530              LD   A,(IY+00)
+C533              AND  A
+C534              JR   Z,C572
+C536              LD   A,(IY+08)
+C539              CP   B
+C53A              JR   NZ,C572
+C53C              PUSH IY
+C53E              EXX
+C53F              POP  HL
+C540              PUSH HL
+C541              LD   A,(HL)
+C542              INC  HL
+C543              LD   (DE),A
+C544              INC  DE
+C545              INC  HL
+C546              INC  HL
+C547              INC  HL
+C548              INC  HL
+C549              LD   BC,0003
+C54C              LDIR
+C54E              EX   DE,HL
+C54F              LD   (HL),05
+C551              INC  HL
+C552              LD   (HL),05
+C554              INC  HL
+C555              LD   (HL),0C
+C557              INC  HL
+C558              LD   (HL),14
+C55A              INC  HL
+C55B              EX   DE,HL
+C55C              LD   A,(HL)
+C55D              INC  HL
+C55E              LD   (DE),A
+C55F              INC  DE
+C560              LD   B,07
+C562              CALL Zero_DE
+C565              POP  BC
+C566              LD   A,C
+C567              LD   (DE),A
+C568              INC  DE
+C569              LD   A,B
+C56A              LD   (DE),A
+C56B              INC  DE
+C56C              LD   B,0E
+C56E              CALL Zero_DE
+C571              EXX
+
+C572              LD   DE,0009
+C575              ADD  IY,DE
+C577              PUSH IY
+C579              POP  HL
+C57A              LD   DE,7112
+C57D              AND  A
+C57E              SBC  HL,DE
+C580              JR   C,C530
+
+C582              EXX
+C583              LD   HL,5C88
+C586              AND  A
+C587              SBC  HL,DE
+C589              RET  Z
+C58A              LD   B,20
+C58C              CALL Zero_DE
+C58F              JR   C583
+C591              LD   IY,5C48
+C595              LD   A,(IY+00)
+C598              AND  A
+C599              JR   Z,C5B7
+C59B              LD   E,(IY+10)
+C59E              LD   D,(IY+11)
+C5A1              LD   A,(IY+00)
+C5A4              LD   (DE),A
+C5A5              INC  DE
+C5A6              INC  DE
+C5A7              INC  DE
+C5A8              INC  DE
+C5A9              INC  DE
+C5AA              PUSH IY
+C5AC              POP  HL
+C5AD              INC  HL
+C5AE              LD   BC,0003
+C5B1              LDIR
+C5B3              LD   A,(IY+08)
+C5B6              LD   (DE),A
+C5B7              LD   BC,0020
+C5BA              ADD  IY,BC
+C5BC              PUSH IY
+C5BE              POP  HL
+C5BF              LD   BC,5C88
+C5C2              AND  A
+C5C3              SBC  HL,BC
+C5C5              JR   C,C595
+C5C7              RET
+
+C5C8              CALL C4DD
+C5CB              CALL C700
+C5CE              LD   A,(IX+09)
+C5D1              OR   (IX+0A)
+C5D4              JR   Z,C5DD
+C5D6              LD   A,(IX+0C)
+C5D9              AND  03
+C5DB              JR   Z,C5FD
+C5DD              LD   A,(5BA5)
+C5E0              AND  03
+C5E2              ADD  A,04
+C5E4              CALL C645
+C5E7              LD   (IX+09),A
+C5EA              LD   A,(5BA2)
+C5ED              AND  03
+C5EF              ADD  A,04
+C5F1              CALL C645
+C5F4              LD   (IX+0A),A
+C5F7              CALL C603
+C5FA              CALL B467
+C5FD              CALL B985
+C600              JP   B856
+
+C603              LD   A,(IX+09)
+C606              AND  A
+C607              JP   P,C60C
+C60A              NEG
+C60C              LD   C,A
+C60D              LD   A,(IX+0A)
+C610              AND  A
+C611              JP   P,C616
+C614              NEG
+C616              CP   C
+C617              JR   NC,C62F
+C619              LD   A,(IX+09)
+C61C              AND  A
+C61D              JP   M,C629
+C620              RES  1,(IX+00)
+C624              SET  6,(IX+07)
+C628              RET
+
+C629              SET  1,(IX+00)
+C62D              JR   C624
+
+C62F              LD   A,(IX+0A)
+C632              AND  A
+C633              JP   M,C63F
+C636              SET  1,(IX+00)
+C63A              RES  6,(IX+07)
+C63E              RET
+
+C63F              RES  1,(IX+00)
+C643              JR   C63A
+
+C645              LD   BC,C64E
+C648              LD   L,A
+C649              LD   H,00
+C64B              ADD  HL,BC
+C64C              LD   A,(HL)
+C64D              RET
+
+c64E 	DB 001h,0FEh,002h,0FDh,003h,0FCh,004h,0FBh,005h,0FAh,006h,0F9h,007h,0F8h,008h
+
+C65E              CALL C4DD
+C661              LD   HL,5BAF
+C664              LD   A,(HL)
+C665              AND  A
+C666              RET  NZ
+C667              LD   A,(5BAE)
+C66A              CP   (IX+03)
+C66D              JR   Z,C6AD
+C66F              ADD  A,1F
+C671              CP   (IX+03)
+C674              JR   NC,C6AD
+C676              LD   A,(5BB0)
+C679              CP   04
+C67B              JR   C,C685
+C67D              LD   A,(5BA5)
+C680              AND  1F
+C682              RET  NZ
+C683              OR   80
+C685              INC  A
+C686              LD   (5BB0),A
+C689              SET  0,(IX+00)
+C68D              LD   (IX+0B),FF
+C691              INC  (HL)
+C692              LD   A,(IX+07)
+C695              OR   30
+C697              LD   (IX+07),A
+C69A              JP   CD4D
+
+C69D              PUSH IY
+C69F              PUSH IX
+C6A1              PUSH IY
+C6A3              POP  IX
+C6A5              CALL C692
+C6A8              POP  IX
+C6AA              POP  IY
+C6AC              RET
+
+C6AD              LD   A,(5BA5)
+C6B0              AND  1F
+C6B2              RET  NZ
+C6B3              SET  0,(IX+00)
+C6B7              LD   (IX+0B),01
+C6BB              JR   C691
+
+C6BD              CALL C4DD
+C6C0              SET  7,(IX+0D)
+C6C4              LD   A,(5C14)
+C6C7              AND  F0
+C6C9              RET  NZ
+C6CA              LD   A,(IX+0B)
+C6CD              AND  A
+C6CE              JP   P,C6EA
+C6D1              DEC  (IX+0B)
+C6D4              CALL C700
+C6D7              BIT  2,(IX+0C)
+C6DB              JR   Z,C692
+C6DD              CALL B489
+C6E0              XOR  A
+C6E1              LD   (5BAF),A
+C6E4              RES  0,(IX+00)
+C6E8              JR   C692
+
+C6EA              LD   (IX+0B),02
+C6EE              CALL B467
+C6F1              CALL C700
+C6F4              LD   A,(5BAE)
+C6F7              ADD  A,1F
+C6F9              CP   (IX+03)
+C6FC              JR   NC,C692
+C6FE              JR   C6E0
+
+C700              DEC  (IX+0B)
+C703              CALL CB45
+C706              LD   A,(IX+01)
+C709              ADD  A,(IX+09)
+C70C              LD   (IX+01),A
+C70F              LD   A,(IX+02)
+C712              ADD  A,(IX+0A)
+C715              LD   (IX+02),A
+C718              LD   A,(IX+03)
+C71B              ADD  A,(IX+0B)
+C71E              LD   (IX+03),A
+C721              RET
+
+C722              BIT  6,(IX+07)
+C726              JR   NZ,C732
+C728              LD   HL,FDF7
+C72B              LD   (IX+12),L
+C72E              LD   (IX+13),H
+C731              RET
+
+C732              LD   HL,FEF9
+C735              JR   C72B
+
+C737              LD   HL,FD01
+C73A              JR   C74C
+
+C73C              BIT  6,(IX+07)
+C740              JR   NZ,C76C
+C742              LD   A,(IX+00)
+C745              CP   04
+C747              JR   Z,C737
+C749              LD   HL,FDF9
+C74C              CALL C72B
+C74F              LD   A,(IX+02)
+C752              ADD  A,0D
+C754              LD   (IX+0A),A
+C757              LD   A,(IX+01)
+C75A              LD   (IX+09),A
+C75D              LD   HL,060F
+C760              LD   A,(IX+03)
+C763              LD   (IX+0B),A
+C766              CALL C7DB
+C769              JP   C785
+
+C76C              LD   HL,FEEF
+C76F              CALL C72B
+C772              LD   A,(IX+01)
+C775              SUB  0D
+C777              LD   (IX+09),A
+C77A              LD   A,(IX+02)
+C77D              LD   (IX+0A),A
+C780              LD   HL,0F06
+C783              JR   C760
+
+C785              LD   HL,0F0F
+C788              LD   IY,5C08
+C78C              LD   DE,0020
+C78F              LD   B,04
+C791              LD   A,(IY+00)
+C794              AND  A
+C795              JR   Z,C7D6
+C797              BIT  3,(IY+07)
+C79A              LD   E,(HL)
+C79B              JR   Z,C7D6
+C79D              CALL C7FE
+C7A0              JR   NC,C7D6
+C7A2              PUSH BC
+C7A3              LD   BC,C7A9
+C7A6              JP   CA17
+
+c7a9	DW 0C7b1h,0C7b1h,0C7c4,0c7c4h
+
+C7B1              LD   A,(IX+0A)
+C7B4              CP   (IY+02)
+C7B7              JR   Z,C7D5
+C7B9              LD   A,01
+C7BB              JR   NC,C7BF
+C7BD              NEG
+C7BF              LD   (IY+0F),A
+C7C2              JR   C7D5
+
+C7C4              LD   A,(IX+09)
+C7C7              CP   (IY+01)
+C7CA              JR   z,C7D5
+C7CC              LD   A,01
+C7CE              JR   NC,C7D2
+C7D0              NEG
+C7D2              LD   (IY+OE),A
+C7D5              POP  BC
+C7D6              ADD  IY,DE
+C7D8              DJNZ C791
+C7DA              RET
+
+C7DB              LD   IY,5C08
+C7DF              LD   DE,0020
+C7E2              LD   B,04
+C7E4              LD   A,(IY+00)
+C7E7              AND  A
+C7E8              JR   Z,C7F9
+C7EA              BIT  3,(IY+07)
+C7EE              JR   Z,C7F9
+C7F0              CALL C7FE
+C7F3              JR   NC,C7F9
+C7F5              SET  0,(IY+07)
+C7FA              ADD  IY,DE
+C7FB              DJNZ C7E4
+C7FD              RET
+
+C7FE              LD   A,(IX+09)
+C801              SUB  (IY+01)
+C804              JR   NC,C808
+C806              NEG
+C808              CP   L
+C809              RET  NC
+C80A              LD   A,(IX+0A)
+C80D              SUB  (IY+02)
+C810              JR   NC,C814
+C812              NEG
+C814              CP   H
+C815              RET  NC
+C816              LD   A,(IX+0B)
+C819              SUB  (IY+03)
+C81C              JR   NC,C820
+C81E              NEG
+C820              CP   04
+C822              RET
+
+C823              CALL C4DD
+C826              JR   C82B
+
+C828              CALL C4FC
+C82B              BIT  6,(IX+0D)
+C82F              JR   Z,C83E
+C831              LD   A,(5BC3)
+C834              AND  A
+C835              JR   NZ,C83E
+C837              SET  6,(IX+2D)
+C83B              JP   BF21
+
+C83E              CALL C306
+C841              CALL D022
+C844              CALL C00E
+C847              CALL C89F
+C84A              CALL C948
+C84D              CALL C969
+C850              CALL C87A
+C853              JR   NC,C86D
+C855              SET  1,(IX+27)
+C859              CALL C9A1
+C85C              RES  1,(IX+27)
+C860              LD   A,(IX+0C)
+C863              SUB  10
+C865              JR   C,C86A
+C867              LD   (IX+0C),A
+C86A              JP   C692
+
+C86D              LD   A,(IX+0B)
+C870              AND  A
+C871              JP   M,C855
+C874              XOR  A
+C875              LD   (IX+0B),A
+C878              JR   C855
+C87A              LD   HL,(5BAB)
+C87D              LD   A,L
+C87E              SUB  (IX+04)
+C881              LD   L,A
+C882              LD   A,H
+C883              SUB  (IX+05)
+C886              LD   H,A
+C887              LD   A,(IX+01)
+C88A              SUB  80
+C88C              JP   P,C891
+C88F              NEG
+C891              CP   L
+C892              RET  NC
+C893              LD   A,(IX+02)
+C896              SUB  80
+C898              JP   P,C89D
+C89B              NEG
+C89D              CP   H
+C89E              RET
+
+C89F              LD   HL,UserInputMethod
+C8A2              LD   A,(HL)
+C8A3              AND  06
+C8A5              JR   Z,C8F2
+C8A7              BIT  3,(HL)
+C8A9              JR   Z,C8F2
+C8AB              LD   A,(IX+0C)
+C8AE              AND  F0
+C8B0              RET  NZ
+C8B1              BIT  2,(IX+0C)
+C8B5              RET  Z
+C8B6              BIT  0,C
+C8B8              JR   NZ,C8BE
+C8BA              BIT  2,C
+C8BC              JR   NZ,C8CD
+C8BE              BIT  1,C
+C8C0              JR   NZ,C8D9
+C8C2              BIT  4,C
+C8C4              JR   NZ,C8E0
+C8C6              BIT  0,C
+C8C8              JR   NZ,C8E9
+C8CA              RES  2,C
+C8CC              RET
+
+C8CD              CALL CA1E
+C8D0              CP   02
+C8D2              JR   Z,C8EF
+C8D4              CPL
+C8D5              AND  01
+C8D7              JR   C91F
+
+C8D9              CALL CA1E
+C8DC              CP   01
+C8DE              JR   C8D2
+
+C8E0              CALL CA1E
+C8E3              CP   03
+C8E5              JR   Z,C8EF
+C8E7              JR   C8D5
+
+C8E9              CALL CA1E
+C8EC              AND  A
+C8ED              JR   C8E5
+C8EF              SET  2,C
+C8F1              RET
+
+C8F2              LD   A,(IX+0D)
+C8F5              AND  07
+C8F7              JR   Z,C8FD
+C8F9              DEC  (IX+0D)
+C8FC              RET
+
+C8FD              LD   A,C
+C8FE              AND  03
+C900              RET  Z
+C901              LD   A,(IX+0C)
+C904              AND  F0
+C906              RET  NZ
+C907              BIT  3,(IX+0C)
+C90B              RET  NZ
+C90C              BIT  2,C
+C90E              JR   NZ,C915
+C910              PUSH BC
+C911              CALL B4C1
+C914              POP  BC
+C915              LD   A,(IX+0D)
+C918              OR   02
+C91A              LD   (IX+0D),A
+C91D              BIT  1,C
+C91F              JR   NZ,C940
+C921              BIT  6,(IX+07)
+C925              JR   NZ,C92F
+C927              LD   A,(IX+00)
+C92A              XOR  08
+C92C              LD   (IX+00),A
+C92F              LD   A,(IX+07)
+C932              XOR  40
+C934              LD   (IX+07),A
+C937              LD   A,(IX+00)
+C93A              ADD  A,10
+C93C              LD   (IX+20),A
+C93F              RET
+
+C940              BIT  6,(IX+07)
+C944              JR   NZ,C927
+C946              JR   C92F
+C948              BIT  3,C
+C94A              RET  Z
+
+C94B              LD   A,(IX+0C)
+C94E              AND  F0
+C950              RET  NZ
+C951              BIT  3,(IX+0C)
+C955              RET  NZ
+C956              LD   A,(IX+0B)
+C959              INC  A
+C95A              RET  M
+C95B              SET  3,(IX+0C)
+
+C95F              LD   (IX+0B),08
+C963              PUSH BC
+C964              CALL B441
+C967              POP  BC
+C968              RET
+
+C969              LD   A,(IX+0C)
+C96C              AND  F0
+C96E              JR   NZ,C97A
+C970              BIT  3,(IX+0C)
+C974              JR   NZ,C97A
+C976              BIT  2,C
+C978              JR   Z,C994
+C97A              PUSH BC
+C97B              CALL B4BB
+C97E              POP  BC
+C97F              LD   A,(IX+00)
+C982              LD   E,A
+C983              INC  A
+C984              AND  07
+C986              CP   06
+C988              JR   NZ,C98B
+C98A              XOR  A
+C98B              LD   D,A
+C98C              LD   A,E
+C98D              AND  F8
+C98F              OR   D
+C990              LD   (IX+00),A
+C993              RET
+
+C994              LD   A,(IX+00)
+C997              AND  07
+C999              CP   02
+C99B              RET  Z
+C99C              CP   04
+C99E              RET  Z
+C99F              JR   C97F
+C9A1              LD   A,(5BC4)
+C9A4              AND  A
+C9A5              JR   Z,C9AB
+C9A7              LD   (IX+0B),02
+C9AB              BIT  3,(IX+0C)
+C9AF              JR   NZ,C9BC
+C9B1              LD   A,(IX+0C)
+C9B4              AND  F0
+C9B6              JR   NZ,C9BC
+C9B8              BIT  2,C
+C9BA              JR   Z,C9C1
+C9BC              PUSH BC
+C9BD              CALL C9FB
+C9C0              POP  BC
+C9C1              LD   A,(IX+0B)
+C9C4              AND  A
+C9C5              JP   M,C9CC
+C9C8              BIT  3,C
+C9CA              JR   NZ,C9CD
+C9CC              DEC  A
+C9CD              DEC  A
+C9CE              LD   (IX+0B),A
+C9D1              LD   (5BC1),A
+C9D4              ADD  A,02
+C9D6              CALL M,B451
+C9D9              CALL CB45
+C9DC              CALL CA70
+C9DF              CALL C706
+C9E2              BIT  2,(IX+0C)
+C9E6              JR   Z,C9F3
+C9E8              LD   A,(5BC1)
+C9EB              AND  A
+C9EC              JP   P,C9F3
+C9EF              RES  3,(IX+0C)
+C9F3              XOR  A
+C9F4              LD   (IX+09),A
+C9F7              LD   (IX+0A),A
+C9FA              RET
+
+C9FB              LD   A,(IX+09)
+C9FE              ADD  A,(IX+0E)
+CA01              LD   (IX+09),A
+CA04              LD   A,(IX+0A)
+CA07              ADD  A,(IX+0F)
+CA0A              LD   (IX+0A),A
+CA0D              XOR  A
+CA0E              LD   (IX+0E),A
+CA11              LD   (IX+0F),A
+CA14              LD   BC,CA32
+CA17              CALL CA1E
+CA1A              LD   L,A
+CA1B              JP   AFDB
+
+CA1E              LD   A,(IX+07)
+CA21              RRCA
+CA22              RRCA
+CA23              AND  10
+CA25              LD   L,A
+CA26              LD   A,(IX+00)
+CA29              AND  08
+CA2B              OR   L
+CA2C              RRCA
+CA2D              RRCA
+CA2E              RRCA
+CA2F              AND  03
+CA31              RET
+
+ca32 DB 0CA3Ah,0CA43h,0CA4Ah,00CA53h,
+
+CA3A              LD   A,(IX+09)
+CA3D              ADD  A,FD
+CA3F              LD   (IX+09),A
+CA42              RET
+
+CA43              LD   A,(IX+09)
+CA46              ADD  A,03
+CA48              JR   CA3F
+
+CA4A              LD   A,(IX+0A)
+CA4D              ADD  A,03
+CA4F              LD   (IX+0A),A
+CA52              RET
+
+CA53              LD   A,(IX+0A)
+CA56              ADD  A,FD
+CA58              JR   CA4F
+
+CA5A              LD   A,(5BAE)
+CA5D              LD   D,A
+CA5E              LD   A,(IX+03)
+CA61              ADD  A,H
+CA62              CP   D
+CA63              RET  NC
+CA64              SET  2,(IX+0C)
+CA68              LD   A,H
+CA69              CALL CA89
+CA6C              LD   H,A
+CA6D              JR   NZ,CA5E
+CA6F              RET
+
+CA70              LD   A,(IX+0C)
+CA73              AND  F0
+CA75              RET  NZ
+CA76              BIT  0,(IX+07)
+CA7A              RET  Z
+CA7B              RES  0,(IX+07)
+
+CA7F              LD   BC,CA92
+CA82              LD   HL,(5BAB)
+CA85              PUSH HL
+CA86              JP   CA17
+
+CA89              AND  A
+CA8A              RET  Z
+CA8B              JP   P,CA90
+CA8E              INC  A
+CA8F              INC  A
+CA90              DEC  A
+CA91              RET
+
+CA92 	DW 0CA9Ah,0CAF3h,0CB0Eh,0CB29h
+	
+CA9A              POP  HL
+CA9B              LD   A,80
+CA9D              SUB  L
+CA9E              LD   L,A
+CA9F              LD   A,(IX+01)
+CAA2              ADD  A,(IX+09)
+CAA5              ADD  A,(IX+04)
+CAA8              CP   L
+CAA9              RET  NC
+CAAA              LD   (IX+01),00
+CAAE              LD   A,(IX+08)
+CAB1              LD   L,A
+CAB2              DEC  A
+CAB3              AND  0F
+CAB5              LD   H,A
+CAB6              LD   A,L
+CAB7              AND  F0
+CAB9              OR   H
+CABA              LD   (IX+08),A
+CABD              LD   A,(IX+0C)
+CAC0              OR   30
+CAC2              LD   (IX+0C),A
+CAC5              LD   A,(IX+00)
+CAC8              SUB  10
+CACA              CP   40
+CACC              RET  NC
+CACD              INC  SP
+CACE              INC  SP
+CACF              INC  SP
+CAD0              INC  SP
+CAD1              PUSH IX
+CAD3              POP  HL
+CAD4              LD   DE,D161
+CAD7              LD   BC,0040
+CADA              LDIR
+CADC              LD   A,(D161)
+CADF              LD   (D171),A
+CAE2              LD   A,(D181)
+CAE5              LD   (D191),A
+CAE8              LD   A,78
+CAEA              LD   (D161),A
+CAED              LD   (D181),A
+CAF0              JP   AFBA
+
+CAF3              POP  HL
+CAF4              LD   A,L
+CAF5              ADD  A,80
+CAF7              LD   L,A
+CAF8              LD   A,(IX+01)
+CAFB              ADD  A,(IX+09)
+CAFE              SUB  (IX+04)
+CB01              CP   L
+CB02              RET  C
+CB03              LD   (IX+01),FF
+CB07              LD   A,(IX+08)
+CB0A              LD   L,A
+CB0B              INC  A
+CB0C              JR   CAB3
+
+CB0E              POP  HL
+CB0F              LD   A,H
+CB10              ADD  A,80
+CB12              LD   H,A
+CB13              LD   A,(IX+02)
+CB16              ADD  A,(IX+0A)
+CB19              SUB  (IX+05)
+CB1C              CP   H
+CB1D              RET  C
+CB1E              LD   (IX+02),FF
+CB22              LD   A,(IX+08)
+CB25              ADD  A,10
+CB27              JR   CABA
+
+CB29              POP  HL
+CB2A              LD   A,80
+CB2C              SUB  H
+CB2D              LD   H,A
+CB2E              LD   A,(IX+02)
+CB31              ADD  A,(IX+0A)
+CB34              ADD  A,(IX+05)
+CB37              CP   H
+CB38              RET  NC
+CB39              LD   (IX+02),00
+CB3D              LD   A,(IX+08)
+CB40              SUB  10
+CB42              JP   CABA
+
+CB45              BIT  1,(IX+07)
+CB49              RET  NZ
+CB4A              SET  1,(IX+07)
+CB4E              LD   A,(IX+0C)
+CB51              AND  F8
+CB53              LD   (IX+0C),A
+CB56              LD   L,00
+CB58              LD   C,L
+CB59              LD   A,(IX+0B)
+CB5C              AND  A
+CB5D              LD   H,A
+CB5E              JR   Z,CB6A
+CB60              CALL CA5A
+CB63              LD   A,H
+CB64              AND  A
+CB65              JR   Z,CB6A
+CB67              CALL CC38
+CB6A              LD   A,(IX+09)
+CB6D              AND  A
+CB6E              LD   C,A
+CB6F              JR   Z,CB7B
+CB71              CALL CCDD
+CB74              LD   A,C
+CB75              AND  A
+CB76              JR   Z,CB7B
+CB78              CALL CB9A
+CB7B              LD   A,(IX+0A)
+CB7E              AND  A
+CB7F              LD   L,A
+CB80              JR   Z,CB8C
+CB82              CALL CD08
+CB85              LD   A,L
+CB86              AND  A
+CB87              JR   Z,CB8C
+CB89              CALL CBE9
+CB8C              LD   (IX+09),C
+CB8F              LD   (IX+0A),L
+CB92              LD   (IX+0B),H
+CB95              RES  1,(IX+07)
+CB99              RET
+
+CB9A              LD   IY,5C08
+CB9E              LD   B,28
+CBA0              CALL B538
+CBA3              JR   Z,CBE1
+CBA5              CALL CCB2
+CBA8              JR   NC,CBE1
+CBAA              CALL CCC7
+CBAD              JR   NC,CBE1
+CBAF              CALL CC9D
+CBB2              JR   NC,CBE1
+CBB4              SET  0,(IX+0C)
+CBB8              LD   A,(IX+0D)
+CBBB              RRCA
+CBBC              AND  40
+CBBE              OR   (IY+0D)
+CBC1              LD   (IY+0D),A
+CBC4              RLCA
+CBC5              AND  40
+CBC7              OR   (IX+0D)
+CBCA              LD   (IX+0D),A
+CBCD              BIT  2,(IY+07)
+CBD1              JR   Z,CBD9
+CBD3              LD   A,(IX+09)
+CBD6              LD   (IY+09),A
+CBD9              LD   A,C
+CBDA              CALL CA89
+CBDD              LD   C,A
+CBDE              RET  Z
+CBDF              JR   CBAF
+CBE1              LD   DE,0020
+CBE4              ADD  IY,DE
+CBE6              DJNZ CBA0
+CBE8              RET
+
+CBE9              LD   IY,5C08
+CBED              LD   B,28
+CBEF              CALL B538
+CBF2              JR   Z,CC30
+CBF4              CALL CC9D
+CBF7              JR   NC,CC30
+CBF9              CALL CCC7
+CBFC              JR   NC,CC30
+CBFE              CALL CCB2
+CC01              JR   NC,CC30
+CC03              SET  1,(IX+0C)
+CC07              LD   A,(IX+0D)
+CC0A              RRCA
+CC0B              AND  40
+CC0D              OR   (IY+0D)
+CC10              LD   (IY+0D),A
+CC13              RLCA
+CC14              AND  40
+CC16              OR   (IX+0D)
+CC19              LD   (IX+0D),A
+CC1C              BIT  2,(IY+07)
+CC20              JR   Z,CC28
+CC22              LD   A,(IX+0A)
+CC25              LD   (IY+0A),A
+CC28              LD   A,L
+CC29              CALL CA89
+CC2C              LD   L,A
+CC2D              RET  Z
+CC2E              JR   CBFE
+CC30              LD   DE,0020
+CC33              ADD  IY,DE
+CC35              DJNZ CBEF
+CC37              RET
+
+; here!!!!!!
+CC38              LD   IY,5C08
+CC3C              LD   B,28
+CC3E              CALL B538
+CC41              JR   Z,CC95
+CC43              CALL CC9D
+CC46              JR   NC,CC95
+CC48              CALL CCB2
+CC4B              JR   NC,CC95
+CC4D              CALL CCC7
+CC50              JR   NC,CC95
+CC52              SET  2,(IX+0C)
+CC56              LD   A,(IX+0D)
+CC59              RRCA
+CC5A              AND  40
+CC5C              OR   (IY)
+CC5E              DEC  C
+CC5F              LD   (IY),A
+CC61              DEC  C
+CC62              RLCA
+CC63              AND  40
+CC65              OR   (IX+0D)
+CC68              LD   (IX+0D),A
+CC6B              [IY  Prefix]
+CC6C              RRC  L
+CC6E              SBC  A,DD
+CC70              RLC  A
+CC72              LD   D,(HL)
+CC73              JR   Z,CC8D
+CC75              LD   A,(IX+09)
+CC78              AND  A
+CC79              JR   NZ,CC81
+CC7B              LD   A,(IY)
+CC7D              ADD  HL,BC
+CC7E              LD   (IX+09),A
+CC81              LD   A,(IX+0A)
+CC84              AND  A
+CC85              JR   NZ,CC8D
+CC87              LD   A,(IY)
+CC89              LD   A,(BC)
+CC8A              LD   (IX+0A),A
+CC8D              LD   A,H
+CC8E              CALL CA89
+CC91              LD   H,A
+CC92              RET  Z
+CC93              JR   CC4D
+
+CC95              LD   DE,0020
+CC98              ADD  IY,DE
+CC9A              DJNZ CC3E
+CC9C              RET
+
+CC9D              LD   A,(IX+04)
+CCA0              ADD  A,(IY)
+CCA2              INC  B
+CCA3              LD   D,A
+CCA4              LD   A,(IX+01)
+CCA7              ADD  A,C
+CCA8              SUB  (IY)
+CCAA              LD   BC,B0F2
+CCAD              CALL Z,44ED
+CCB0              SUB  D
+CCB1              RET
+
+CCB2              LD   A,(IX+05)
+CCB5              ADD  A,(IY)
+CCB7              DEC  B
+CCB8              LD   D,A
+CCB9              LD   A,(IX+02)
+CCBC              ADD  A,L
+CCBD              SUB  (IY)
+CCBF              LD   (BC),A
+CCC0              JP   P,CCC5
+CCC3              NEG
+CCC5              SUB  D
+CCC6              RET
+
+CCC7              LD   A,(IX+03)
+CCCA              ADD  A,H
+CCCB              SUB  (IY)
+CCCD              INC  BC
+CCCE              JP   P,CCD8
+CCD1              NEG
+CCD3              LD   D,(IX+06)
+CCD6              SUB  D
+CCD7              RET
+
+CCD8              LD   D,(IY)
+CCDA              LD   B,18
+CCDC              LD   SP,HL
+CCDD              LD   A,(IX+0C)
+CCE0              AND  F0
+CCE2              RET  NZ
+CCE3              BIT  0,(IX+07)
+CCE7              RET  NZ
+CCE8              LD   A,(5BAB)
+CCEB              LD   B,A
+CCEC              LD   A,(IX+01)
+CCEF              ADD  A,C
+CCF0              SUB  80
+CCF2              JR   NC,CCF6
+CCF4              NEG
+CCF6              ADD  A,(IX+04)
+CCF9              CP   B
+CCFA              JR   C,CD07
+CCFC              SET  0,(IX+0C)
+CD00              LD   A,C
+CD01              CALL CA89
+CD04              LD   C,A
+CD05              JR   NZ,CCEC
+CD07              RET
+
+CD08              LD   A,(IX+0C)
+CD0B              AND  F0
+CD0D              RET  NZ
+CD0E              BIT  0,(IX+07)
+CD12              RET  NZ
+CD13              LD   A,(5BAC)
+CD16              LD   B,A
+CD17              LD   A,(IX+02)
+CD1A              ADD  A,L
+CD1B              SUB  80
+CD1D              JR   NC,CD21
+CD1F              NEG
+CD21              ADD  A,(IX+05)
+CD24              CP   B
+CD25              JR   C,CD32
+CD27              SET  1,(IX+0C)
+CD2B              LD   A,L
+CD2C              CALL CA89
+CD2F              LD   L,A
+CD30              JR   NZ,CD17
+CD32              RET
+
+CD33              CALL D6C9
+CD36              CALL D6EF
+CD39              LD   A,(IX+1A)
+CD3C              AND  07
+CD3E              LD   A,(DE)
+CD3F              INC  DE
+CD40              JR   Z,CD43
+CD42              INC  A
+CD43              AND  0F
+CD45              LD   (IX+18),A
+CD48              LD   A,(DE)
+CD49              LD   (IX+19),A
+CD4C              RET
+
+CD4D              LD   IY,5C08
+CD51              CALL CD33
+CD54              LD   B,28
+CD56              LD   A,(IX+1A)
+CD59              RRCA
+CD5A              RRCA
+CD5B              RRCA
+CD5C              AND  1F
+CD5E              LD   L,A
+CD5F              LD   A,(IX+1E)
+CD62              RRCA
+CD63              RRCA
+CD64              RRCA
+CD65              AND  1F
+CD67              LD   H,A
+CD68              CP   L
+CD69              JR   C,CD6C
+CD6B              LD   A,L
+CD6C              LD   E,A
+CD6D              LD   A,L
+CD6E              ADD  A,(IX+18)
+CD71              LD   L,A
+CD72              LD   A,H
+CD73              ADD  A,(IX+1C)
+CD76              CP   L
+CD77              JR   NC,CD7A
+CD79              LD   A,L
+CD7A              SUB  E
+CD7B              LD   D,A
+CD7C              LD   A,(IX+1B)
+CD7F              CP   (IX+1F)
+CD82              JR   C,CD87
+CD84              LD   A,(IX+1F)
+CD87              LD   L,A
+CD88              LD   A,(IX+1B)
+CD8B              ADD  A,(IX+19)
+CD8E              LD   H,A
+CD8F              LD   A,(IX+1F)
+CD92              ADD  A,(IX+1D)
+CD95              CP   H
+CD96              JR   NC,CD99
+CD98              LD   A,H
+CD99              SUB  L
+CD9A              LD   H,A
+CD9B              LD   A,(IY)
+CD9D              NOP
+CD9E              AND  A
+CD9F              JR   Z,CDC2
+CDA1              [IY  Prefix]
+CDA2              RLC  A
+CDA4              LD   H,(HL)
+CDA5              JR   NZ,CDC2
+CDA7              LD   A,(IY)
+CDA9              LD   A,(DE)
+CDAA              RRCA
+CDAB              RRCA
+CDAC              RRCA
+CDAD              AND  1F
+CDAF              SUB  E
+CDB0              JR   C,CDCC
+CDB2              CP   D
+CDB3              JR   NC,CDC2
+CDB5              LD   A,(IY)
+CDB7              DEC  DE
+CDB8              SUB  L
+CDB9              JR   C,CDD3
+CDBB              CP   H
+CDBC              JR   NC,CDC2
+CDBE              [IY  Prefix]
+CDBF              RLC  A
+CDC1              AND  D9
+CDC3              LD   DE,0020
+CDC6              ADD  IY,DE
+CDC8              EXX
+CDC9              DJNZ CD9B
+CDCB              RET
+
+CDCC              NEG
+CDCE              CP   (IY)
+CDD0              JR   CDEA
+CDD2              RET  PO
+CDD3              NEG
+CDD5              CP   (IY)
+CDD7              ADD  HL,DE
+CDD8              JR   CDBC
+
+CDDA              CALL C4F7
+CDDD              JR   CDE2
+
+CDDF              CALL C501
+CDE2              LD   A,(5BC3)
+CDE5              AND  A
+CDE6              JR   NZ,CDEF
+CDE8              BIT  6,(IX+0D)
+CDEC              JP   NZ,BF21
+
+CDEF              PUSH IX
+CDF1              POP  DE
+CDF2              LD   HL,FFE0
+CDF5              ADD  HL,DE
+CDF6              PUSH HL
+CDF7              POP  IY
+CDF9              INC  DE
+CDFA              INC  HL
+CDFB              LD   BC,0007
+CDFE              LDIR
+CE00              LD   (IX+06),00
+CE04              SET  1,(IX+07)
+CE08              LD   A,(IX+0D)
+CE0B              AND  0F
+CE0D              JR   Z,CE14
+CE0F              DEC  (IX+0D)
+CE12              JR   CE27
+
+CE14              LD   A,(5BA5)
+CE17              CP   02
+CE19              JR   C,CE33
+CE1B              CP   FE
+CE1D              JR   NC,CE40
+CE1F              LD   A,(IY)
+CE21              NOP
+CE22              ADD  A,10
+CE24              LD   (IX+00),A
+CE27              LD   A,(IY)
+CE29              INC  BC
+CE2A              ADD  A,0C
+CE2C              LD   (IX+03),A
+CE2F              CALL CD4D
+CE32              RET
+
+CE33              LD   A,(IY)
+CE35              NOP
+CE36              AND  F8
+CE38              OR   06
+CE3A              LD   (IX+0D),08
+CE3E              JR   CE22
+
+CE40              LD   A,(IY)
+CE42              NOP
+CE43              AND  F8
+CE45              OR   07
+CE47              JR   CE3A
+
+CE49              LD   A,(IX+18)
+CE4C              LD   (IX+1C),A
+CE4F              LD   A,(IX+19)
+CE52              LD   (IX+1D),A
+CE55              LD   A,(IX+1A)
+CE58              LD   (IX+1E),A
+CE5B              LD   A,(IX+1B)
+CE5E              LD   (IX+1F),A
+CE61              RET
+
+CE62              PUSH IX
+CE64              LD   B,28
+CE66              LD   DE,0020
+CE69              LD   IX,5C08
+CE6D              LD   HL,CE8B
+CE70              LD   C,00
+CE72              LD   A,(IX+00)
+CE75              AND  A
+CE76              JR   Z,CE80
+CE78              BIT  4,(IX+07)
+CE7C              JR   Z,CE80
+CE7E              LD   (HL),C
+CE7F              INC  HL
+CE80              INC  C
+CE81              ADD  IX,DE
+CE83              DJNZ CE72
+CE85              LD   A,FF
+CE87              LD   (HL),A
+CE88              POP  IX
+CE8A              RET
+
+CE8B 	DB 000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h
+	DB 000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h
+	DB 000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h,000h
+
+CEBB              XOR  A
+CEBC              LD   (5BBE),A
+CEBF              PUSH IX
+CEC1              PUSH IY
+CEC3              LD   DE,CE8B
+CEC6              LD   A,(DE)
+CEC7              INC  DE
+CEC8              CP   FF
+CECA              JP   Z,D015
+CECD              BIT  7,A
+CECF              JR   NZ,CEC6
+CED1              CALL D3B5
+CED4              LD   (5BCD),DE
+CED8              PUSH HL
+CED9              POP  IX
+CEDB              LD   A,(DE)
+CEDC              INC  DE
+CEDD              CP   FF
+CEDF              JP   Z,D000
+CEE2              BIT  7,A
+CEE4              JR   NZ,CEDB
+CEE6              CALL D3B5
+CEE9              LD   (5BCF),DE
+CEED              PUSH HL
+CEEE              POP  IY
+CEF0              PUSH IX
+CEF2              POP  BC
+CEF3              AND  A
+CEF4              SBC  HL,BC
+CEF6              JR   Z,CEDB
+CEF8              LD   C,00
+CEFA              LD   A,(IY)
+CEFC              INC  BC
+CEFD              ADD  A,(IY)
+CEFF              LD   B,6F
+CF01              LD   A,(IX+03)
+CF04              SUB  L
+CF05              JR   NC,CF16
+CF07              LD   A,(IX+03)
+CF0A              ADD  A,(IX+06)
+CF0D              LD   L,A
+CF0E              LD   A,(IY)
+CF10              INC  BC
+CF11              SUB  L
+CF12              JR   C,CF15
+CF14              INC  C
+CF15              INC  C
+CF16              LD   A,(IY)
+CF18              LD   (BC),A
+CF19              ADD  A,(IY)
+CF1B              DEC  B
+CF1C              LD   L,A
+CF1D              LD   A,(IX+02)
+CF20              SUB  (IX+05)
+CF23              SUB  L
+CF24              JR   NC,CF3C
+CF26              LD   A,(IX+02)
+CF29              ADD  A,(IX+05)
+CF2C              LD   L,A
+CF2D              LD   A,(IY)
+CF2F              LD   (BC),A
+CF30              SUB  (IY)
+CF32              DEC  B
+CF33              SUB  L
+CF34              LD   A,C
+CF35              JR   C,CF39
+CF37              ADD  A,03
+CF39              ADD  A,03
+CF3B              LD   C,A
+CF3C              LD   A,(IY)
+CF3E              LD   BC,86FD
+CF41              INC  B
+CF42              LD   L,A
+CF43              LD   A,(IX+01)
+CF46              SUB  (IX+04)
+CF49              SUB  L
+CF4A              JR   NC,CF62
+CF4C              LD   A,(IX+01)
+CF4F              ADD  A,(IX+04)
+CF52              LD   L,A
+CF53              LD   A,(IY)
+CF55              LD   BC,96FD
+CF58              INC  B
+CF59              SUB  L
+CF5A              LD   A,C
+CF5B              JR   C,CF5F
+CF5D              ADD  A,09
+CF5F              ADD  A,09
+CF61              LD   C,A
+CF62              LD   L,C
+CF63              LD   BC,CF69
+CF66              JP   AFDB
+
+Cf69 	DW 0CF9Fh,0CF9Fh,0CF9Fh,0CFA5h
+	DW 0CFA5h,0CF9Fh,0CFA5h,0CFA5h
+	DW 0CF9Fh,0CF9Fh,0CFA2h,0CFA2h
+	DW 0CFA5h,0CFE1h,0CFA2h,0CFA5h
+	DW 0CFA5h,0CF9Fh,0CF9Fh,0CFA2h
+	DW 0CFA2h,0CF9Fh,0CFA2h,0CFA2h
+	DW 0CF9Fh,0CF9Fh,0CF9Fh
+
+
+CF9F              JP   CEDB
+
+CFA2              JP   CEDB
+
+CFA5              LD   HL,(5BCF)
+CFA8              DEC  HL
+CFA9              LD   C,(HL)
+CFAA              LD   DE,D01A
+CFAD              LD   A,(DE)
+CFAE              CP   FF
+CFB0              JR   Z,CFB8
+CFB2              CP   C
+CFB3              JR   Z,CFCE
+CFB5              INC  DE
+CFB6              JR   CFAD
+
+CFB8              LD   A,C
+CFB9              LD   (DE),A
+CFBA              INC  DE
+CFBB              LD   A,FF
+CFBD              LD   (DE),A
+CFBE              PUSH IY
+CFC0              POP  IX
+CFC2              LD   HL,(5BCF)
+CFC5              LD   (5BCD),HL
+CFC8              LD   DE,CE8B
+CFCB              JP   CEDB
+
+CFCE              LD   HL,CE8B
+CFD1              LD   A,(HL)
+CFD2              INC  HL
+CFD3              CP   FF
+CFD5              JP   Z,CEC3
+CFD8              CP   C
+CFD9              JR   NZ,CFD1
+CFDB              PUSH IY
+CFDD              POP  IX
+CFDF              JR   D003
+
+CFE1              LD   A,(IX+00)
+CFE4              SUB  60
+CFE6              CP   07
+CFE8              JR   NC,CFF0
+CFEA              LD   (IX+00),BB
+CFEE              JR   CFFD
+
+CFF0              LD   A,(IY)
+CFF2              NOP
+CFF3              SUB  60
+CFF5              CP   07
+CFF7              JR   NC,CFFD
+CFF9              LD   (IY),00
+CFFC              CP   E
+CFFD              JP   CEDB
+
+D000              LD   HL,(5BCD)
+D003              DEC  HL
+D004              SET  7,(HL)
+D006              LD   A,FF
+D008              LD   (D01A),A
+D00B              LD   HL,5BBE
+D00E              INC  (HL)
+D00F              CALL D704
+D012              JP   CEC3
+
+D015              POP  IY
+D017              POP  IX
+D019              RET
+
+D01A              DB 0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
+
+CheckUserInput:
+D022              LD   A,(5BC3)
+D025              LD   C,A
+D026              LD   A,(5BC4)
+D029              OR   C
+D02A              LD   C,00
+D02C              JP   NZ,FinishedInput
+D02F              LD   A,(UserInputMethod)
+D032              RRCA
+D033              AND  03
+D035              JP   Z,Keyboard
+D038              DEC  A
+D039              JR   Z,Kempston
+D03B              DEC  A
+D03C              JR   Z,Cursor
+
+InterfaceII:
+D03E              LD   A,F7               ; row 3
+D040              CALL ReadKey            ; read keys '1'-'5'
+D043              PUSH BC                 
+D044              LD   B,05
+D046              RRA
+D047              RL   C
+D049              DJNZ D046               ; flip the bits '5'-'1'
+D04B              LD   A,C
+D04C              POP  BC
+D04D              LD   C,A
+D04E              LD   A,EF               ; row 4
+D050              CALL ReadKey
+D053              OR   C                  ; combine in row '3'
+D054              LD   C,00
+D056              BIT  0,A                ; '0' or '5'
+D058              JR   Z,D05C
+D05A              SET  3,C
+D05C              BIT  1,A                ; '9' or '4'
+D05E              JR   Z,D062
+D060              SET  2,C
+D062              BIT  2,A                ; '8' or '3'
+D064              JR   Z,D068
+D066              SET  4,C
+D068              BIT  3,A                ; '7' or '2'
+D06A              JR   Z,D06E
+D06C              SET  1,C
+D06E              BIT  4,A                ; '6' or '1'
+D070              JR   Z,D074
+D072              SET  0,C
+D074              JP   FinishedInput
+
+Kempston:
+D077              IN   A,(1F)
+D079              LD   C,00
+D07B              BIT  0,A
+D07D              JR   Z,D081
+D07F              SET  1,C
+D081              BIT  1,A
+D083              JR   Z,D087
+D085              SET  0,C
+D087              BIT  2,A
+D089              JR   Z,D08D
+D08B              SET  4,C
+D08D              BIT  3,A
+D08F              JR   Z,D093
+D091              SET  2,C
+D093              BIT  4,A
+D095              JR   Z,D099
+D097              SET  3,C
+D099              JP   FinishedInput
+
+Cursor:
+D09C              LD   C,00
+D09E              LD   A,F7               ; row 3
+D0A0              CALL ReadKey
+D0A3              BIT  4,A                ; '5'
+D0A5              JR   Z,D0A9
+D0A7              SET  0,C
+D0A9              LD   A,EF               ; row 4
+D0AB              CALL ReadKey
+D0AE              BIT  0,A                ; '0'
+D0B0              JR   Z,D0B4
+D0B2              SET  3,C
+D0B4              BIT  3,A                ; '7'
+D0B6              JR   Z,D0BA
+D0B8              SET  2,C
+D0BA              BIT  2,A                ; '8'
+D0BC              JR   Z,D0C0
+D0BE              SET  1,C
+D0C0              BIT  4,A                ; '6'
+D0C2              JR   Z,FinishedInput
+D0C4              SET  4,C
+D0C6              JR   FinishedInput
+
+Keyboard:
+D0C8              LD   A,FE			; row 0
+D0CA              CALL ReadKey
+D0CD              RRCA
+D0CE              LD   C,A
+D0CF              AND  03
+D0D1              SRL  C
+D0D3              SRL  C
+D0D5              OR   C
+D0D6              AND  03
+D0D8              LD   C,A
+D0D9              LD   A,7F			; row 7
+D0DB              CALL ReadKey
+D0DE              BIT  1,A
+D0E0              JR   Z,D0E4
+D0E2              SET  1,C
+D0E4              BIT  2,
+D0E6              JR   Z,D0EA
+D0E8              SET  0,C
+D0EA              BIT  3,A
+D0EC              JR   Z,D0F0
+D0EE              SET  1,C
+D0F0              BIT  4,A
+D0F2              JR   Z,D0F6
+D0F4              SET  0,C
+D0F6              LD   A,BD			; row 1,6
+D0F8              CALL ReadKey
+D0FB              JR   Z,D0FF
+D0FD              SET  2,C
+D0FF              LD   A,DB			; row 2,5
+D101              CALL ReadKey
+D104              JR   Z,D108
+D106              SET  3,C
+D108              LD   A,E7			; row 3,4
+D10A              CALL ReadKey
+D10D              JR   Z,FinishedInput
+D10F              SET  4,C
+
+FinishedInput:
+D111              LD   A,7E
+D113              CALL ReadKey
+D116              AND  1E
+D118              PUSH BC
+D119              LD   B,A
+D11A              LD   A,99
+D11C              CALL ReadKey
+D11F              OR   B
+D120              POP  BC
+D121              JR   Z,D125
+D123              SET  5,C
+D125              LD   A,C
+D126              LD   (UserInput),A
+D129              RET
+
+LoseLife:
+D12A              LD   HL,D161
+D12D              LD   DE,5C08
+D130              PUSH DE
+D131              POP  IX
+D133              LD   BC,0040
+D136              LDIR
+D138              XOR  A
+D139              LD   (5BB1),A
+D13C              LD   HL,Lives
+D13F              DEC  (HL)
+D140              JP   M,GameOver
+D143              LD   A,(C44D)
+D146              RRCA
+D147              RRCA
+D148              RRCA
+D149              AND  20
+D14B              LD   C,A
+D14C              LD   A,(IX+10)
+D14F              AND  1F
+D151              ADD  A,C
+D152              LD   (IX+10),A
+D155              LD   A,(IX+30)
+D158              AND  0F
+D15A              ADD  A,C
+D15B              ADD  A,20
+D15D              LD   (IX+30),A
+D160              RET
+
+D161		DB 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+D171		DB 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00 
+
+D181		DB 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+D191		DB 00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+
+D1A1		DB 078h,080h,080h,080h,005h,005h,017h,01Ch
+		DB 078h,080h,080h,08Ch,005h,005h,000h,01eh
+
+InitStartLocation:
+D1B1              LD   HL,D1A1
+D1B4              LD   DE,D161
+D1B7              LD   BC,0008
+D1BA              LDIR
+D1BC              LD   DE,D181
+D1BF              LD   BC,0008
+D1C2              LDIR
+D1C4              LD   A,12
+D1C6              LD   (D171),A
+D1C9              LD   A,22
+D1CB              LD   (D191),A
+D1CE              LD   A,(5BA0)
+D1D1              AND  03
+D1D3              LD   L,A
+D1D4              LD   H,00
+D1D6              LD   BC,StartLocations
+D1D9              ADD  HL,BC
+D1DA              LD   A,(HL)
+D1DB              LD   (D169),A
+D1DE              LD   (D189),A
+D1E1              RET
+
+StartLocations:
+D1E2              DB	 02Fh,044h,0B3h,08Fh
+
+D1E6              LD   A,(5BB2)
+D1E9              AND  A
+D1EA              JR   Z,D1EF
+D1EC              CALL C591
+D1EF              CALL ClrWrkScr
+D1F2              CALL RetrieveScreen
+D1F5              CALL ObjectsInLocation
+D1F8              CALL D320
+D1FB              XOR  A
+D1FC              LD   (5BAF),A
+D1FF              LD   (5BB0),A
+D202              LD   (5BBD),A
+D205              LD   (5BBF),A
+D208              LD   A,01
+D20A              LD   (5BB7),A
+D20D              LD   A,(5C10)
+D210              AND  01
+D212              LD   (5BC0),A
+D215              CALL D219
+D218              RET
+
+D219              LD   A,(5C10)
+D21C              LD   C,A
+D21D              RRCA
+D21E              RRCA
+D21F              RRCA
+D220              AND  1F
+D222              LD   L,A
+D223              LD   H,00
+D225              LD   A,C
+D226              RLCA
+D227              RLCA
+D228              RLCA
+D229              AND  38
+D22B              OR   C6
+D22D              LD   (D235),A
+D230              LD   BC,5BE8
+D233              ADD  HL,BC
+D234              SET  7,(HL)
+D236              RET
+
+TransferSprite:
+D237              LD   A,(HL)
+D238              INC  HL
+D239              LD   (IX+00),A	;sprite
+D23C              LD   A,(HL)
+D23D              INC  HL
+D23E              LD   (IX+07),A	;flags
+D241              LD   A,(HL)
+D242              INC  HL
+D243              LD   (IX+1A),A	;x
+D246              LD   A,(HL)
+D247              INC  HL
+D248              LD   (IX+1B),A	;y
+D24B              RET
+
+TransferSpriteAndPrint
+D24C              CALL TransferSprite
+D24F              PUSH HL
+D250              CALL PrintSprite
+D253              POP  HL
+D254              RET
+
+DisplayPanel:
+D255              LD   IX,BFDB
+D259              LD   HL,D27E
+D25C              CALL TransferSprite
+D25F              LD   DE,F810
+D262              LD   B,05
+D264              CALL MultiplePrintSprite
+D267              CALL TransferSpriteAndPrint
+D26A              CALL TransferSpriteAndPrint
+D26D              CALL TransferSprite
+D270              LD   DE,0810
+D273              LD   B,05
+D275              CALL MultiplePrintSprite
+D278              CALL TransferSpriteAndPrint
+D27B              JP   TransferSpriteAndPrint
+
+; Panel Data
+D27E		DB 086h,000h,010h,034h
+		DB 087h,000h,0F0h,000h
+		DB 088h,000h,090h,004h
+		DB 086h,040h,0A0h,014h
+		DB 087h,040h,000h,000h
+		DB 088h,040h,060h,004h
+
+PrintBorder:
+D296              LD   IX,BFDB
+D29A              LD   HL,D2CF
+D29D              CALL TransferSpriteAndPrint
+D2A0              CALL TransferSpriteAndPrint
+D2A3              CALL TransferSpriteAndPrint
+D2A6              CALL TransferSpriteAndPrint
+
+D2A9              CALL TransferSprite
+D2AC              LD   DE,0008
+D2AF              LD   B,18
+D2B1              CALL MultiplePrintSprite
+
+D2B4              CALL TransferSprite
+D2B7              LD   B,18
+D2B9              CALL MultiplePrintSprite
+
+D2BC              CALL TransferSprite
+D2BF              LD   DE,0100
+D2C2              LD   B,80
+D2C4              CALL MultiplePrintSprite
+
+D2C7              CALL TransferSprite
+D2CA              LD   B,80
+D2CC              JP   MultiplePrintSprite
+
+; Border data
+D2CF		DB 089h,000h,000h,0A0h
+		DB 089h,040h,0E0h,0A0h
+		DB 089h,0C0h,0E0h,000h
+		DB 089h,080h,000h,000h
+		
+		DB 08Bh,000h,020h,0A8h
+		DB 08Bh,000h,020h,000h
+		
+		DB 08Ah,000h,000h,020h
+		DB 08Ah,000h,0E8h,020h
+		
+ColourPanel:
+D2EF              XOR  A
+D2F0              LD   HL,5AB6
+D2F3              LD   BC,0103
+D2F6              CALL FillWindow
+D2F9              LD   HL,5ABD
+D2FC              LD   BC,0103
+D2FF              CALL FillWindow
+D302              LD   A,42
+D304              LD   HL,5A97
+D307              LD   BC,0604
+D30A              JP   FillWindow
+
+ColourSunMoon:
+D30D              LD   A,(C44D)
+D310              AND  01
+D312              LD   A,46
+D314              JR   Z,D317
+D316              INC  A
+D317              LD   HL,5AB8
+D31A              LD   BC,0402
+D31D              JP   FillWindow
+
+D320              LD   A,(5BAB)
+D323              SUB  02
+D325              LD   L,A
+D326              LD   A,(5BAC)
+D329              SUB  02
+D32B              LD   H,A
+D32C              LD   A,(IX+01)
+D32F              AND  A
+D330              JR   Z,D37F
+D332              INC  A
+D333              JR   Z,D36F
+D335              LD   A,(IX+02)
+D338              AND  A
+D339              JR   Z,D362
+D33B              INC  A
+D33C              JR   Z,D33F
+D33E              RET
+
+D33F              LD   C,C8
+D341              CALL D38C
+D344              LD   A,80
+D346              SUB  H
+D347              SUB  (IX+05)
+D34A              LD   (IX+02),A
+D34D              SET  4,(IX+07)
+D351              SET  4,(IX+27)
+D355              LD   A,(IX+01)
+D358              LD   (IX+21),A
+D35B              LD   A,(IX+02)
+D35E              LD   (IX+22),A
+D361              RET
+
+D362              LD   C,51
+D364              CALL D38C
+D367              LD   A,H
+D368              ADD  A,80
+D36A              ADD  A,(IX+05)
+D36D              JR   D34A
+D36F              LD   C,AE
+D371              CALL D38C
+D374              LD   A,80
+D376              SUB  L
+D377              SUB  (IX+04)
+D37A              LD   (IX+01),A
+D37D              JR   D34D
+
+D37F              LD   C,37
+D381              CALL D38C
+D384              LD   A,L
+D385              ADD  A,80
+D387              ADD  A,(IX+04)
+D38A              JR   D37A
+
+D38C              LD   IY,5C88
+D390              LD   DE,0040
+D393              LD   B,04
+D395              LD   A,(IY)
+D397              NOP
+D398              CP   06
+D39A              RET  NC
+D39B              LD   A,(IY)
+D39D              LD   BC,86FD
+D3A0              LD   (BC),A
+D3A1              CP   C
+D3A2              JR   Z,D3A9
+D3A4              ADD  IY,DE
+D3A6              DJNZ D395
+D3A8              RET
+
+D3A9              LD   A,(IY)
+D3AB              INC  BC
+D3AC              LD   (IX+03),A
+D3AF              ADD  A,0C
+D3B1              LD   (IX+23),A
+D3B4              RET
+
+D3B5              PUSH BC
+D3B6              AND  7F
+D3B8              LD   L,A
+D3B9              LD   H,00
+D3BB              ADD  HL,HL
+D3BC              ADD  HL,HL
+D3BD              ADD  HL,HL
+D3BE              ADD  HL,HL
+D3BF              ADD  HL,HL
+D3C0              LD   BC,5C08
+D3C3              ADD  HL,BC
+D3C4              POP  BC
+D3C5              RET
+
+RetrieveScreen:
+D3C6              LD   DE,5C88
+D3C9              LD   BC,6BD1
+D3CC              LD   HL,6251
+D3CF              LD   A,(HL)
+D3D0              INC  HL
+D3D1              CP   (IX+08)
+D3D4              JR   Z,D3F0
+D3D6              LD   A,(HL)
+D3D7              CALL Add_HL_A
+D3DA              AND  A
+D3DB              SBC  HL,BC
+D3DD              JR   NC,D3E2
+D3DF              ADD  HL,BC
+D3E0              JR   D3CF
+D3E2              LD   HL,6108
+D3E5              AND  A
+D3E6              SBC  HL,DE
+D3E8              RET  Z
+D3E9              LD   B,20
+D3EB              CALL Zero_DE
+D3EE              JR   D3E2
+
+; +0 Location No
+; +1 Size
+; +2 Attribute
+
+D3F0              LD   B,(HL)		; Skip Value
+D3F1              INC  HL
+D3F2              LD   A,(HL)		; Attribute
+D3F3              AND  07
+D3F5              OR   40
+D3F7              LD   (5BAD),A
+D3FA              PUSH DE
+D3FB              EX   DE,HL
+D3FC              LD   A,(DE)
+D3FD              INC  DE
+D3FE              RRCA
+D3FF              RRCA
+D400              RRCA
+D401              AND  1F
+D403              LD   C,A
+D404              ADD  A,A
+D405              ADD  A,C
+D406              LD   HL,6248
+D409              CALL Add_HL_A
+D40C              LD   A,(HL)
+D40D              INC  HL
+D40E              LD   (5BAB),A
+D411              LD   A,(HL)
+D412              INC  HL
+D413              LD   (5BAC),A
+D416              LD   A,(HL)
+D417              LD   (5BAE),A
+D41A              DEC  B
+D41B              DEC  B
+D41C              EX   DE,HL
+D41D              POP  DE
+D41E              LD   A,(HL)
+D41F              INC  HL
+D420              CP   FF
+D422              JR   Z,D44C
+D424              PUSH BC
+D425              PUSH HL
+D426              LD   L,A
+D427              LD   H,00
+D429              ADD  HL,HL
+D42A              LD   BC,6CE2
+D42D              ADD  HL,BC
+D42E              LD   A,(HL)
+D42F              INC  HL
+D430              LD   H,(HL)
+D431              LD   L,A
+D432              LD   BC,0008
+D435              LDIR
+D437              LD   A,(IX+08)
+D43A              LD   (DE),A
+D43B              INC  DE
+D43C              LD   B,17
+D43E              CALL Zero_DE
+D441              LD   A,(HL)
+D442              AND  A
+D443              JR   NZ,D432
+D445              POP  HL
+D446              POP  BC
+D447              DJNZ D41E
+D449              JP   D3E2
+D44C              DEC  B
+D44D              PUSH IY
+D44F              PUSH DE
+D450              POP  IY
+
+D452              LD   A,(HL)	;count
+D453              AND  07
+D455              INC  A
+D456              LD   C,A
+
+D457              LD   A,(HL)	;type
+D458              INC  HL
+D459              DEC  B
+
+D45A              LD   D,(HL)
+D45B              INC  HL
+D45C              PUSH HL
+
+D45D              RRCA
+D45E              RRCA
+D45F              AND  3E
+D461              LD   HL,6BD1
+D464              CALL Add_HL_A
+D467              LD   A,(HL)
+D468              INC  HL
+D469              LD   H,(HL)
+D46A              LD   L,A
+D46B              PUSH HL
+D46C              LD   A,(HL)
+D46D              INC  HL
+D46E              LD   (IY),A
+D470              NOP
+D471              LD   A,(HL)
+D472              INC  HL
+D473              LD   (IY),A
+D475              INC  B
+D476              LD   A,(HL)
+D477              INC  HL
+D478              LD   (IY),A
+D47A              DEC  B
+D47B              LD   A,(HL)
+D47C              INC  HL
+D47D              LD   (IY),A
+D47F              LD   B,7E
+D481              INC  HL
+D482              LD   (IY),A
+D484              RLCA
+D485              LD   A,(IX+08)
+D488              LD   (IY),A
+D48A              EX   AF,AF'
+D48B              LD   A,(HL)
+D48C              RLCA
+D48D              RLCA
+D48E              RLCA
+D48F              AND  08
+D491              LD   E,A
+D492              LD   A,D
+D493              RLCA
+D494              RLCA
+D495              RLCA
+D496              RLCA
+D497              AND  70
+D499              ADD  A,E
+D49A              ADD  A,48
+D49C              LD   (IY),A
+D49E              LD   BC,077E
+D4A1              RLCA
+D4A2              AND  08
+D4A4              LD   E,A
+D4A5              LD   A,D
+D4A6              RLCA
+D4A7              AND  70
+D4A9              ADD  A,E
+D4AA              ADD  A,48
+D4AC              LD   (IY),A
+D4AE              LD   (BC),A
+D4AF              LD   A,D
+D4B0              RLCA
+D4B1              RLCA
+D4B2              AND  03
+D4B4              ADD  A,A
+D4B5              ADD  A,A
+D4B6              LD   E,A
+D4B7              ADD  A,A
+D4B8              ADD  A,E
+D4B9              ADD  A,(HL)
+D4BA              INC  HL
+D4BB              AND  FC
+D4BD              LD   E,A
+D4BE              LD   A,(5BAE)
+D4C1              ADD  A,E
+D4C2              LD   (IY),A
+D4C4              INC  BC
+D4C5              PUSH BC
+D4C6              LD   BC,0009
+D4C9              ADD  IY,BC
+D4CB              LD   B,17
+D4CD              LD   (IY),00
+D4D0              NOP
+D4D1              INC  IY
+D4D3              DJNZ D4CD
+D4D5              POP  BC
+D4D6              LD   A,(HL)
+D4D7              AND  A
+D4D8              JR   NZ,D46C
+D4DA              POP  DE
+D4DB              POP  HL
+D4DC              DEC  B
+D4DD              JR   Z,D4EA
+D4DF              DEC  C
+D4E0              JP   Z,D452
+D4E3              LD   A,(HL)
+D4E4              INC  HL
+D4E5              PUSH HL
+D4E6              EX   DE,HL
+D4E7              LD   D,A
+D4E8              JR   D46B
+
+D4EA              PUSH IY
+D4EC              POP  DE
+D4ED              POP  IY
+D4EF              JP   D3E2
+
+Add_HL_A:
+D4F2              ADD  A,L
+D4F3              LD   L,A
+D4F4              LD   A,H
+D4F5              ADC  A,00
+D4F7              LD   H,A
+D4F8              RET
+
+D4F9              PUSH BC
+D4FA              LD   HL,0000
+D4FD              LD   B,08
+D4FF              ADD  HL,HL
+D500              RLCA
+D501              JR   NC,D504
+D503              ADD  HL,DE
+D504              DJNZ D4FF
+D506              POP  BC
+D507              RET
+
+Zero_DE:
+D508              XOR  A
+
+Fill_DE:
+D509              LD   (DE),A
+D50A              INC  DE
+D50B              DJNZ Fill_DE
+D50D              RET
+
+D50E              LD   A,7E
+D510              CALL ReadKey
+D513              BIT  0,A
+D515              RET  Z
+D516              AND  1E
+D518              RET  NZ
+D519              LD   A,7E
+D51B              CALL ReadKey
+D51E              BIT  0,A
+D520              JR   NZ,D519
+D522              CALL B4A8
+D525              LD   A,7E
+D527              CALL ReadKey
+D52A              BIT  0,A
+D52C              JR   Z,D525
+D52E              LD   A,7E
+D530              CALL ReadKey
+D533              BIT  0,A
+D535              JR   NZ,D52E
+D537              JP   B4A8
+
+ClrMem:
+D53A              LD   E,00
+FillMem:
+D53C              LD   (HL),E
+D53D              INC  HL
+D53E              DEC  BC
+D53F              LD   A,B
+D540              OR   C
+D541              JR   NZ,FillMem
+D543              RET
+
+ClrScr:
+D544              LD   HL,Screen
+D547              LD   BC,1800
+D54A              JR   ClrMem
+
+ClrAtrr:
+D54C              LD   HL,Attributes
+D54F              LD   BC,0300
+D552              LD   E,46
+D554              JR   FillMem
+
+FillAttr:
+D556              LD   HL,Attributes
+D559              LD   BC,0300
+D55C              LD   E,A
+D55D              JR   FillMem
+
+ClearScrn:
+D55F              XOR  A
+D560              OUT  (FE),A
+D562              CALL ClrAtrr
+D565              JR   ClrScr
+
+ClrWrkScr:
+D567              LD   BC,1800
+D56A              LD   HL,WrkScr
+D56D              JR   ClrMem
+
+UpdateScreen:
+D56F              LD   HL,WrkScr
+D572              LD   DE,57E0
+D575              LD   BC,20C0
+D578              PUSH BC
+D579              PUSH DE
+D57A              PUSH HL
+D57B              LD   A,(HL)
+D57C              LD   (DE),A
+D57D              LD   (HL),00
+D57F              INC  HL
+D580              INC  E
+D581              DJNZ D57B
+D583              POP  HL
+D584              LD   BC,0020
+D587              ADD  HL,BC
+D588              POP  DE
+D589              DEC  D
+D58A              LD   A,D
+D58B              CPL
+D58C              AND  07
+D58E              JR   NZ,D59A
+D590              LD   A,E
+D591              SUB  20
+D593              LD   E,A
+D594              JR   C,D59A
+D596              LD   A,D
+D597              ADD  A,08
+D599              LD   D,A
+D59A              POP  BC
+D59B              DEC  C
+D59C              JR   NZ,D578
+D59E              RET
+
+D59F              XOR  A
+D5A0              LD   (5BA8),A
+D5A3              PUSH IX
+D5A5              LD   A,(5BB7)
+D5A8              AND  A
+D5A9              JP   NZ,D653
+D5AC              LD   HL,CE8B
+D5AF              LD   (5BCB),HL
+D5B2              LD   HL,(5BCB)
+D5B5              LD   A,(HL)
+D5B6              INC  HL
+D5B7              LD   (5BCB),HL
+D5BA              CP   FF
+D5BC              JP   Z,D653
+D5BF              CALL D3B5
+D5C2              PUSH HL
+D5C3              POP  IX
+D5C5              BIT  5,(IX+07)
+D5C9              JR   Z,D5B2
+D5CB              RES  5,(IX+07)
+D5CF              LD   A,(IX+1A)
+D5D2              SUB  (IX+1E)
+D5D5              JP   C,D649
+D5D8              LD   C,(IX+1E)
+D5DB              LD   A,(IX+1E)
+D5DE              RRCA
+D5DF              RRCA
+D5E0              RRCA
+D5E1              AND  1F
+D5E3              ADD  A,(IX+1C)
+D5E6              LD   E,A
+D5E7              LD   A,(IX+1A)
+D5EA              RRCA
+D5EB              RRCA
+D5EC              RRCA
+D5ED              AND  1F
+D5EF              ADD  A,(IX+18)
+D5F2              CP   E
+D5F3              JR   C,D5F6
+D5F5              LD   E,A
+D5F6              LD   A,C
+D5F7              RRCA
+D5F8              RRCA
+D5F9              RRCA
+D5FA              AND  1F
+D5FC              LD   B,A
+D5FD              LD   A,E
+D5FE              SUB  B
+D5FF              LD   H,A
+D600              LD   A,(IX+1B)
+D603              SUB  (IX+1F)
+D606              JR   C,D64E
+D608              LD   B,(IX+1F)
+D60B              LD   A,(IX+1F)
+D60E              ADD  A,(IX+1D)
+D611              LD   E,A
+D612              LD   A,(IX+1B)
+D615              ADD  A,(IX+19)
+D618              CP   E
+D619              JR   NC,D61C
+D61B              LD   A,E
+D61C              SUB  B
+D61D              LD   L,A
+D61E              LD   A,B
+D61F              CP   C0
+D621              JR   NC,D5B2
+D623              ADD  A,L
+D624              SUB  C0
+D626              JR   C,D62C
+D628              NEG
+D62A              ADD  A,L
+D62B              LD   L,A
+D62C              CALL BCtoAttradrInDE
+D62F              CALL BCtoScradr
+D632              LD   A,L
+D633              LD   L,C
+D634              LD   C,A
+D635              LD   A,H
+D636              LD   H,B
+D637              LD   B,A
+D638              LD   A,(5BA8)
+D63B              INC  A
+D63C              LD   (5BA8),A
+D63F              PUSH BC
+D640              PUSH DE
+D641              PUSH HL
+D642              XOR  A
+D643              CALL FillWindow
+D646              JP   D5B2
+
+D649              LD   C,(IX+1A)
+D64C              JR   D5DB
+
+D64E              LD   B,(IX+1B)
+D651              JR   D60B
+
+D653              CALL CEBB
+D656              CALL PrintSunMoon
+D659              CALL DisplayObjectsCarried
+D65C              LD   HL,5BA8
+D65F              LD   A,(5BBE)
+D662              ADD  A,(HL)
+D663              LD   (5BBE),A
+D666              LD   HL,5BA8
+D669              LD   A,(HL)
+D66A              AND  A
+D66B              JR   Z,D679
+D66D              DEC  (HL)
+D66E              POP  HL
+D66F              POP  DE
+D670              POP  BC
+D671              LD   A,B
+D672              LD   B,C
+D673              LD   C,A
+D674              CALL D67C
+D677              JR   D666
+D679              POP  IX
+D67B              RET
+
+D67C              PUSH BC
+D67D              PUSH DE
+D67E              PUSH HL
+D67F              LD   B,00
+D681              LDIR
+D683              POP  HL
+D684              LD   DE,0020
+D687              ADD  HL,DE
+D688              POP  DE
+D689              DEC  D
+D68A              LD   A,D
+D68B              CPL
+D68C              AND  07
+D68E              JR   NZ,D69A
+D690              LD   A,E
+D691              SUB  20
+D693              LD   E,A
+D694              JR   C,D69A
+D696              LD   A,D
+D697              ADD  A,08
+D699              LD   D,A
+D69A              POP  BC
+D69B              DJNZ D67C
+D69D              RET
+
+D69E              LD   L,00
+D6A0              LD   D,00
+D6A2              LD   E,L
+D6A3              LD   H,FF
+D6A5              LD   B,07
+D6A7              SLA  E
+D6A9              RL   D
+D6AB              LD   A,E
+D6AC              CPL
+D6AD              LD   (HL),A
+D6AE              DEC  H
+D6AF              LD   A,D
+D6B0              CPL
+D6B1              LD   (HL),A
+D6B2              DEC  H
+D6B3              DJNZ D6A7
+D6B5              INC  L
+D6B6              JR   NZ,D6A0
+D6B8              LD   HL,F100
+D6BB              LD   D,L
+D6BC              LD   B,08
+D6BE              SRL  D
+D6C0              RL   E
+D6C2              DJNZ D6BE
+D6C4              LD   (HL),E
+D6C5              INC  L
+D6C6              JR   NZ,D6BB
+D6C8              RET
+
+D6C9              LD   A,(IX+01)
+D6CC              ADD  A,(IX+02)
+D6CF              SUB  80
+D6D1              ADD  A,(IX+12)
+D6D4              LD   (IX+1A),A
+D6D7              LD   A,(IX+02)
+D6DA              SUB  (IX+01)
+D6DD              ADD  A,80
+D6DF              SRL  A
+D6E1              ADD  A,(IX+03)
+D6E4              SUB  68
+D6E6              ADD  A,(IX+13)
+D6E9              LD   (IX+1B),A
+D6EC              CP   C0
+D6EE              RET
+
+D6EF              LD   L,(IX+00)
+D6F2              LD   H,00
+D6F4              ADD  HL,HL
+D6F5              LD   BC,7112
+D6F8              ADD  HL,BC
+D6F9              LD   E,(HL)
+D6FA              INC  HL
+D6FB              LD   D,(HL)
+D6FC              LD   A,(DE)
+D6FD              AND  A
+D6FE              JP   NZ,D865
+D701              INC  SP
+D702              INC  SP
+D703              RET
+
+D704              LD   A,(IX+00)
+D707              CP   01
+D709              JR   NZ,D710
+D70B              LD   (IX+00),00
+D70F              RET
+
+D710              RES  4,(IX+07)
+D714              CALL D6C9
+D717              RET  NC
+
+
+PrintSprite:
+D718              CALL D6EF
+D71B              LD   A,(IX+1A)
+D71E              AND  07
+D720              JR   Z,D76F
+D722              RLCA
+D723              AND  0E
+D725              OR   F0
+D727              LD   H,A
+D728              LD   A,(DE)
+D729              INC  DE
+D72A              AND  07
+D72C              INC  A
+D72D              LD   B,A
+D72E              LD   (IX+18),A
+D731              DEC  A
+D732              AND  07
+D734              ADD  A,A
+D735              ADD  A,A
+D736              ADD  A,A
+D737              ADD  A,A
+D738              NEG
+D73A              ADD  A,50
+D73C              LD   (D7AD),A
+D73F              LD   A,B
+D740              CPL
+D741              ADD  A,22
+D743              LD   (D801),A
+D746              LD   A,(DE)
+D747              INC  DE
+D748              LD   (IX+19),A
+D74B              ADD  A,(IX+1B)
+D74E              SUB  C0
+D750              JR   C,D75A
+D752              NEG
+D754              ADD  A,(IX+19)
+D757              LD   (IX+19),A
+D75A              LD   C,(IX+1A)
+D75D              LD   B,(IX+1B)
+D760              CALL BCtoScradr
+D763              LD   (5BA9),SP
+D767              EX   DE,HL
+D768              LD   SP,HL
+D769              EX   DE,HL
+D76A              LD   A,(IX+19)
+D76D              JR   D7AA
+
+D76F              LD   A,(DE)
+D770              INC  DE
+D771              AND  0F
+D773              LD   (IX+18),A
+D776              LD   B,A
+D777              ADD  A,A
+D778              ADD  A,A
+D779              ADD  A,A
+D77A              NEG
+D77C              SUB  06
+D77E              JR   D73C
+D780              POP  DE
+D781              LD   A,(BC)
+D782              CPL
+D783              OR   E
+D784              CPL
+D785              OR   D
+D786              LD   (BC),A
+D787              INC  BC
+D788              POP  DE
+D789              LD   A,(BC)
+D78A              CPL
+D78B              OR   E
+D78C              CPL
+D78D              OR   D
+D78E              LD   (BC),A
+D78F              INC  BC
+D790              POP  DE
+D791              LD   A,(BC)
+D792              CPL
+D793              OR   E
+D794              CPL
+D795              OR   D
+D796              LD   (BC),A
+D797              INC  BC
+D798              POP  DE
+D799              LD   A,(BC)
+D79A              CPL
+D79B              OR   E
+D79C              CPL
+D79D              OR   D
+D79E              LD   (BC),A
+D79F              INC  BC
+D7A0              POP  DE
+D7A1              LD   A,(BC)
+D7A2              CPL
+D7A3              OR   E
+D7A4              CPL
+D7A5              OR   D
+D7A6              LD   (BC),A
+D7A7              JP   D7FF
+
+D7AA              EX   AF,AF'
+D7AB              LD   A,(BC)
+D7AC              JR   D7CE
+
+D7AE              POP  DE
+D7AF              LD   L,E
+D7B0              AND  (HL)
+D7B1              LD   L,D
+D7B2              XOR  (HL)
+D7B3              CPL
+D7B4              LD   (BC),A
+D7B5              INC  BC
+D7B6              INC  H
+D7B7              LD   L,E
+D7B8              LD   A,(BC)
+D7B9              AND  (HL)
+D7BA              LD   L,D
+D7BB              XOR  (HL)
+D7BC              CPL
+D7BD              DEC  H
+D7BE              POP  DE
+D7BF              LD   L,E
+D7C0              AND  (HL)
+D7C1              LD   L,D
+D7C2              XOR  (HL)
+D7C3              CPL
+D7C4              LD   (BC),A
+D7C5              INC  BC
+D7C6              INC  H
+D7C7              LD   L,E
+D7C8              LD   A,(BC)
+D7C9              AND  (HL)
+D7CA              LD   L,D
+D7CB              XOR  (HL)
+D7CC              CPL
+D7CD              DEC  H
+D7CE              POP  DE
+D7CF              LD   L,E
+D7D0              AND  (HL)
+D7D1              LD   L,D
+D7D2              XOR  (HL)
+D7D3              CPL
+D7D4              LD   (BC),A
+D7D5              INC  BC
+D7D6              INC  H
+D7D7              LD   L,E
+D7D8              LD   A,(BC)
+D7D9              AND  (HL)
+D7DA              LD   L,D
+D7DB              XOR  (HL)
+D7DC              CPL
+D7DD              DEC  H
+D7DE              POP  DE
+D7DF              LD   L,E
+D7E0              AND  (HL)
+D7E1              LD   L,D
+D7E2              XOR  (HL)
+D7E3              CPL
+D7E4              LD   (BC),A
+D7E5              INC  BC
+D7E6              INC  H
+D7E7              LD   L,E
+D7E8              LD   A,(BC)
+D7E9              AND  (HL)
+D7EA              LD   L,D
+D7EB              XOR  (HL)
+D7EC              CPL
+D7ED              DEC  H
+D7EE              POP  DE
+D7EF              LD   L,E
+D7F0              AND  (HL)
+D7F1              LD   L,D
+D7F2              XOR  (HL)
+D7F3              CPL
+D7F4              LD   (BC),A
+D7F5              INC  BC
+D7F6              INC  H
+D7F7              LD   L,E
+D7F8              LD   A,(BC)
+D7F9              AND  (HL)
+D7FA              LD   L,D
+D7FB              XOR  (HL)
+D7FC              CPL
+D7FD              DEC  H
+D7FE              LD   (BC),A
+D7FF              LD   A,C
+D800              ADD  A,1D
+D802              LD   C,A
+D803              LD   A,B
+D804              ADC  A,00
+D806              LD   B,A
+D807              EX   AF,AF'
+D808              DEC  A
+D809              JP   NZ,D7AA
+D80C              LD   SP,(5BA9)
+D810              RET
+
+BCtoScrAdr:
+D811              PUSH HL
+D812              SRL  B
+D814              RR   C
+D816              SRL  B
+D818              RR   C
+D81A              SRL  B
+D81C              RR   C
+D81E              LD   HL,WrkScr
+D821              ADD  HL,BC
+D822              LD   C,L
+D823              LD   B,H
+D824              POP  HL
+D825              RET
+
+BCtoAttrAdrInDE:
+D826              LD   A,C
+D827              RRCA
+D828              RRCA
+D829              RRCA
+D82A              AND  1F
+D82C              LD   E,A
+D82D              LD   A,B
+D82E              CPL
+D82F              AND  07
+D831              EX   AF,AF'
+D832              LD   A,B
+D833              CPL
+D834              RLCA
+D835              RLCA
+D836              AND  E0
+D838              OR   E
+D839              LD   E,A
+D83A              LD   A,B
+D83B              CPL
+D83C              RRCA
+D83D              RRCA
+D83E              RRCA
+D83F              AND  18
+D841              LD   D,A
+D842              EX   AF,AF'
+D843              OR   D
+D844              ADD  A,38
+D846              LD   D,A
+D847              RET
+
+D848              PUSH HL
+D849              LD   A,H
+D84A              CPL
+D84B              LD   H,A
+D84C              SRL  H
+D84E              SRL  H
+D850              SRL  H
+D852              SRL  H
+D854              RR   L
+D856              SRL  H
+D858              RR   L
+D85A              SRL  H
+D85C              RR   L
+D85E              LD   DE,5700
+D861              ADD  HL,DE
+D862              EX   DE,HL
+D863              POP  HL
+D864              RET
+
+D865              PUSH DE
+D866              LD   A,(DE)
+D867              XOR  (IX+07)
+D86A              AND  80
+D86C              JR   Z,D8A2
+D86E              LD   A,(DE)
+D86F              XOR  80
+D871              LD   (DE),A
+D872              RLCA
+D873              AND  1E
+D875              LD   B,A
+D876              INC  DE
+D877              LD   A,(DE)
+D878              LD   C,A
+D879              INC  DE
+D87A              PUSH DE
+D87B              LD   E,B
+D87C              LD   D,00
+D87E              CALL D4F9
+D881              POP  DE
+D882              ADD  HL,DE
+D883              EX   DE,HL
+D884              LD   A,B
+D885              CALL Add_HL_A
+D888              DEC  DE
+D889              DEC  HL
+D88A              SRL  C
+D88C              PUSH BC
+D88D              LD   A,(DE)
+D88E              LD   C,(HL)
+D88F              LD   (HL),A
+D890              LD   A,C
+D891              LD   (DE),A
+D892              DEC  HL
+D893              DEC  DE
+D894              DJNZ D88D
+D896              POP  BC
+D897              LD   A,B
+D898              CALL Add_HL_A
+D89B              LD   A,B
+D89C              CALL Add_HL_A
+D89F              DEC  C
+D8A0              JR   NZ,D88C
+D8A2              POP  DE
+D8A3              PUSH DE
+D8A4              LD   A,(DE)
+D8A5              XOR  (IX+07)
+D8A8              AND  40
+D8AA              JR   Z,D8DC
+D8AC              LD   A,(DE)
+D8AD              XOR  40
+D8AF              LD   (DE),A
+D8B0              AND  0F
+D8B2              LD   B,A
+D8B3              LD   C,A
+D8B4              INC  DE
+D8B5              LD   A,(DE)
+D8B6              EX   AF,AF'
+D8B7              INC  DE
+D8B8              EX   DE,HL
+D8B9              PUSH HL
+D8BA              EXX
+D8BB              POP  HL
+D8BC              LD   B,F1
+D8BE              EXX
+D8BF              EXX
+D8C0              LD   C,(HL)
+D8C1              LD   A,(BC)
+D8C2              LD   E,A
+D8C3              INC  HL
+D8C4              LD   C,(HL)
+D8C5              LD   A,(BC)
+D8C6              LD   D,A
+D8C7              INC  HL
+D8C8              PUSH DE
+D8C9              EXX
+D8CA              DJNZ D8BF
+D8CC              LD   B,C
+D8CD              POP  DE
+D8CE              LD   (HL),E
+D8CF              INC  HL
+D8D0              LD   (HL),D
+D8D1              INC  HL
+D8D2              DJNZ D8CD
+D8D4              EX   AF,AF'
+D8D5              DEC  A
+D8D6              JR   Z,D8DC
+D8D8              EX   AF,AF'
+D8D9              LD   B,C
+D8DA              JR   D8BF
+D8DC              POP  DE
+D8DD              RET
+
+
+Address Labels
+
+5BBA  Lives
+5BB5  UserInput
+5BBB  ObjectsPutInCauldron
+D8F3  WrkScr
+5BC7  _8x8GfxBase
+5ba4  UserInputMethod
+5ba6  OldUserInputMethod
+c44d  DayOrNight
+
+5c08 game vars
+ +08 Screen
