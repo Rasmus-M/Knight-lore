@@ -92,8 +92,6 @@ bc_    equ  13
 de_    equ  14
 hl_    equ  15
 
-       aorg >A000
-
 * ===========================================================================
 *
 * Segment type: Regular
@@ -119,6 +117,7 @@ zx_aram:
 *
 * Segment type: Regular
 * .org 0x5BA0
+       aorg >A000
 *
 seed_1:
        data 0
@@ -325,7 +324,7 @@ start:
 *      Init TMS9900
        limi 0
        li   sp,stack
-       bl   @GMODE
+       bl   @gmode
 ;RAM:AF6C 21 A0 5B                    ld      hl, #seed_1                             ; location to clear
        li   hl,seed_1
 ;RAM:AF6F 01 68 05                    ld      bc, #0x568                              ; # bytes to clear
@@ -405,7 +404,7 @@ onscreen_loop:
        li   ix,graphic_objs_tbl
 update_sprite_loop:
 ;RAM:AFC7 31 A0 5B                    ld      sp, #seed_1                             ; init stack
-       li   sp,seed_1                                                                 ; TODO
+       li   sp,stack
 ;RAM:AFCA 21 BC 5B                    ld      hl, #fire_seed
        li   hl,fire_seed
 ;RAM:AFCD 34                          inc     (hl)
@@ -7293,6 +7292,7 @@ vdpwr2 movb r1, *r0
 vdpwr3 b    *r11
 *// VDPWR
 
+* Byte constants
 b00h   byte >00
 b01h   byte >01
 b20h   byte >20
