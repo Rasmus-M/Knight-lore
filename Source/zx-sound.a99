@@ -1,31 +1,35 @@
-;RAM:B20E             ;
-;RAM:B20E             ; Audio Tunes
-;RAM:B20E             ;
-;RAM:B20E 59 5C 5B 54+start_game_tune:.db 0x59, 0x5C, 0x5B, 0x54, 0x19, 0x17, 0x14, 0x17, 0xD9
-;RAM:B20E 19 17 14 17+                .db 0xFF
-;RAM:B218 2E 17 27 17+game_over_tune: .db 0x2E, 0x17, 0x27, 0x17, 0x2E, 0x17, 0x27, 0x17, 0x2C
-;RAM:B218 2E 17 27 17+                .db 0x19, 0x27, 0x19, 0x2C, 0x19, 0x27, 0x19, 0x2A, 0x1B
-;RAM:B218 2C 19 27 19+                .db 0x27, 0x1B, 0x2A, 0x1B, 0x27, 0x1B, 0x2A, 0x1B, 0x27
-;RAM:B218 2C 19 27 19+                .db 0x1B, 0x2A, 0x1B, 0x27, 0x1B, 0xFF
-;RAM:B239 1B 1D 1E 1B+game_complete_tune:.db 0x1B, 0x1D, 0x1E, 0x1B, 0x1D, 0x1E, 0x20, 0x1D, 0x1E
-;RAM:B239 1D 1E 20 1D+                .db 0x20, 0x22, 0x1E, 0x1D, 0x1E, 0x20, 0x1D, 0x1B, 0x1D
-;RAM:B239 1E 20 22 1E+                .db 0x1E, 0x1B, 0x1A, 0x1B, 0x1D, 0x1A, 0x9B, 0xFF
-;RAM:B253 1B 27 1B 27+menu_tune:      .db 0x1B, 0x27, 0x1B, 0x27, 0x1B, 0x2A, 0x2E, 0x1B, 0x27
-;RAM:B253 1B 2A 2E 1B+                .db 0x1B, 0x27, 0x1B, 0x2A, 0x1B, 0x2E, 0x16, 0x25, 0x16
-;RAM:B253 27 1B 27 1B+                .db 0x24, 0x16, 0x22, 0x16, 0x22, 0x16, 0x25, 0x16, 0x24
-;RAM:B253 2A 1B 2E 16+                .db 0x16, 0x22, 0x16, 0x22, 0x16, 0x22, 0x1B, 0x27, 0x1B
-;RAM:B253 25 16 24 16+                .db 0x27, 0x1B, 0x2A, 0x2E, 0x1B, 0x27, 0x1B, 0x27, 0x1B
-;RAM:B253 22 16 22 16+                .db 0x2A, 0x1B, 0x2E, 0x16, 0x25, 0x16, 0x24, 0x16, 0x22
-;RAM:B253 25 16 24 16+                .db 0x16, 0x22, 0x16, 0x25, 0x16, 0x24, 0x16, 0x22, 0x16
-;RAM:B253 22 16 22 16+                .db 0x22, 0x16, 0x22, 0x17, 0x2E, 0x17, 0x2E, 0x17, 0x2E
-;RAM:B253 22 1B 27 1B+                .db 0x17, 0x2E, 0x19, 0x2E, 0x19, 0x2E, 0x19, 0x2E, 0x19
-;RAM:B253 27 1B 2A 2E+                .db 0x2E, 0x1B, 0x2E, 0x1B, 0x2E, 0x1B, 0x2E, 0x1B, 0x2E
-;RAM:B253 1B 27 1B 27+                .db 0x1B, 0x2E, 0x1B, 0x2E, 0x1B, 0x2E, 0x1B, 0x2E, 0xFF
+*
+* Audio Tunes
+*
+start_game_tune:
+       byte >59, >5C, >5B, >54, >19, >17, >14, >17, >D9
+       byte >FF
+game_over_tune:
+       byte >2E, >17, >27, >17, >2E, >17, >27, >17, >2C
+       byte >19, >27, >19, >2C, >19, >27, >19, >2A, >1B
+       byte >27, >1B, >2A, >1B, >27, >1B, >2A, >1B, >27
+       byte >1B, >2A, >1B, >27, >1B, >FF
+game_complete_tune:
+       byte >1B, >1D, >1E, >1B, >1D, >1E, >20, >1D, >1E
+       byte >20, >22, >1E, >1D, >1E, >20, >1D, >1B, >1D
+       byte >1E, >1B, >1A, >1B, >1D, >1A, >9B, >FF
+menu_tune:
+      byte >1B, >27, >1B, >27, >1B, >2A, >2E, >1B, >27
+       byte >1B, >27, >1B, >2A, >1B, >2E, >16, >25, >16
+       byte >24, >16, >22, >16, >22, >16, >25, >16, >24
+       byte >16, >22, >16, >22, >16, >22, >1B, >27, >1B
+       byte >27, >1B, >2A, >2E, >1B, >27, >1B, >27, >1B
+       byte >2A, >1B, >2E, >16, >25, >16, >24, >16, >22
+       byte >16, >22, >16, >25, >16, >24, >16, >22, >16
+       byte >22, >16, >22, >17, >2E, >17, >2E, >17, >2E
+       byte >17, >2E, >19, >2E, >19, >2E, >19, >2E, >19
+       byte >2E, >1B, >2E, >1B, >2E, >1B, >2E, >1B, >2E
+       byte >1B, >2E, >1B, >2E, >1B, >2E, >1B, >2E, >FF
 ;RAM:B2B6
 ;RAM:B2B6             ; =============== S U B R O U T I N E =======================================
 ;RAM:B2B6
 ;RAM:B2B6
-;RAM:B2B6             play_audio_wait_key:
+play_audio_wait_key:
 ;RAM:B2B6 21 D1 5B                    ld      hl, #audio_played
 ;RAM:B2B9 7E                          ld      a, (hl)
 ;RAM:B2BA A7                          and     a
@@ -37,11 +41,12 @@
 ;RAM:B2BE             ; =============== S U B R O U T I N E =======================================
 ;RAM:B2BE
 ;RAM:B2BE
-;RAM:B2BE             play_audio_until_keypress:
+play_audio_until_keypress:
 ;RAM:B2BE AF                          xor     a
 ;RAM:B2BF CD F7 B5                    call    read_port
 ;RAM:B2C2 28 01                       jr      Z, loc_B2C5
 ;RAM:B2C4 C9                          ret
+       rt
 ;RAM:B2C5             ; ---------------------------------------------------------------------------
 ;RAM:B2C5
 ;RAM:B2C5             loc_B2C5:                                                       ; audio data
@@ -56,7 +61,7 @@
 ;RAM:B2CF             ; =============== S U B R O U T I N E =======================================
 ;RAM:B2CF
 ;RAM:B2CF
-;RAM:B2CF             play_audio:
+play_audio:
 ;RAM:B2CF 1A                          ld      a, (de)                                 ; audio data byte
 ;RAM:B2D0 FE FF                       cp      #0xFF                                   ; done?
 ;RAM:B2D2 28 05                       jr      Z, end_audio                            ; yes, return
@@ -64,15 +69,16 @@
 ;RAM:B2D7 18 F6                       jr      play_audio
 ;RAM:B2D9             ; ---------------------------------------------------------------------------
 ;RAM:B2D9
-;RAM:B2D9             end_audio:
+end_audio:
 ;RAM:B2D9 C9                          ret
+       rt
 ;RAM:B2D9             ; End of function play_audio
 ;RAM:B2D9
 ;RAM:B2DA
 ;RAM:B2DA             ; =============== S U B R O U T I N E =======================================
 ;RAM:B2DA
 ;RAM:B2DA
-;RAM:B2DA             play_note:
+play_note:
 ;RAM:B2DA E6 3F                       and     #0x3F ; '?'                             ; note
 ;RAM:B2DC 28 3E                       jr      Z, snd_delay
 ;RAM:B2DE 6F                          ld      l, a
@@ -131,9 +137,10 @@
 ;RAM:B318 20 E6                       jr      NZ, loc_B300
 ;RAM:B31A 13                          inc     de
 ;RAM:B31B C9                          ret
+       rt
 ;RAM:B31C             ; ---------------------------------------------------------------------------
 ;RAM:B31C
-;RAM:B31C             snd_delay:
+snd_delay:
 ;RAM:B31C 1A                          ld      a, (de)
 ;RAM:B31D 13                          inc     de
 ;RAM:B31E 07                          rlca
@@ -155,71 +162,72 @@
 ;RAM:B32E 2D                          dec     l
 ;RAM:B32F 20 F6                       jr      NZ, loc_B327
 ;RAM:B331 C9                          ret
+       rt
 ;RAM:B331             ; End of function play_note
 ;RAM:B331
 ;RAM:B331             ; ---------------------------------------------------------------------------
 ;RAM:B332             ; Frequency Table?
-;RAM:B332 00 00 00 F4+freq_tbl:       .db 0, 0, 0
-;RAM:B332 0A 08 65 0A+                .db 0xF4, 0xA, 8
-;RAM:B332 09 DE 09 09+                .db 0x65, 0xA, 9
-;RAM:B332 5E 09 0A E7+                .db 0xDE, 9, 9
-;RAM:B332 08 0A 75 08+                .db 0x5E, 9, 0xA
-;RAM:B332 0B 0A 08 0C+                .db 0xE7, 8, 0xA
-;RAM:B332 A5 07 0C 45+                .db 0x75, 8, 0xB
-;RAM:B332 07 0D EB 06+                .db 0xA, 8, 0xC
-;RAM:B332 0E 96 06 0F+                .db 0xA5, 7, 0xC
-;RAM:B332 46 06 0F FA+                .db 0x45, 7, 0xD
-;RAM:B332 05 10 B3 05+                .db 0xEB, 6, 0xE
-;RAM:B332 11 6F 05 12+                .db 0x96, 6, 0xF
-;RAM:B332 2F 05 13 F3+                .db 0x46, 6, 0xF
-;RAM:B332 04 15 F3 04+                .db 0xFA, 5, 0x10
-;RAM:B332 16 85 04 17+                .db 0xB3, 5, 0x11
-;RAM:B332 52 04 19 23+                .db 0x6F, 5, 0x12
-;RAM:B332 04 1A F6 03+                .db 0x2F, 5, 0x13
-;RAM:B332 1C CB 03 1D+                .db 0xF3, 4, 0x15
-;RAM:B332 A3 03 1F 7D+                .db 0xF3, 4, 0x16
-;RAM:B332 03 21 59 03+                .db 0x85, 4, 0x17
-;RAM:B332 23 38 03 25+                .db 0x52, 4, 0x19
-;RAM:B332 18 03 27 FA+                .db 0x23, 4, 0x1A
-;RAM:B332 02 29 DD 02+                .db 0xF6, 3, 0x1C
-;RAM:B332 2C C2 02 2E+                .db 0xCB, 3, 0x1D
-;RAM:B332 A9 02 31 91+                .db 0xA3, 3, 0x1F
-;RAM:B332 02 34 7B 02+                .db 0x7D, 3, 0x21
-;RAM:B332 37 66 02 3A+                .db 0x59, 3, 0x23
-;RAM:B332 51 02 3E 3F+                .db 0x38, 3, 0x25
-;RAM:B332 02 41 2D 02+                .db 0x18, 3, 0x27
-;RAM:B332 45 1C 02 49+                .db 0xFA, 2, 0x29
-;RAM:B332 0C 02 4E FD+                .db 0xDD, 2, 0x2C
-;RAM:B332 01 52 EF 01+                .db 0xC2, 2, 0x2E
-;RAM:B332 57 E2 01 5D+                .db 0xA9, 2, 0x31
-;RAM:B332 D5 01 62 C9+                .db 0x91, 2, 0x34
-;RAM:B332 01 68 BD 01+                .db 0x7B, 2, 0x37
-;RAM:B332 6E B3 01 75+                .db 0x66, 2, 0x3A
-;RAM:B332 A9 01 7B 9F+                .db 0x51, 2, 0x3E
-;RAM:B332 01 83 96 01+                .db 0x3F, 2, 0x41
-;RAM:B332 8B 8E 01 93+                .db 0x2D, 2, 0x45
-;RAM:B332 86 01 9C 7E+                .db 0x1C, 2, 0x49
-;RAM:B332 01 A5 77 01+                .db 0xC, 2, 0x4E
-;RAM:B332 AF 71 01 B9+                .db 0xFD, 1, 0x52
-;RAM:B332 6A 01 C4 64+                .db 0xEF, 1, 0x57
-;RAM:B332 01 D0 5F 01+                .db 0xE2, 1, 0x5D
-;RAM:B332 DC 59 01 E9+                .db 0xD5, 1, 0x62
-;RAM:B332 54 01 F7                    .db 0xC9, 1, 0x68
-;RAM:B332                             .db 0xBD, 1, 0x6E
-;RAM:B332                             .db 0xB3, 1, 0x75
-;RAM:B332                             .db 0xA9, 1, 0x7B
-;RAM:B332                             .db 0x9F, 1, 0x83
-;RAM:B332                             .db 0x96, 1, 0x8B
-;RAM:B332                             .db 0x8E, 1, 0x93
-;RAM:B332                             .db 0x86, 1, 0x9C
-;RAM:B332                             .db 0x7E, 1, 0xA5
-;RAM:B332                             .db 0x77, 1, 0xAF
-;RAM:B332                             .db 0x71, 1, 0xB9
-;RAM:B332                             .db 0x6A, 1, 0xC4
-;RAM:B332                             .db 0x64, 1, 0xD0
-;RAM:B332                             .db 0x5F, 1, 0xDC
-;RAM:B332                             .db 0x59, 1, 0xE9
-;RAM:B332                             .db 0x54, 1, 0xF7
+;RAM:B332 00 00 00 F4+freq_tbl:       byte 0, 0, 0
+;RAM:B332 0A 08 65 0A+                byte 0xF4, 0xA, 8
+;RAM:B332 09 DE 09 09+                byte 0x65, 0xA, 9
+;RAM:B332 5E 09 0A E7+                byte 0xDE, 9, 9
+;RAM:B332 08 0A 75 08+                byte 0x5E, 9, 0xA
+;RAM:B332 0B 0A 08 0C+                byte 0xE7, 8, 0xA
+;RAM:B332 A5 07 0C 45+                byte 0x75, 8, 0xB
+;RAM:B332 07 0D EB 06+                byte 0xA, 8, 0xC
+;RAM:B332 0E 96 06 0F+                byte 0xA5, 7, 0xC
+;RAM:B332 46 06 0F FA+                byte 0x45, 7, 0xD
+;RAM:B332 05 10 B3 05+                byte 0xEB, 6, 0xE
+;RAM:B332 11 6F 05 12+                byte 0x96, 6, 0xF
+;RAM:B332 2F 05 13 F3+                byte 0x46, 6, 0xF
+;RAM:B332 04 15 F3 04+                byte 0xFA, 5, 0x10
+;RAM:B332 16 85 04 17+                byte 0xB3, 5, 0x11
+;RAM:B332 52 04 19 23+                byte 0x6F, 5, 0x12
+;RAM:B332 04 1A F6 03+                byte 0x2F, 5, 0x13
+;RAM:B332 1C CB 03 1D+                byte 0xF3, 4, 0x15
+;RAM:B332 A3 03 1F 7D+                byte 0xF3, 4, 0x16
+;RAM:B332 03 21 59 03+                byte 0x85, 4, 0x17
+;RAM:B332 23 38 03 25+                byte 0x52, 4, 0x19
+;RAM:B332 18 03 27 FA+                byte 0x23, 4, 0x1A
+;RAM:B332 02 29 DD 02+                byte 0xF6, 3, 0x1C
+;RAM:B332 2C C2 02 2E+                byte 0xCB, 3, 0x1D
+;RAM:B332 A9 02 31 91+                byte 0xA3, 3, 0x1F
+;RAM:B332 02 34 7B 02+                byte 0x7D, 3, 0x21
+;RAM:B332 37 66 02 3A+                byte 0x59, 3, 0x23
+;RAM:B332 51 02 3E 3F+                byte 0x38, 3, 0x25
+;RAM:B332 02 41 2D 02+                byte 0x18, 3, 0x27
+;RAM:B332 45 1C 02 49+                byte 0xFA, 2, 0x29
+;RAM:B332 0C 02 4E FD+                byte 0xDD, 2, 0x2C
+;RAM:B332 01 52 EF 01+                byte 0xC2, 2, 0x2E
+;RAM:B332 57 E2 01 5D+                byte 0xA9, 2, 0x31
+;RAM:B332 D5 01 62 C9+                byte 0x91, 2, 0x34
+;RAM:B332 01 68 BD 01+                byte 0x7B, 2, 0x37
+;RAM:B332 6E B3 01 75+                byte 0x66, 2, 0x3A
+;RAM:B332 A9 01 7B 9F+                byte 0x51, 2, 0x3E
+;RAM:B332 01 83 96 01+                byte 0x3F, 2, 0x41
+;RAM:B332 8B 8E 01 93+                byte 0x2D, 2, 0x45
+;RAM:B332 86 01 9C 7E+                byte 0x1C, 2, 0x49
+;RAM:B332 01 A5 77 01+                byte 0xC, 2, 0x4E
+;RAM:B332 AF 71 01 B9+                byte 0xFD, 1, 0x52
+;RAM:B332 6A 01 C4 64+                byte 0xEF, 1, 0x57
+;RAM:B332 01 D0 5F 01+                byte 0xE2, 1, 0x5D
+;RAM:B332 DC 59 01 E9+                byte 0xD5, 1, 0x62
+;RAM:B332 54 01 F7                    byte 0xC9, 1, 0x68
+;RAM:B332                             byte 0xBD, 1, 0x6E
+;RAM:B332                             byte 0xB3, 1, 0x75
+;RAM:B332                             byte 0xA9, 1, 0x7B
+;RAM:B332                             byte 0x9F, 1, 0x83
+;RAM:B332                             byte 0x96, 1, 0x8B
+;RAM:B332                             byte 0x8E, 1, 0x93
+;RAM:B332                             byte 0x86, 1, 0x9C
+;RAM:B332                             byte 0x7E, 1, 0xA5
+;RAM:B332                             byte 0x77, 1, 0xAF
+;RAM:B332                             byte 0x71, 1, 0xB9
+;RAM:B332                             byte 0x6A, 1, 0xC4
+;RAM:B332                             byte 0x64, 1, 0xD0
+;RAM:B332                             byte 0x5F, 1, 0xDC
+;RAM:B332                             byte 0x59, 1, 0xE9
+;RAM:B332                             byte 0x54, 1, 0xF7
 ;RAM:B3E9             ;
 ;RAM:B3E9             ; block (62)
 ;RAM:B3E9
@@ -239,7 +247,7 @@
 ;RAM:B3F8             ; End of function audio_B3E9
 ;RAM:B3F8
 ;RAM:B3F8             ; ---------------------------------------------------------------------------
-;RAM:B3FB A0 B0 C0 90+byte_B3FB:      .db 0xA0, 0xB0, 0xC0, 0x90, 0xA0, 0xE0, 0x80, 0x60
+;RAM:B3FB A0 B0 C0 90+byte_B3FB:      byte 0xA0, 0xB0, 0xC0, 0x90, 0xA0, 0xE0, 0x80, 0x60
 ;RAM:B403             ;
 ;RAM:B403             ; eg. death sparkles
 ;RAM:B403
@@ -345,13 +353,14 @@
 ;RAM:B454             ; =============== S U B R O U T I N E =======================================
 ;RAM:B454
 ;RAM:B454
-;RAM:B454             audio_B454:
+audio_B454:
 ;RAM:B454 2F                          cpl
 ;RAM:B455 07                          rlca
 ;RAM:B456 07                          rlca
 ;RAM:B457 47                          ld      b, a
 ;RAM:B458 0E 06                       ld      c, #6
 ;RAM:B45A C3 E6 B4                    jp      toggle_audio_hw_xC
+       rt
 ;RAM:B45A             ; End of function audio_B454
 ;RAM:B45A
 ;RAM:B45D             ; block, fire movng (EW)
@@ -504,7 +513,7 @@
 ;RAM:B4ED             ; =============== S U B R O U T I N E =======================================
 ;RAM:B4ED
 ;RAM:B4ED
-;RAM:B4ED             toggle_audio_hw:
+toggle_audio_hw:
 ;RAM:B4ED 3E 10                       ld      a, #0x10                                ; EAR output
 ;RAM:B4EF D3 FE                       out     (0xFE), a                               ; enable
 ;RAM:B4F1 78                          ld      a, b
@@ -520,8 +529,5 @@
 ;RAM:B4F9 10 FE                       djnz    loc_B4F9
 ;RAM:B4FB 47                          ld      b, a
 ;RAM:B4FC C9                          ret
+       rt
 ;RAM:B4FC             ; End of function toggle_audio_hw
-;RAM:B4FC
-;RAM:B4FD             ; returns C flag set if any other object
-;RAM:B4FD             ; intersects with this one
-;RAM:B4FD
