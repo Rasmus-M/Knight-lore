@@ -1,8 +1,5 @@
-
-.gitignore
 .idea/
 Docs/
-Java/.idea/
 Java/Knight Lore.iml
 Java/out/
 Viewer/
