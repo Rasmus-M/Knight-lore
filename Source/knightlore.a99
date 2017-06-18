@@ -70,22 +70,19 @@ PADVAR EQU  STACK+>40
 **
 * Z80 register mapping
 *
-af     equ  1
-a      equ  1
-bc     equ  2
-b      equ  2
-c      equ  R2LB
-de     equ  3
-d      equ  3
-e      equ  R3LB
-hl     equ  4
-h      equ  4
-l      equ  R4LB
-ix     equ  5
-iy     equ  6
-temp1  equ  7
-temp2  equ  8
-temp3  equ  9
+af     equ  4
+a      equ  4
+bc     equ  5
+b      equ  5
+c      equ  R5LB
+de     equ  6
+d      equ  6
+e      equ  R6LB
+hl     equ  7
+h      equ  7
+l      equ  R7LB
+ix     equ  8
+iy     equ  9
 sp     equ  10
 af_    equ  12
 bc_    equ  13
@@ -422,19 +419,16 @@ jump_to_upd_object:                                             ; sprite graphic
        li   bc,upd_sprite_jmp_tbl
 jump_to_tbl_entry:
 ;RAM:AFDB 26 00                       ld      h, #0
-       movb @b00h,@h
+       movb @b00h,h
 ;RAM:AFDD 29                          add     hl, hl                                  ; word offset
        a    hl,hl
 ;RAM:AFDE 09                          add     hl, bc                                  ; get ptr jump entry
        a    bc,hl
 ;RAM:AFDF 7E                          ld      a, (hl)
-       movb *hl,a
 ;RAM:AFE0 23                          inc     hl
-       inc  hl
 ;RAM:AFE1 66                          ld      h, (hl)
-       movb *hl,h
 ;RAM:AFE2 6F                          ld      l, a                                    ; HL=jump address
-       movb a,@l
+       mov  *hl,hl
 ;RAM:AFE3 E9                          jp      (hl)                                    ; go
        b    *hl
 *
@@ -6287,31 +6281,35 @@ clr_byte:
 * ---------------------------------------------------------------------------
 * START OF FUNCTION CHUNK FOR clear_scrn
 *
-; TODO
 clr_bitmap_memory:                                              ; screen memory
        mov  r11,*sp+
-clr_bitmap_memory_1:
 ;RAM:D544 21 00 40                    ld      hl, #zx_vram
-       li   hl,zx_vram
 ;RAM:D547 01 00 18                    ld      bc, #0x1800                             ; # bytes to clear
-       LI   bc,>1800
 ;RAM:D54A 18 EE                       jr      clr_mem
-       jmp  clr_mem_1
+       li   r0,PTRNTB
+       clr  r1                         ; bright yellow on black
+       li   r2,>1800
+       bl   @vdpwr
+       dect sp
+       mov  *sp,r11
+       rt
 * END OF FUNCTION CHUNK FOR clear_scrn
 *
 * =============== S U B R O U T I N E =======================================
 *
-; TODO
 clr_attribute_memory:
        mov  r11,*sp+
 ;RAM:D54C 21 00 58                    ld      hl, #zx_aram                            ; colour data
-       li   hl,zx_aram
 ;RAM:D54F 01 00 03                    ld      bc, #0x300                              ; # bytes to clear
-       li   bc,>300
 ;RAM:D552 1E 46                       ld      e, #0x46 ; 'F'                          ; bright yellow on black
-       li   de,>0046
 ;RAM:D554 18 E6                       jr      clr_byte
-       jmp  clr_byte
+       li   r0,COLRTB
+       li   r1,>b100                   ; bright yellow on black
+       li   r2,>1800
+       bl   @vdpwr
+       dect sp
+       mov  *sp,r11
+       rt
 *
 * End of function clr_attribute_memory
 *
@@ -6321,35 +6319,40 @@ clr_attribute_memory:
 fill_attr:
        mov  r11,*sp+
 ;RAM:D556 21 00 58                    ld      hl, #zx_aram                            ; colour data
-       li   hl,zx_aram
 ;RAM:D559 01 00 03                    ld      bc, #0x300                              ; # bytes to clear
-       li   bc,>300
 ;RAM:D55C 5F                          ld      e, a                                    ; attribute to set
-       movb a,@e
 ;RAM:D55D 18 DD                       jr      clr_byte                                ; fill
-       jmp  clr_byte
+       li   r0,COLRTB
+       mov  a,r1
+       li   r2,>1800
+       bl   @vdpwr
+       dect sp
+       mov  *sp,r11
+       rt
 *
 * End of function fill_attr
 *
 * =============== S U B R O U T I N E =======================================
 *
-; TODO
 clear_scrn:
        mov  r11,*sp+
 ;RAM:D55F
 ;RAM:D55F AF                          xor     a                                       ; border colour BLACK, activate MIC
-       clr  a
 ;RAM:D560 D3 FE                       out     (0xFE), a                               ; ULA
+       li   r0,>0700
+       bl   @vwtr
 ;RAM:D562 CD 4C D5                    call    clr_attribute_memory
        bl   @clr_attribute_memory
 ;RAM:D565 18 DD                       jr      clr_bitmap_memory
-       jmp  clr_bitmap_memory_1
+       bl   @clr_bitmap_memory
+       dect sp
+       mov  *sp,r11
+       rt
 *
 * End of function clear_scrn
 *
 * =============== S U B R O U T I N E =======================================
 *
-; TODO
 clear_scrn_buffer:
        mov  r11,*sp+
 ;RAM:D567 01 00 18                    ld      bc, #0x1800                             ; # bytes to clear
