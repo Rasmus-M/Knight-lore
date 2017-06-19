@@ -424,7 +424,7 @@ jump_to_tbl_entry:
        a    hl,hl
 ;RAM:AFDE 09                          add     hl, bc                                  ; get ptr jump entry
        a    bc,hl
-;RAM:AFDF 7E                          ld      a, (hl)
+;RAM:AFDF 7E                          ld      a, (hl)                                 ; little endian!
 ;RAM:AFE0 23                          inc     hl
 ;RAM:AFE1 66                          ld      h, (hl)
 ;RAM:AFE2 6F                          ld      l, a                                    ; HL=jump address
@@ -5964,13 +5964,14 @@ adjust_plyr_xyz_for_room_size:
 ;RAM:D3C4 C1                          pop     bc
 ;RAM:D3C5 C9                          ret
 ;RAM:D3C5             ; End of function get_ptr_object
-;RAM:D3C5
-;RAM:D3C6             ; Retrieves graphics objects to render screen
-;RAM:D3C6             ; - background object sprites, then
-;RAM:D3C6             ; - foreground object sprites
-;RAM:D3C6             ; Populates graphics_object_tbl
-;RAM:D3C6             ;
-;RAM:D3C6             ; IX=player object
+
+*
+* Retrieves graphics objects to render screen
+* - background object sprites, then
+* - foreground object sprites
+* Populates graphics_object_tbl
+*
+* IX=player object
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -6108,7 +6109,7 @@ next_bg_obj:
        li   bc,background_type_tbl
 ;RAM:D42D 09                          add     hl, bc                                  ; ptr entry
        a    bc,hl
-;RAM:D42E 7E                          ld      a, (hl)
+;RAM:D42E 7E                          ld      a, (hl)                                 ; little endian!
 ;RAM:D42F 23                          inc     hl
 ;RAM:D430 66                          ld      h, (hl)
 ;RAM:D431 6F                          ld      l, a                                    ; HL=ptr to background object
@@ -6169,113 +6170,185 @@ next_fg_obj:
 ;RAM:D458 23                          inc     hl
        movb *hl+,a
 ;RAM:D459 05                          dec     b                                       ; adjust bytes remaining
+       sb    @b01h,b
 ;RAM:D45A 56                          ld      d, (hl)                                 ; location (x/y/z)
 ;RAM:D45B 23                          inc     hl
+       movb *hl+,d
 ;RAM:D45C E5                          push    hl
+       mov  hl,*sp+
 ;RAM:D45D 0F                          rrca
 ;RAM:D45E 0F                          rrca
+       srl  a,2
 ;RAM:D45F E6 3E                       and     #0x3E ; '>'                             ; block x2
+       andi a,>3E00
 ;RAM:D461 21 D1 6B                    ld      hl, #block_type_tbl
+       li   hl,block_type_tbl
 ;RAM:D464 CD F2 D4                    call    add_HL_A                                ; ptr entry
-;RAM:D467 7E                          ld      a, (hl)
+       bl   @add_HL_A
+;RAM:D467 7E                          ld      a, (hl)                                 ; little endian!
 ;RAM:D468 23                          inc     hl
 ;RAM:D469 66                          ld      h, (hl)
 ;RAM:D46A 6F                          ld      l, a                                    ; HL=ptr object
-;RAM:D46B
-;RAM:D46B             next_fg_obj_in_count:
+       mov  *hl,hl
+next_fg_obj_in_count:
 ;RAM:D46B E5                          push    hl
-;RAM:D46C
-;RAM:D46C             next_fg_obj_sprite:                                             ; sprite
+       mov  hl,*sp+
+next_fg_obj_sprite:                                                                   ; sprite
 ;RAM:D46C 7E                          ld      a, (hl)
 ;RAM:D46D 23                          inc     hl
 ;RAM:D46E FD 77 00                    ld      0(iy), a
+       movb *hl+,@0(iy)
 ;RAM:D471 7E                          ld      a, (hl)                                 ; width
 ;RAM:D472 23                          inc     hl
 ;RAM:D473 FD 77 04                    ld      4(iy), a
+       movb *hl+,@4(iy)
 ;RAM:D476 7E                          ld      a, (hl)                                 ; depth
 ;RAM:D477 23                          inc     hl
 ;RAM:D478 FD 77 05                    ld      5(iy), a
+       movb *hl+,@5(iy)
 ;RAM:D47B 7E                          ld      a, (hl)                                 ; height
 ;RAM:D47C 23                          inc     hl
 ;RAM:D47D FD 77 06                    ld      6(iy), a
+       movb *hl+,@6(iy)
 ;RAM:D480 7E                          ld      a, (hl)                                 ; flags
 ;RAM:D481 23                          inc     hl
 ;RAM:D482 FD 77 07                    ld      7(iy), a
+       movb *hl+,@7(ix)
 ;RAM:D485 DD 7E 08                    ld      a, 8(ix)
 ;RAM:D488 FD 77 08                    ld      8(iy), a
+       movb @8(ix),@8(iy)
 ;RAM:D48B 7E                          ld      a, (hl)                                 ; offsets
+       movb *hl,a
 ;RAM:D48C 07                          rlca
 ;RAM:D48D 07                          rlca
 ;RAM:D48E 07                          rlca
+       sla  a,3
 ;RAM:D48F E6 08                       and     #8                                      ; x1 in bit3
+       andi a,>0800
 ;RAM:D491 5F                          ld      e, a                                    ; E=x1*8
+       movb a,@e
 ;RAM:D492 7A                          ld      a, d                                    ; location (x/y/z)
+       movb d,a
 ;RAM:D493 07                          rlca
 ;RAM:D494 07                          rlca
 ;RAM:D495 07                          rlca
 ;RAM:D496 07                          rlca
+       sla  a,4
 ;RAM:D497 E6 70                       and     #0x70 ; 'p'                             ; x*16
+       andi a,>7000
 ;RAM:D499 83                          add     a, e                                    ; x*16+x1*8
+       ab   @e,a
 ;RAM:D49A C6 48                       add     a, #72                                  ; x*16+x1*8+72
+       ai   a,>4800
 ;RAM:D49C FD 77 01                    ld      1(iy), a                                ; store X
+       movb a,@1(iy)
 ;RAM:D49F 7E                          ld      a, (hl)                                 ; offsets
+       movb *hl,a
 ;RAM:D4A0 07                          rlca
 ;RAM:D4A1 07                          rlca
+       sla  a,2
 ;RAM:D4A2 E6 08                       and     #8                                      ; y1 in bit3
+       andi a,>0800
 ;RAM:D4A4 5F                          ld      e, a                                    ; E=y1*8
+       movb a,@e
 ;RAM:D4A5 7A                          ld      a, d                                    ; location (x/y/z)
+       movb d,a
 ;RAM:D4A6 07                          rlca
+       sla  a,1
 ;RAM:D4A7 E6 70                       and     #0x70 ; 'p'                             ; Y*16
+       andi a,>7000
 ;RAM:D4A9 83                          add     a, e                                    ; Y*16+Y1*8
+       ab   @e,a
 ;RAM:D4AA C6 48                       add     a, #72                                  ; Y*16+Y1*8+72
+       ai   a,>4800
 ;RAM:D4AC FD 77 02                    ld      2(iy), a                                ; store Y
+       movb a,@2(iy)
 ;RAM:D4AF 7A                          ld      a, d                                    ; location (x/y/z)
+       movb d,a
 ;RAM:D4B0 07                          rlca
 ;RAM:D4B1 07                          rlca
 ;RAM:D4B2 E6 03                       and     #3                                      ; z
 ;RAM:D4B4 87                          add     a, a
 ;RAM:D4B5 87                          add     a, a                                    ; z*4
+       andi a,>c000
+       srl  a,4
 ;RAM:D4B6 5F                          ld      e, a
+       movb a,@e
 ;RAM:D4B7 87                          add     a, a                                    ; z*8
+       ab   a,a
 ;RAM:D4B8 83                          add     a, e                                    ; z*12
+       ab   @e,a
 ;RAM:D4B9 86                          add     a, (hl)                                 ; z*12+z1*4+rubbish
 ;RAM:D4BA 23                          inc     hl
+       ab   *hl+,a
 ;RAM:D4BB E6 FC                       and     #0xFC ; '�'                             ; mask off rubbish bits
+       andi a,>fc00
 ;RAM:D4BD 5F                          ld      e, a
+       movb a,@e
 ;RAM:D4BE 3A AE 5B                    ld      a, (room_size_Z)
+       movb @room_size_Z,a
 ;RAM:D4C1 83                          add     a, e                                    ; z*12+z1*4+room_size_Z
+       ab   @e,a
 ;RAM:D4C2 FD 77 03                    ld      3(iy), a                                ; store Z
+       movb a,@3(iy)
 ;RAM:D4C5 C5                          push    bc
+       mov  bc,*sp+
 ;RAM:D4C6 01 09 00                    ld      bc, #9
+       li   bc,9
 ;RAM:D4C9 FD 09                       add     iy, bc
+       a    bc,iy
 ;RAM:D4CB 06 17                       ld      b, #23                                  ; 9+23=32 bytes/entry
-;RAM:D4CD
-;RAM:D4CD             loc_D4CD:                                                       ; zero byte
+       li   b,>1700
+loc_D4CD:                                                                             ; zero byte
 ;RAM:D4CD FD 36 00 00                 ld      0(iy), #0
 ;RAM:D4D1 FD 23                       inc     iy
+       movb @b00h,*iy+
 ;RAM:D4D3 10 F8                       djnz    loc_D4CD
+       sb   @b01h,b
+       jne  loc_D4CD
 ;RAM:D4D5 C1                          pop     bc
+       dect sp
+       mov  *sp,bc
 ;RAM:D4D6 7E                          ld      a, (hl)                                 ; next entry
+       movb *hl,a
 ;RAM:D4D7 A7                          and     a                                       ; done?
 ;RAM:D4D8 20 92                       jr      NZ, next_fg_obj_sprite                  ; no, loop
+       jne  next_fg_obj_sprite
 ;RAM:D4DA D1                          pop     de
+       dect sp
+       mov  *sp,de
 ;RAM:D4DB E1                          pop     hl
+       dect sp
+       mov  *sp,hl
 ;RAM:D4DC 05                          dec     b
+       sb   @b01h,b
 ;RAM:D4DD 28 0B                       jr      Z, loc_D4EA
+       jne  loc_D4EA
 ;RAM:D4DF 0D                          dec     c                                       ; done count blocks?
+       sb   @b01h,@c
 ;RAM:D4E0 CA 52 D4                    jp      Z, next_fg_obj                          ; yes, exit loop
+       jne  next_fg_obj
 ;RAM:D4E3 7E                          ld      a, (hl)
 ;RAM:D4E4 23                          inc     hl
+       movb *hl+,a
 ;RAM:D4E5 E5                          push    hl
+       mov  hl,*sp+
 ;RAM:D4E6 EB                          ex      de, hl
+       mov  de,r0
+       mov  hl,de
+       mov  r0,hl
 ;RAM:D4E7 57                          ld      d, a
+       movb a,d
 ;RAM:D4E8 18 81                       jr      next_fg_obj_in_count
-;RAM:D4EA             ; ---------------------------------------------------------------------------
-;RAM:D4EA
-;RAM:D4EA             loc_D4EA:
+       jmp  next_fg_obj_in_count
+* ---------------------------------------------------------------------------
+loc_D4EA:
 ;RAM:D4EA FD E5                       push    iy
 ;RAM:D4EC D1                          pop     de
+       mov  iy,de
 ;RAM:D4ED FD E1                       pop     iy
+       dect sp
+       mov  *sp,iy
 ;RAM:D4EF C3 E2 D3                    jp      zero_end_of_graphic_objs_tbl
        b    @zero_end_of_graphic_objs_tbl
 *
@@ -6298,7 +6371,7 @@ add_HL_A:
 * End of function add_HL_A
 *
 ;RAM:D4F9             ; =============== S U B R O U T I N E =======================================
-;RAM:D4F9
+;RAM:D4F9             ; Set HL = DE x A
 ;RAM:D4F9
 ;RAM:D4F9             HL_equals_DE_x_A:
 ;RAM:D4F9 C5                          push    bc
@@ -6314,7 +6387,12 @@ add_HL_A:
 ;RAM:D504             loc_D504:
 ;RAM:D504 10 F9                       djnz    loc_D4FF
 ;RAM:D506 C1                          pop     bc
+       clr  r0
+       movb a,@r0lb
+       mpy  de,r0
+       mov  r1,hl
 ;RAM:D507 C9                          ret
+       rt
 ;RAM:D507             ; End of function HL_equals_DE_x_A
 ;RAM:D507
 *
