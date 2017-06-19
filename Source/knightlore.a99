@@ -412,8 +412,8 @@ update_sprite_loop:
        mov  hl,*sp+
 ;RAM:AFD2 CD 49 CE                    call    save_2d_info
        bl   @save_2d_info
-jump_to_upd_object:                                             ; sprite graphic to render
-;RAM:AFD5 DD 6E 00                    ld      l, 0(ix)
+jump_to_upd_object:
+;RAM:AFD5 DD 6E 00                    ld      l, 0(ix)                                ; sprite graphic to render
        movb @0(ix),@l
 ;RAM:AFD8 01 96 B0                    ld      bc, #upd_sprite_jmp_tbl
        li   bc,upd_sprite_jmp_tbl
@@ -451,7 +451,7 @@ ret_from_tbl_jp:
 ;RAM:AFF6 01 08 61                    ld      bc, #font                               ; end of table
        li   bc,font
 ;RAM:AFF9 A7                          and     a
-*      Clear carry flag?
+*      Clear carry flag
 ;RAM:AFFA ED 42                       sbc     hl, bc                                  ; past end of table?
        s    bc,hl
 ;RAM:AFFC 30 02                       jr      NC, loc_B000                            ; yes, exit
@@ -3413,11 +3413,10 @@ fill_window:
 ;RAM:C525             ;
 ;RAM:C525             ; IX=graphics object table
 ;RAM:C525             ;    00=player sprite
-;RAM:C525
-;RAM:C525             ; =============== S U B R O U T I N E =======================================
-;RAM:C525
-;RAM:C525
-;RAM:C525             find_special_objs_here:
+*
+* =============== S U B R O U T I N E =======================================
+*
+find_special_objs_here:
 ;RAM:C525 11 48 5C                    ld      de, #special_objs_here
 ;RAM:C528 D9                          exx
 ;RAM:C529 FD 21 F2 6F                 ld      iy, #special_objs_tbl
@@ -3487,11 +3486,13 @@ fill_window:
 ;RAM:C586 A7                          and     a
 ;RAM:C587 ED 52                       sbc     hl, de                                  ; past end of table (max=2)
 ;RAM:C589 C8                          ret     Z                                       ; yes, exit
+       rt
 ;RAM:C58A 06 20                       ld      b, #32
 ;RAM:C58C CD 08 D5                    call    zero_DE                                 ; zero next entry
 ;RAM:C58F 18 F2                       jr      loc_C583                                ; next entry
-;RAM:C58F             ; End of function find_special_objs_here
-;RAM:C58F
+*
+* End of function find_special_objs_here
+*
 ;RAM:C591             ; updates special objects table with current data (coords etc)
 ;RAM:C591             ; - traverses special_objs_here table
 ;RAM:C591             ; - writes to special_objs_tbl
@@ -3503,11 +3504,10 @@ fill_window:
 ;RAM:C591             ;   and (again) writes to ROM @$0000
 ;RAM:C591             ; * VERIFIED on the ZX Spectrum emulator!
 ;RAM:C591             ;
-;RAM:C591
-;RAM:C591             ; =============== S U B R O U T I N E =======================================
-;RAM:C591
-;RAM:C591
-;RAM:C591             update_special_objs:
+*
+* =============== S U B R O U T I N E =======================================
+*
+update_special_objs:
 ;RAM:C591 FD 21 48 5C                 ld      iy, #special_objs_here
 ;RAM:C595
 ;RAM:C595             loc_C595:                                                       ; get graphic no.
@@ -3541,8 +3541,10 @@ fill_window:
 ;RAM:C5C3 ED 42                       sbc     hl, bc                                  ; past end of table?
 ;RAM:C5C5 38 CE                       jr      C, loc_C595                             ; no, loop
 ;RAM:C5C7 C9                          ret
-;RAM:C5C7             ; End of function update_special_objs
-;RAM:C5C7
+       rt
+*
+* End of function update_special_objs
+*
 ;RAM:C5C8             ; ---------------------------------------------------------------------------
 ;RAM:C5C8             ; ghost
 ;RAM:C5C8
@@ -5633,35 +5635,56 @@ init_start_location:
 * =============== S U B R O U T I N E =======================================
 *
 build_screen_objects:
+       movb r11,*sp+
 ;RAM:D1E6 3A B2 5B                    ld      a, (not_1st_screen)
+       movb @not_1st_screen,a
 ;RAM:D1E9 A7                          and     a                                       ; 1st screen of the game?
 ;RAM:D1EA 28 03                       jr      Z, loc_D1EF                             ; yes, skip updating special objects
+       jeq  loc_D1EF
 ;RAM:D1EC CD 91 C5                    call    update_special_objs                     ; save state in special_objs_tbl
+       bl   @update_special_objs
 ;RAM:D1EF
-;RAM:D1EF             loc_D1EF:
+loc_D1EF:
 ;RAM:D1EF CD 67 D5                    call    clear_scrn_buffer
+       bl   @clear_scrn_buffer
 ;RAM:D1F2 CD C6 D3                    call    retrieve_screen
+       bl   @retrieve_screen
 ;RAM:D1F5 CD 25 C5                    call    find_special_objs_here                  ; find special objects in new room
+       bl   @find_special_objs_here
 ;RAM:D1F8 CD 20 D3                    call    adjust_plyr_xyz_for_room_size
-;RAM:D1FB AF                          xor     a                                       ; flag not moving
-;RAM:D1FC 32 AF 5B                    ld      (portcullis_moving), a
+       bl   @adjust_plyr_xyz_for_room_size
+;RAM:D1FB AF                          xor     a
+       clr  a
+;RAM:D1FC 32 AF 5B                    ld      (portcullis_moving), a                  ; flag not moving
+       movb a,@portcullis_moving
 ;RAM:D1FF 32 B0 5B                    ld      (portcullis_move_cnt), a
+       movb a,@portcullis_move_cnt
 ;RAM:D202 32 BD 5B                    ld      (ball_bounce_height), a
+       movb a,@ball_bounce_height
 ;RAM:D205 32 BF 5B                    ld      (is_spike_ball_dropping), a
+       movb a,@is_spike_ball_dropping
 ;RAM:D208 3E 01                       ld      a, #1                                   ; flag rendering of status information
+       movb @b01h,a
 ;RAM:D20A 32 B7 5B                    ld      (render_status_info), a
+       movb a,@render_status_info
 ;RAM:D20D 3A 10 5C                    ld      a, (graphic_objs_tbl+8)                 ; plyr_spr_1 screen
+       movb @graphic_objs_tbl+8,a
 ;RAM:D210 E6 01                       and     #1
+       andi a,>0100
 ;RAM:D212 32 C0 5B                    ld      (disable_spike_ball_drop), a
+       movb a,@disable_spike_ball_drop
 ;RAM:D215 CD 19 D2                    call    flag_room_visited
+       bl   @flag_room_visited
 ;RAM:D218 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function build_screen_objects
 *
-;RAM:D219             ; ---------------------------------------------------------------------------
-;RAM:D219
-;RAM:D219             flag_room_visited:                                              ; plyr_spr_1_screen
+* ---------------------------------------------------------------------------
+*
+flag_room_visited:                                              ; plyr_spr_1_screen
 ;RAM:D219 3A 10 5C                    ld      a, (graphic_objs_tbl+8)
 ;RAM:D21C 4F                          ld      c, a
 ;RAM:D21D 0F                          rrca
@@ -5684,9 +5707,10 @@ build_screen_objects:
 ;RAM:D235 C6          byte_D235:      .db 0xC6                                        ; flag as visited?
 ;RAM:D236             ; ---------------------------------------------------------------------------
 ;RAM:D236 C9                          ret
-;RAM:D237
-;RAM:D237             ; =============== S U B R O U T I N E =======================================
-;RAM:D237
+       rt
+*
+* =============== S U B R O U T I N E =======================================
+*
 ;RAM:D237
 ;RAM:D237             transfer_sprite:
 ;RAM:D237 7E                          ld      a, (hl)                                 ; sprite index
@@ -5818,11 +5842,9 @@ colour_sun_moon:
 *
 * End of function colour_sun_moon
 *
-;RAM:D320
-;RAM:D320             ; =============== S U B R O U T I N E =======================================
-;RAM:D320
-;RAM:D320
-;RAM:D320             adjust_plyr_xyz_for_room_size:
+* =============== S U B R O U T I N E =======================================
+*
+adjust_plyr_xyz_for_room_size:
 ;RAM:D320 3A AB 5B                    ld      a, (room_size_X)
 ;RAM:D323 D6 02                       sub     #2
 ;RAM:D325 6F                          ld      l, a
@@ -5840,7 +5862,8 @@ colour_sun_moon:
 ;RAM:D33B 3C                          inc     a                                       ; -1?
 ;RAM:D33C 28 01                       jr      Z, enter_arch_s                         ; yes, go
 ;RAM:D33E C9                          ret
-;RAM:D33F             ; ---------------------------------------------------------------------------
+       rt
+* ---------------------------------------------------------------------------
 ;RAM:D33F
 ;RAM:D33F             enter_arch_s:
 ;RAM:D33F 0E C8                       ld      c, #200
@@ -5948,119 +5971,203 @@ colour_sun_moon:
 ;RAM:D3C6             ; Populates graphics_object_tbl
 ;RAM:D3C6             ;
 ;RAM:D3C6             ; IX=player object
-;RAM:D3C6
-;RAM:D3C6             ; =============== S U B R O U T I N E =======================================
-;RAM:D3C6
-;RAM:D3C6
-;RAM:D3C6             retrieve_screen:
+*
+* =============== S U B R O U T I N E =======================================
+*
+retrieve_screen:
+       mov  r11,*sp+
 ;RAM:D3C6 11 88 5C                    ld      de, #other_objs_here
+       li   de,other_objs_here
 ;RAM:D3C9 01 D1 6B                    ld      bc, #block_type_tbl                     ; end of location table
+       li   bc,block_type_tbl
 ;RAM:D3CC 21 51 62                    ld      hl, #location_tbl
-;RAM:D3CF
-;RAM:D3CF             find_screen:                                                    ; get location ID
+       li   hl,location_tbl
+find_screen:                                                                          ; get location ID
 ;RAM:D3CF 7E                          ld      a, (hl)
 ;RAM:D3D0 23                          inc     hl
+       movb *hl+,a
 ;RAM:D3D1 DD BE 08                    cp      8(ix)                                   ; same as player (current) screen?
+       cb   a,@8(ix)
 ;RAM:D3D4 28 1A                       jr      Z, found_screen                         ; yes, exit
+       jeq  found_screen
 ;RAM:D3D6 7E                          ld      a, (hl)                                 ; get entry size
+       movb *hl,a
 ;RAM:D3D7 CD F2 D4                    call    add_HL_A                                ; ptr next entry
+       bl   @add_HL_A
 ;RAM:D3DA A7                          and     a
+*      Clear carry flag
 ;RAM:D3DB ED 42                       sbc     hl, bc                                  ; end of location table?
+       s    bc,hl
 ;RAM:D3DD 30 03                       jr      NC, zero_end_of_graphic_objs_tbl        ; yes, exit
+       jnc  zero_end_of_graphic_objs_tbl
 ;RAM:D3DF 09                          add     hl, bc
+       a    bc,hl
 ;RAM:D3E0 18 ED                       jr      find_screen                             ; loop
+       jmp  find_screen
 ;RAM:D3E2             ; ---------------------------------------------------------------------------
 ;RAM:D3E2
-;RAM:D3E2             zero_end_of_graphic_objs_tbl:                                   ; start of program data
-;RAM:D3E2 21 08 61                    ld      hl, #font
+zero_end_of_graphic_objs_tbl:
+;RAM:D3E2 21 08 61                    ld      hl, #font                               ; start of program data
+       li   hl,font
 ;RAM:D3E5 A7                          and     a
+*      Clear carry flag
 ;RAM:D3E6 ED 52                       sbc     hl, de                                  ; done?
+       s    de,hl
 ;RAM:D3E8 C8                          ret     Z                                       ; yes, exit
+       jne  !
+       dect sp
+       mov  *sp,r11
+       rt
 ;RAM:D3E9 06 20                       ld      b, #32                                  ; 32 bytes to clear
+!      li   b,>2000
 ;RAM:D3EB CD 08 D5                    call    zero_DE
+       bl   @zero_DE
 ;RAM:D3EE 18 F2                       jr      zero_end_of_graphic_objs_tbl
-;RAM:D3F0             ; ---------------------------------------------------------------------------
-;RAM:D3F0
-;RAM:D3F0             found_screen:                                                   ; get entry size
-;RAM:D3F0 46                          ld      b, (hl)
+       jmp  zero_end_of_graphic_objs_tbl
+*
+* ---------------------------------------------------------------------------
+*
+found_screen:
+;RAM:D3F0 46                          ld      b, (hl)                                 ; get entry size
 ;RAM:D3F1 23                          inc     hl
+       movb *hl+,b
 ;RAM:D3F2 7E                          ld      a, (hl)                                 ; get attributes
+       movb *hl,a
 ;RAM:D3F3 E6 07                       and     #7                                      ; mask off unused bits
+       andi a,>0700
 ;RAM:D3F5 F6 40                       or      #0x40 ; '@'                             ; bright ON
+       ori  a,>4000
 ;RAM:D3F7 32 AD 5B                    ld      (curr_room_attrib), a                   ; store
+       movb a,@curr_room_attrib
 ;RAM:D3FA D5                          push    de
+       mov  de,*sp+
 ;RAM:D3FB EB                          ex      de, hl                                  ; DE=attributes
+       mov  de,r0
+       mov  hl,de
+       mov  r0,hl
 ;RAM:D3FC 1A                          ld      a, (de)                                 ; get attributes
 ;RAM:D3FD 13                          inc     de                                      ; ptr background type
+       movb *de+,a
 ;RAM:D3FE 0F                          rrca
 ;RAM:D3FF 0F                          rrca
 ;RAM:D400 0F                          rrca
+       srl  a,3
 ;RAM:D401 E6 1F                       and     #0x1F                                   ; get room size
+       andi a,>1f00
 ;RAM:D403 4F                          ld      c, a                                    ; C=room size
+       movb a,@c
 ;RAM:D404 87                          add     a, a
+       ab   a,a
 ;RAM:D405 81                          add     a, c                                    ; A=room size x3
+       ab   @c,a
 ;RAM:D406 21 48 62                    ld      hl, #room_size_tbl
+       li   hl,room_size_tbl
 ;RAM:D409 CD F2 D4                    call    add_HL_A                                ; ptr entry
+       bl   @add_HL_A
 ;RAM:D40C 7E                          ld      a, (hl)                                 ; room size X
 ;RAM:D40D 23                          inc     hl
+       movb *hl+,a
 ;RAM:D40E 32 AB 5B                    ld      (room_size_X), a
+       movb a,@room_size_X
 ;RAM:D411 7E                          ld      a, (hl)                                 ; room size Y
 ;RAM:D412 23                          inc     hl
+       movb *hl+,a
 ;RAM:D413 32 AC 5B                    ld      (room_size_Y), a
+       movb a,@room_size_Y
 ;RAM:D416 7E                          ld      a, (hl)                                 ; room size Z
+       movb *hl,a
 ;RAM:D417 32 AE 5B                    ld      (room_size_Z), a
+       movb a,@room_size_Z
 ;RAM:D41A 05                          dec     b
 ;RAM:D41B 05                          dec     b                                       ; adjust entry size
+       sb   @b02h,@b
 ;RAM:D41C EB                          ex      de, hl
+       mov  de,hl
 ;RAM:D41D D1                          pop     de
-;RAM:D41E
-;RAM:D41E             next_bg_obj:                                                    ; get background type
-;RAM:D41E 7E                          ld      a, (hl)
+       dect sp
+       mov  *sp,de
+next_bg_obj:
+;RAM:D41E 7E                          ld      a, (hl)                                 ; get background type
 ;RAM:D41F 23                          inc     hl                                      ; next entry
+       movb *hl+,a
 ;RAM:D420 FE FF                       cp      #0xFF                                   ; done all background types?
+       cb   a,@bffh
 ;RAM:D422 28 28                       jr      Z, find_fg_objs                         ; yes, exit
+       jeq  find_fg_objs
 ;RAM:D424 C5                          push    bc
+       mov  bc,*sp+
 ;RAM:D425 E5                          push    hl
+       mov  hl,*sp+
 ;RAM:D426 6F                          ld      l, a
 ;RAM:D427 26 00                       ld      h, #0
+       clr  hl
+       movb a,@l
 ;RAM:D429 29                          add     hl, hl                                  ; word offset
+       a    hl,hl
 ;RAM:D42A 01 E2 6C                    ld      bc, #background_type_tbl
+       li   bc,background_type_tbl
 ;RAM:D42D 09                          add     hl, bc                                  ; ptr entry
+       a    bc,hl
 ;RAM:D42E 7E                          ld      a, (hl)
 ;RAM:D42F 23                          inc     hl
 ;RAM:D430 66                          ld      h, (hl)
 ;RAM:D431 6F                          ld      l, a                                    ; HL=ptr to background object
-;RAM:D432
-;RAM:D432             next_bg_obj_sprite:                                             ; 8 bytes/entry
+       mov  *hl,hl
+next_bg_obj_sprite:                                                                   ; 8 bytes/entry
 ;RAM:D432 01 08 00                    ld      bc, #8
+       li   bc,8
 ;RAM:D435 ED B0                       ldir                                            ; copy to graphic_object_tbl
+!      movb *hl+,*de+
+       dec  bc
+       jne  -!
 ;RAM:D437 DD 7E 08                    ld      a, 8(ix)                                ; player (current) screen
+       movb @8(ix),a
 ;RAM:D43A 12                          ld      (de), a                                 ; store
 ;RAM:D43B 13                          inc     de
+       movb a,*de+
 ;RAM:D43C 06 17                       ld      b, #23
+       li   b,>1700
 ;RAM:D43E CD 08 D5                    call    zero_DE                                 ; 8+1+23 = 32 bytes/entry
+       bl   @zero_DE
 ;RAM:D441 7E                          ld      a, (hl)
+       movb *hl,a
 ;RAM:D442 A7                          and     a                                       ; done object?
 ;RAM:D443 20 ED                       jr      NZ, next_bg_obj_sprite                  ; no, loop
+       jne  next_bg_obj_sprite
 ;RAM:D445 E1                          pop     hl
+       dect sp
+       mov  *sp,hl
 ;RAM:D446 C1                          pop     bc
+       dect bc
+       mov  *sp,bc
 ;RAM:D447 10 D5                       djnz    next_bg_obj                             ; done location? no, loop
+       sb   @b01h,b
+       jne  next_bg_obj
 ;RAM:D449 C3 E2 D3                    jp      zero_end_of_graphic_objs_tbl
-;RAM:D44C             ; ---------------------------------------------------------------------------
-;RAM:D44C
-;RAM:D44C             find_fg_objs:                                                   ; adjust bytes remaining
+       b    @zero_end_of_graphic_objs_tbl
+*
+* ---------------------------------------------------------------------------
+*
+find_fg_objs:                                                                         ; adjust bytes remaining
 ;RAM:D44C 05                          dec     b
+       sb    @b01h,b
 ;RAM:D44D FD E5                       push    iy
+       mov  iy,*sp+
 ;RAM:D44F D5                          push    de                                      ; graphic object table
 ;RAM:D450 FD E1                       pop     iy                                      ; IY = graphic object table
-;RAM:D452
-;RAM:D452             next_fg_obj:                                                    ; block/count
-;RAM:D452 7E                          ld      a, (hl)
+       mov  de,iy
+next_fg_obj:
+;RAM:D452 7E                          ld      a, (hl)                                 ; block/count
+       movb *hl,a
 ;RAM:D453 E6 07                       and     #7                                      ; count
+       andi a,>0700
 ;RAM:D455 3C                          inc     a                                       ; adjust to 1-8
+       ab   @b01h,a
 ;RAM:D456 4F                          ld      c, a                                    ; C = count
+       movb a,@c
 ;RAM:D457 7E                          ld      a, (hl)                                 ; block/count
 ;RAM:D458 23                          inc     hl
+       movb *hl+,a
 ;RAM:D459 05                          dec     b                                       ; adjust bytes remaining
 ;RAM:D45A 56                          ld      d, (hl)                                 ; location (x/y/z)
 ;RAM:D45B 23                          inc     hl
@@ -6170,22 +6277,26 @@ colour_sun_moon:
 ;RAM:D4EC D1                          pop     de
 ;RAM:D4ED FD E1                       pop     iy
 ;RAM:D4EF C3 E2 D3                    jp      zero_end_of_graphic_objs_tbl
-;RAM:D4EF             ; End of function retrieve_screen
-;RAM:D4EF
-;RAM:D4F2
-;RAM:D4F2             ; =============== S U B R O U T I N E =======================================
-;RAM:D4F2
-;RAM:D4F2
-;RAM:D4F2             add_HL_A:
+       b    @zero_end_of_graphic_objs_tbl
+*
+* End of function retrieve_screen
+*
+* =============== S U B R O U T I N E =======================================
+*
+add_HL_A:
 ;RAM:D4F2 85                          add     a, l
 ;RAM:D4F3 6F                          ld      l, a
 ;RAM:D4F4 7C                          ld      a, h
 ;RAM:D4F5 CE 00                       adc     a, #0
 ;RAM:D4F7 67                          ld      h, a
+       clr  r0
+       mov  a,@r0lb
+       a    r0,hl
 ;RAM:D4F8 C9                          ret
-;RAM:D4F8             ; End of function add_HL_A
-;RAM:D4F8
-;RAM:D4F9
+       rt
+*
+* End of function add_HL_A
+*
 ;RAM:D4F9             ; =============== S U B R O U T I N E =======================================
 ;RAM:D4F9
 ;RAM:D4F9
@@ -6211,10 +6322,14 @@ colour_sun_moon:
 *
 zero_DE:
 ;RAM:D508 AF                          xor     a
+       clr  a
 fill_DE:
 ;RAM:D509 12                          ld      (de), a
 ;RAM:D50A 13                          inc     de
+       movb a,*de+
 ;RAM:D50B 10 FC                       djnz    fill_DE
+       sb   @b01h,b
+       jne  fill_DE
 ;RAM:D50D C9                          ret
        rt
 *
@@ -6377,8 +6492,8 @@ update_screen:
 ;RAM:D579 D5                          push    de
 ;RAM:D57A E5                          push    hl
 ;RAM:D57B
-;RAM:D57B             loc_D57B:                                                       ; source byte
-;RAM:D57B 7E                          ld      a, (hl)
+;RAM:D57B             loc_D57B:
+;RAM:D57B 7E                          ld      a, (hl)                                 ; source byte
 ;RAM:D57C 12                          ld      (de), a                                 ; copy to destination
 ;RAM:D57D 36 00                       ld      (hl), #0                                ; wipe source byte
 ;RAM:D57F 23                          inc     hl                                      ; next source location
@@ -7298,6 +7413,8 @@ vdpwr3 b    *r11
 * Byte constants
 b00h   byte >00
 b01h   byte >01
+b02h   byte >02
 b20h   byte >20
+bffh   byte >ff
 
        end  start
