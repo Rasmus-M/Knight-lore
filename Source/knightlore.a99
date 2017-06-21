@@ -64,7 +64,8 @@ R6LB   EQU  WRKSP+13
 R7LB   EQU  WRKSP+15
 R8LB   EQU  WRKSP+17
 R9LB   EQU  WRKSP+19
-STACK  EQU  >8320                      ; Stack grows up
+WRKSP2 EQU  WRKSP+>20
+STACK  EQU  WRKSP2+>20                      ; Stack grows up
 PADVAR EQU  STACK+>40
 
 **
@@ -3160,8 +3161,8 @@ display_frame:                                                  ; 31 lines, 6 by
 ;RAM:C432
 ;RAM:C432
 ;RAM:C432             blit_2x8:
-;RAM:C432 CD 26 D8                    call    calc_vram_addr
-;RAM:C435 CD 11 D8                    call    calc_vidbuf_addr
+;RAM:C432 CD 26 D8                    call    calc_vram_addr            ; dest
+;RAM:C435 CD 11 D8                    call    calc_vidbuf_addr          ; source
 ;RAM:C438 69                          ld      l, c
 ;RAM:C439 60                          ld      h, b
 ;RAM:C43A 01 02 08                    ld      bc, #0x802
@@ -6598,9 +6599,48 @@ update_screen:
 ;RAM:D59A C1                          pop     bc
 ;RAM:D59B 0D                          dec     c                                       ; dec line counter
 ;RAM:D59C 20 DA                       jr      NZ, loc_D578                            ; loop through all lines
+       lwpi wrksp2
+       li   r0,PTRNTB
+       bl   @vwad
+       li   r0,VDPWD
+       li   r1,vidbuf+>1800-32
+       li   r2,24
+updscr1:
+       li   r3,32
+       mov  r1,r5
+       s    r3,r1
+       mov  r1,r6
+       s    r3,r1
+       mov  r1,r7
+       s    r3,r1
+       mov  r1,r8
+       s    r3,r1
+       mov  r1,r9
+       s    r3,r1
+       mov  r1,r10
+       s    r3,r1
+       mov  r1,r11
+       s    r3,r1
+       mov  r1,r12
+       s    r3,r1
+updscr2:
+       movb *r5+,*r0
+       movb *r6+,*r0
+       movb *r7+,*r0
+       movb *r8+,*r0
+       movb *r9+,*r0
+       movb *r10+,*r0
+       movb *r11+,*r0
+       movb *r12+,*r0
+       dec  r3
+       jne  updscr2
+       dec  r2
+       jne  updscr1
+       lwpi wrksp
 ;RAM:D59E C9                          ret
-;RAM:D59E             ; End of function update_screen
-;RAM:D59E
+       rt
+*
+* End of function update_screen
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -6752,6 +6792,8 @@ render_dynamic_objects:
 *
 * =============== S U B R O U T I N E =======================================
 *
+* Copy a section of the video buffer to the screen
+*
 * HL=source
 * DE=destination
 * B=lines
@@ -6841,6 +6883,8 @@ loc_D6BE:
 * End of function build_lookup_tbls
 *
 * =============== S U B R O U T I N E =======================================
+*
+* Calculate 2D coordinates from 3D coordinates
 *
 calc_pixel_XY:
 ;RAM:D6C9 DD 7E 01                    ld      a, 1(ix)                                ; X
@@ -7195,18 +7239,23 @@ loc_D800:
 *
 * =============== S U B R O U T I N E =======================================
 *
+* b: pixel Y
+* c: pixel X
+*
 calc_vidbuf_addr:
 ;RAM:D811 E5                          push    hl
-;RAM:D812 CB 38                       srl     b
-;RAM:D814 CB 19                       rr      c
-;RAM:D816 CB 38                       srl     b
-;RAM:D818 CB 19                       rr      c
-;RAM:D81A CB 38                       srl     b
-;RAM:D81C CB 19                       rr      c
+;RAM:D812 CB 38                       srl     b                                       ; y >> 1, bit 0 to Carry
+;RAM:D814 CB 19                       rr      c                                       ; Carry to bit 7, x >> 1
+;RAM:D816 CB 38                       srl     b                                       ;
+;RAM:D818 CB 19                       rr      c                                       ;
+;RAM:D81A CB 38                       srl     b                                       ;
+;RAM:D81C CB 19                       rr      c                                       ;
+       srl  bc,3
 ;RAM:D81E 21 F3 D8                    ld      hl, #vidbuf                             ; bitmap buffer
 ;RAM:D821 09                          add     hl, bc                                  ; calculate bitmap memory address
 ;RAM:D822 4D                          ld      c, l
 ;RAM:D823 44                          ld      b, h                                    ; BC = bitmap memory address
+       ai   bc,vidbuf
 ;RAM:D824 E1                          pop     hl
 ;RAM:D825 C9                          ret
        rt
