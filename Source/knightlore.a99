@@ -132,10 +132,10 @@ old_input_method:
 *
 * Variables from here are zeroed each game
 *
+tmp_SP:                                ; Swapped tmp_SP and objs_wiped_cnt
+       data 0
 objs_wiped_cnt:
        byte 0
-tmp_SP:
-       data 0
 room_size_X:
        byte 0
 room_size_Y:
@@ -198,6 +198,8 @@ rising_blocks_z:
        byte 0
 num_scrns_visited:
        byte 0
+audio_played:                          ; Moved from after render_obj_2
+       byte 0
 gfxbase_8x8:
        data 0
 percent_msw:
@@ -210,8 +212,6 @@ render_obj_1:
        data 0
 render_obj_2:
        data 0
-audio_played:
-       byte 0
 debounce_5:
        byte 0
 cant_drop:
@@ -346,7 +346,7 @@ start:
 *
 start_menu:                                                                           ; location to clear
 ;RAM:AF7F 21 A8 5B                    ld      hl, #objs_wiped_cnt
-       mov  @objs_wiped_cnt,hl
+       li   hl,objs_wiped_cnt
 ;RAM:AF82 01 60 05                    ld      bc, #0x560                              ; # bytes to clear
        li   bc,>560
 ;RAM:AF85 CD 3A D5                    call    clr_mem
@@ -432,7 +432,7 @@ jump_to_tbl_entry:
 ;RAM:AFE2 6F                          ld      l, a                                    ; HL=jump address
        mov  *hl,hl
 ;RAM:AFE3 E9                          jp      (hl)                                    ; go
-       li   hl,no_update
+       li   hl,no_update               ; TODO: remove
        b    *hl
 *
 * END OF FUNCTION CHUNK FOR main
@@ -2898,10 +2898,11 @@ upd_104_to_110:
 ;RAM:C27A C3 F2 D4                    jp      add_HL_A
 ;RAM:C27A             ; End of function ret_next_obj_required
 ;RAM:C27A
-;RAM:C27A             ; ---------------------------------------------------------------------------
-;RAM:C27D 00 01 02 03+objects_required:.db 0, 1, 2, 3, 4, 5, 6, 3
-;RAM:C27D 04 05 06 03+                .db 5, 0, 6, 1, 2, 4
-;RAM:C28B             ; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
+objects_required:
+       byte 0, 1, 2, 3, 4, 5, 6, 3
+       byte 5, 0, 6, 1, 2, 4
+* ---------------------------------------------------------------------------
 ;RAM:C28B             ; special objects
 ;RAM:C28B
 upd_96_to_102:
@@ -7075,12 +7076,13 @@ print_sprite:
        mov  r11,*sp+
 ;RAM:D718 CD EF D6                    call    flip_sprite
 print_sprite_1:
-       bl   @flip_sprite
+;       bl   @flip_sprite              ; TODO: enable
 ;RAM:D71B DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
        movb @26(ix),a
 ;RAM:D71E E6 07                       and     #7                                      ; bit offset?
        andi a,>0700
 ;RAM:D720 28 4D                       jr      Z, loc_D76F                             ; no, skip
+       jmp  loc_D76F                   ; TODO: remove
        jeq  loc_D76F
 ;RAM:D722 07                          rlca                                            ; 0x02, 0x04, ..., 0x0e
        sla  a,1
@@ -7088,7 +7090,7 @@ print_sprite_1:
        andi a,>0e00
 ;RAM:D725 F6 F0                       or      #0xF0 ; '�'                            ; 0xf2, 0xf4, ..., 0xfe
        ori  a,>f000
-;RAM:D727 67                          ld      h, a                                    ; hl = bit shift lookup table base
+;RAM:D727 67                          ld      h, a                                    ; hl = bit shift lookup table address
        movb a,h
 ;RAM:D728 1A                          ld      a, (de)                                 ; sprite width
 ;RAM:D729 13                          inc     de
@@ -7117,99 +7119,151 @@ print_sprite_1:
        ai   a,>5000
 loc_D73C:                                                                             ; self-modifying code
 ;RAM:D73C 32 AD D7                    ld      (loc_D7AC+1), a                         ; set jump offset
+       movb a,@loc_D7AC+1
 ;RAM:D73F 78                          ld      a, b                                    ; width (or width+1)
+       movb b,a
 ;RAM:D740 2F                          cpl                                             ; -(width+1)
+       inv  a
 ;RAM:D741 C6 22                       add     a, #0x22 ; '"'                          ; 34-(width+1)=33-width
+       ab   @b22h,a
 ;RAM:D743 32 01 D8                    ld      (loc_D800+1), a                         ; self-modifying code
+       movb a,@loc_D800+2              ; patch LSB
 ;RAM:D746 1A                          ld      a, (de)                                 ; get sprite height
 ;RAM:D747 13                          inc     de
+       movb *de+,a
 ;RAM:D748 DD 77 19                    ld      25(ix), a                               ; height_lines
+       movb a,@25(ix)
 ;RAM:D74B DD 86 1B                    add     a, 27(ix)                               ; add Y
+       ab   @27(ix),a
 ;RAM:D74E D6 C0                       sub     #192                                    ; off bottom of screen?
+       sb   @bc0h,a
 ;RAM:D750 38 08                       jr      C, loc_D75A                             ; no, skip
+       joc   loc_D75A                  ; TODO
 ;RAM:D752 ED 44                       neg                                             ; -lines outside screen
+       neg  a
+       ab   @b01h,a
 ;RAM:D754 DD 86 19                    add     a, 25(ix)                               ; height-lines outside screen
+       ab   @25(ix),a
 ;RAM:D757 DD 77 19                    ld      25(ix), a                               ; store actual height_lines
+       movb a,@25(ix)
 ;RAM:D75A
-loc_D75A:                                                                             ; pixel X
-;RAM:D75A DD 4E 1A                    ld      c, 26(ix)
+loc_D75A:
+;RAM:D75A DD 4E 1A                    ld      c, 26(ix)                               ; pixel X
+       movb @26(ix),@c
 ;RAM:D75D DD 46 1B                    ld      b, 27(ix)                               ; pixel Y
+       movb @27(ix),b
 ;RAM:D760 CD 11 D8                    call    calc_vidbuf_addr                        ; bc = address
+       bl   @calc_vidbuf_addr
 ;RAM:D763 ED 73 A9 5B                 ld      (tmp_SP), sp                            ; store stack pointer
+       mov  sp,@tmp_SP
 ;RAM:D767 EB                          ex      de, hl
 ;RAM:D768 F9                          ld      sp, hl                                  ; sp=source data address
 ;RAM:D769 EB                          ex      de, hl
+       mov  hl,sp
 ;RAM:D76A DD 7E 19                    ld      a, 25(ix)                               ; height_lines
+       movb @25(ix),a
 ;RAM:D76D 18 3B                       jr      loc_D7AA
+       jmp  loc_D7AA
 ;RAM:D76F             ; ---------------------------------------------------------------------------
 * No pixel offset
 loc_D76F:
 ;RAM:D76F 1A                          ld      a, (de)                                 ; sprite width
+       movb *de+,a
 ;RAM:D770 13                          inc     de
 ;RAM:D771 E6 0F                       and     #0xF                                    ; mod 16
+       andi a,>0f00
 ;RAM:D773 DD 77 18                    ld      24(ix), a                               ; width_bytes
+       movb a,@24(ix)
 ;RAM:D776 47                          ld      b, a                                    ; keep width
+       movb a,b
 ;RAM:D777 87                          add     a, a                                    ; multiply by 8
 ;RAM:D778 87                          add     a, a
 ;RAM:D779 87                          add     a, a                                    ; 8, 16, 24, 32, 40
+       sla  a,3
 ;RAM:D77A ED 44                       neg                                             ; -8, -16, -24, -32, -40
+       inv  a
+       ab   @b01h,a
 ;RAM:D77C D6 06                       sub     #6                                      ; -14, -20, -30, -38, -46
+       ab   @b0ah,a                    ; 10 in this code
+* TMS9900 offsets are in words
+       sra  a,1
 ;RAM:D77E 18 BC                       jr      loc_D73C                                ; to self modifying code
+       jmp  loc_D73C
 ;RAM:D780             ; ---------------------------------------------------------------------------
-* For sprites with no but offset, 8 bytes per routine
+* For sprites with no bit offset, 8 bytes per routine
 * -- 1st byte --
 ;RAM:D780 D1                          pop     de                                      ; get pattern d and mask e
+       mov  *sp+,de
 ;RAM:D781 0A                          ld      a, (bc)                                 ; get existing byte
 ;RAM:D782 2F                          cpl                                             ; invert
 ;RAM:D783 B3                          or      e                                       ; apply mask
 ;RAM:D784 2F                          cpl                                             ; invert
+       szcb d,*bc
 ;RAM:D785 B2                          or      d                                       ; apply pattern
 ;RAM:D786 02                          ld      (bc), a                                 ; store
 ;RAM:D787 03                          inc     bc                                      ; next destination address
+       socb  @e,*bc+
 * -- 2nd byte --
 ;RAM:D788 D1                          pop     de
+       mov  *sp+,de
 ;RAM:D789 0A                          ld      a, (bc)
 ;RAM:D78A 2F                          cpl
 ;RAM:D78B B3                          or      e
 ;RAM:D78C 2F                          cpl
+       szcb d,*bc
 ;RAM:D78D B2                          or      d
 ;RAM:D78E 02                          ld      (bc), a
 ;RAM:D78F 03                          inc     bc
+       socb  @e,*bc+
 loc_D790:
 * -- 3rd byte --
 ;RAM:D790 D1                          pop     de
+       mov  *sp+,de
 ;RAM:D791 0A                          ld      a, (bc)
 ;RAM:D792 2F                          cpl
 ;RAM:D793 B3                          or      e
 ;RAM:D794 2F                          cpl
+       szcb d,*bc
 ;RAM:D795 B2                          or      d
 ;RAM:D796 02                          ld      (bc), a
 ;RAM:D797 03                          inc     bc
+       socb  @e,*bc+
 * -- 4th byte --
 ;RAM:D798 D1                          pop     de
+       mov  *sp+,de
 ;RAM:D799 0A                          ld      a, (bc)
 ;RAM:D79A 2F                          cpl
 ;RAM:D79B B3                          or      e
 ;RAM:D79C 2F                          cpl
+       szcb d,*bc
 ;RAM:D79D B2                          or      d
 ;RAM:D79E 02                          ld      (bc), a
 ;RAM:D79F 03                          inc     bc
+       socb  @e,*bc+
 * -- 5th byte --
 ;RAM:D7A0 D1                          pop     de
+       mov  *sp+,de
 ;RAM:D7A1 0A                          ld      a, (bc)
 ;RAM:D7A2 2F                          cpl
 ;RAM:D7A3 B3                          or      e
 ;RAM:D7A4 2F                          cpl
+       szcb d,*bc
 ;RAM:D7A5 B2                          or      d
 ;RAM:D7A6 02                          ld      (bc), a
+       socb  @e,*bc
+* ---------------------------------------------------------------------------
 ;RAM:D7A7 C3 FF D7                    jp      loc_D7FF
+       b    @loc_D7FF
 * ---------------------------------------------------------------------------
 loc_D7AA:
 ;RAM:D7AA 08                          ex      af, af'                                 ; save height
+       mov  af,af_
 ;RAM:D7AB 0A                          ld      a, (bc)                                 ; get screen byte
+       movb *bc,a
 ;RAM:D7AC                                                                             ; only required for forward jumps
 loc_D7AC:
 ;RAM:D7AC 18 E2                       jr      loc_D790                                ; patched jump (forwards/backwards)
+       jmp  loc_D790
 * ---------------------------------------------------------------------------
 * For sprites with bit offset, 16 bytes per routine
 * -- 1st byte --
@@ -7303,17 +7357,25 @@ loc_D7AC:
 loc_D7FF:
 * Next line
 ;RAM:D7FF 79                          ld      a, c
+       movb @c,a
 loc_D800:
 ;RAM:D800 C6 1E                       add     a, #0x1E                                ; patched line increment
 ;RAM:D802 4F                          ld      c, a
 ;RAM:D803 78                          ld      a, b
 ;RAM:D804 CE 00                       adc     a, #0                                   ; add carry
 ;RAM:D806 47                          ld      b, a
+       ai   bc,>001e
 ;RAM:D807 08                          ex      af, af'                                 ; restore height
+       mov  af_,af
 ;RAM:D808 3D                          dec     a
+       sb   @b01h,a
 ;RAM:D809 C2 AA D7                    jp      NZ, loc_D7AA                            ; line loop
+       jne  loc_D7AA
 ;RAM:D80C ED 7B A9 5B                 ld      sp, (tmp_SP)                            ; restore stack pointer
+       mov  @tmp_SP,sp
 ;RAM:D810 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * =============== S U B R O U T I N E =======================================
@@ -7699,8 +7761,11 @@ vdpwr3 b    *r11
 b00h   byte >00
 b01h   byte >01
 b02h   byte >02
+b0ah   byte >0a
+b0dh   byte >0d
 b10h   byte >10
 b20h   byte >20
+b22h   byte >22
 b68h   byte >68
 b80h   byte >80
 bc0h   byte >c0
