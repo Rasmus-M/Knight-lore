@@ -323,6 +323,7 @@ start:
        limi 0
        li   sp,stack
        bl   @gmode
+*
 ;RAM:AF6C 21 A0 5B                    ld      hl, #seed_1                             ; location to clear
        li   hl,seed_1
 ;RAM:AF6F 01 68 05                    ld      bc, #0x568                              ; # bytes to clear
@@ -341,7 +342,7 @@ start:
 ;RAM:AF7D 18 09                       jr      main
        jmp  main
 * ---------------------------------------------------------------------------
-* START OF FUNCTION CHUNK FOR lose_life
+* START OF FUNCTION CHUNK FOR main
 *
 start_menu:                                                                           ; location to clear
 ;RAM:AF7F 21 A8 5B                    ld      hl, #objs_wiped_cnt
@@ -431,9 +432,10 @@ jump_to_tbl_entry:
 ;RAM:AFE2 6F                          ld      l, a                                    ; HL=jump address
        mov  *hl,hl
 ;RAM:AFE3 E9                          jp      (hl)                                    ; go
+       li   hl,no_update
        b    *hl
 *
-* END OF FUNCTION CHUNK FOR lose_life
+* END OF FUNCTION CHUNK FOR main
 * ---------------------------------------------------------------------------
 *
 ret_from_tbl_jp:
@@ -862,23 +864,36 @@ upd_sprite_jmp_tbl:
 *
 shuffle_objects_required:
 ;RAM:B544 3A A0 5B                    ld      a, (seed_1)
+       movb @seed_1,a
 ;RAM:B547 E6 03                       and     #3
+       andi a,>0300
 ;RAM:B549 F6 04                       or      #4
+       ori  a,>0400
 ;RAM:B54B 4F                          ld      c, a                                    ; random 4-7
-;RAM:B54C
-;RAM:B54C             loc_B54C:                                                       ; 14 items (13 swaps)
+       movb a,@c
+loc_B54C:                                                       ; 14 items (13 swaps)
 ;RAM:B54C 06 0D                       ld      b, #13
+       movb @b0dh,b
 ;RAM:B54E FD 21 7D C2                 ld      iy, #objects_required
+       li   iy,objects_required
 ;RAM:B552 FD 5E 00                    ld      e, 0(iy)
-;RAM:B555
-;RAM:B555             loc_B555:
+       movb @0(iy),@e
+loc_B555:
 ;RAM:B555 FD 7E 01                    ld      a, 1(iy)
+       movb @1(iy),a
 ;RAM:B558 FD 77 00                    ld      0(iy), a
+       movb a,@0(iy)
 ;RAM:B55B FD 23                       inc     iy
+       inc  iy
 ;RAM:B55D 10 F6                       djnz    loc_B555
+       sb   @b01h,b
+       jne  loc_B555
 ;RAM:B55F FD 73 00                    ld      0(iy), e
+       movb @e,@0(iy)
 ;RAM:B562 0D                          dec     c
+       sb   @b01h,@c
 ;RAM:B563 20 E7                       jr      NZ, loc_B54C
+       jne  loc_B54C
 ;RAM:B565 C9                          ret
        rt
 *
@@ -906,7 +921,6 @@ upd_131_to_133:
 ;RAM:B584 6F                          ld      l, a
 ;RAM:B585 01 8B B5                    ld      bc, #dX_dY_tbl                          ; jump table
 ;RAM:B588 C3 DB AF                    jp      jump_to_tbl_entry
-       b    @jump_to_tbl_entry
 ;RAM:B588             ; ---------------------------------------------------------------------------
 ;RAM:B58B 93 B5       dX_dY_tbl:      .dw p4_m4                                       ; +4, -4
 ;RAM:B58D B5 B5                       .dw p4_p4                                       ; +4, +4
@@ -1604,7 +1618,6 @@ upd_30_31_158_159:
 ;RAM:B9D2 E6 03                       and     #3                                      ; direction (N/S/E/W)
 ;RAM:B9D4 6F                          ld      l, a
 ;RAM:B9D5 C3 DB AF                    jp      jump_to_tbl_entry
-       b    @jump_to_tbl_entry
 ;RAM:B9D5             ; End of function move_guard_wizard_NSEW
 ;RAM:B9D5
 ;RAM:B9D5             ; ---------------------------------------------------------------------------
@@ -1655,10 +1668,11 @@ upd_30_31_158_159:
 ;RAM:BA1C C8                          ret     Z                                       ; no, exit
 ;RAM:BA1D 21 FE 00                    ld      hl, #0xFE ; '�'                         ; dY=0, dX=-2
 ;RAM:BA20 18 C9                       jr      next_guard_dir
-;RAM:BA22             ; ---------------------------------------------------------------------------
-;RAM:BA22             ; START OF FUNCTION CHUNK FOR lose_life
-;RAM:BA22
-;RAM:BA22             game_over:
+* ---------------------------------------------------------------------------
+*
+* START OF FUNCTION CHUNK FOR game_over
+*
+game_over:
 ;RAM:BA22 3A C3 5B                    ld      a, (all_objs_in_cauldron)
 ;RAM:BA25 A7                          and     a
 ;RAM:BA26 C2 AB BA                    jp      NZ, game_complete_msg
@@ -1724,8 +1738,10 @@ upd_30_31_158_159:
 ;RAM:BA98             ; but the main game loop re-init's the stack each iteration
 ;RAM:BA98             ;
 ;RAM:BA98 C3 7F AF                    jp      start_menu
-;RAM:BA98             ; END OF FUNCTION CHUNK FOR lose_life
-;RAM:BA9B
+       b    @start_menu
+*
+* END OF FUNCTION CHUNK FOR game_over
+*
 ;RAM:BA9B             ; =============== S U B R O U T I N E =======================================
 ;RAM:BA9B
 ;RAM:BA9B
@@ -2938,6 +2954,8 @@ upd_96_to_102:
 ;RAM:C2CB
 no_update:
 ;RAM:C2CB C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 ;RAM:C2CB             ; End of function cycle_colours_with_sound
 ;RAM:C2CB
@@ -4299,7 +4317,6 @@ upd_48_to_53_56_to_61:
 ;RAM:CA17 CD 1E CA                    call    get_sprite_dir
 ;RAM:CA1A 6F                          ld      l, a
 ;RAM:CA1B C3 DB AF                    jp      jump_to_tbl_entry
-       b    @jump_to_tbl_entry
 ;RAM:CA1B             ; End of function calc_plyr_dXY
 ;RAM:CA1B
 ;RAM:CA1E
@@ -5066,12 +5083,16 @@ upd_player_top:
 save_2d_info:
 ;RAM:CE49 DD 7E 18                    ld      a, 24(ix)                               ; data width (bytes)
 ;RAM:CE4C DD 77 1C                    ld      28(ix), a
+       movb @24(ix),@28(ix)
 ;RAM:CE4F DD 7E 19                    ld      a, 25(ix)                               ; data height (lines)
 ;RAM:CE52 DD 77 1D                    ld      29(ix), a
+       movb @25(ix),@29(ix)
 ;RAM:CE55 DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
 ;RAM:CE58 DD 77 1E                    ld      30(ix), a
+       movb @26(ix),@30(ix)
 ;RAM:CE5B DD 7E 1B                    ld      a, 27(ix)                               ; pixel Y
 ;RAM:CE5E DD 77 1F                    ld      31(ix), a
+       movb @27(ix),@31(ix)
 ;RAM:CE61 C9                          ret
        rt
 *
@@ -5219,7 +5240,6 @@ list_objects_to_draw:
 ;RAM:CF62 69                          ld      l, c
 ;RAM:CF63 01 69 CF                    ld      bc, #off_CF69                           ; jump table
 ;RAM:CF66 C3 DB AF                    jp      jump_to_tbl_entry
-       b    @jump_to_tbl_entry
 ;RAM:CF66             ; ---------------------------------------------------------------------------
 ;RAM:CF69 9F CF       off_CF69:       .dw continue_1
 ;RAM:CF6B 9F CF                       .dw continue_1
@@ -5553,85 +5573,139 @@ list_objects_to_draw:
 * =============== S U B R O U T I N E =======================================
 *
 lose_life:
-;RAM:D12A
-;RAM:D12A             ; FUNCTION CHUNK AT RAM:AF7F SIZE 00000065 BYTES
-;RAM:D12A             ; FUNCTION CHUNK AT RAM:BA22 SIZE 00000079 BYTES
-;RAM:D12A             ; FUNCTION CHUNK AT RAM:BAAB SIZE 00000027 BYTES
-;RAM:D12A
 ;RAM:D12A 21 61 D1                    ld      hl, #plyr_spr_1_scratchpad
+       li   hl,plyr_spr_1_scratchpad
 ;RAM:D12D 11 08 5C                    ld      de, #graphic_objs_tbl
+       li   de,graphic_objs_tbl
 ;RAM:D130 D5                          push    de
 ;RAM:D131 DD E1                       pop     ix
+       mov  de,ix
 ;RAM:D133 01 40 00                    ld      bc, #64                                 ; 1st 2 entries
+       li   bc,64
 ;RAM:D136 ED B0                       ldir                                            ; copy scratchpad back to object table
+!      movb *hl+,*de+
+       dec  bc
+       jne  -!
 ;RAM:D138 AF                          xor     a
+       clr  a
 ;RAM:D139 32 B1 5B                    ld      (transform_flag_graphic), a
+       movb a,@transform_flag_graphic
 ;RAM:D13C 21 BA 5B                    ld      hl, #lives
+       li   hl,lives
 ;RAM:D13F 35                          dec     (hl)                                    ; decrement life
+       dec  *hl
 ;RAM:D140 FA 22 BA                    jp      M, game_over                            ; any left? no, exit
+       jne  !
+       b    @game_over
 ;RAM:D143 3A 4D C4                    ld      a, (sun_moon_scratchpad)                ; sprite index
+!      movb @sun_moon_scratchpad,a
 ;RAM:D146 0F                          rrca
 ;RAM:D147 0F                          rrca
 ;RAM:D148 0F                          rrca
+       sla  a,5                        ; Move bit 0 to bit 5
 ;RAM:D149 E6 20                       and     #0x20 ; ' '                             ; day/night?
+       andi a,>2000
 ;RAM:D14B 4F                          ld      c, a
+       movb a,@c
 ;RAM:D14C DD 7E 10                    ld      a, 16(ix)                               ; plyr graphic no
+       movb @16(ix),a
 ;RAM:D14F E6 1F                       and     #0x1F
+       andi a,>1f00
 ;RAM:D151 81                          add     a, c                                    ; legs human/wulf?
+       ab   @c,a
 ;RAM:D152 DD 77 10                    ld      16(ix), a
+       movb a,@16(ix)
 ;RAM:D155 DD 7E 30                    ld      a, 0x30(ix)                             ; top half playr graphic no
+       movb @30(ix),a
 ;RAM:D158 E6 0F                       and     #0xF
+       andi a,>0f00
 ;RAM:D15A 81                          add     a, c
+       ab   @c,a
 ;RAM:D15B C6 20                       add     a, #32                                  ; top half human/wulf
+       ab   @b20h,a
 ;RAM:D15D DD 77 30                    ld      0x30(ix), a
+       movb a,@30(ix)
 ;RAM:D160 C9                          ret
        rt
 *
 * End of function lose_life
 *
-;RAM:D160             ; ---------------------------------------------------------------------------
-;RAM:D161             ; scratchpad for player sprites/objects
-;RAM:D161 00 00 00 00+plyr_spr_1_scratchpad:.db 0, 0, 0, 0, 0, 0, 0, 0
-;RAM:D169 00 00 00 00 start_loc_1:    .db 0, 0, 0, 0
+* ---------------------------------------------------------------------------
+* scratchpad for player sprites/objects
+*
+plyr_spr_1_scratchpad:
+       byte 0, 0, 0, 0, 0, 0, 0, 0
+start_loc_1:
+       byte 0, 0, 0, 0
 flags12_1:
        byte 0, 0, 0, 0
-;RAM:D171 00 00 00 00+byte_D171:      .db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-;RAM:D181 00 00 00 00+plyr_spr_2_scratchpad:.db 0, 0, 0, 0, 0, 0, 0, 0
-;RAM:D189 00 00 00 00+start_loc_2:    .db 0, 0, 0, 0, 0, 0, 0, 0
-;RAM:D191 00 00 00 00+byte_D191:      .db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-;RAM:D1A1 78 80 80 80+plyr_spr_init_data:.db 0x78, 0x80, 0x80, 0x80, 5, 5, 0x17, 0x1C
-;RAM:D1A9 78 80 80 8C+                .db 0x78, 0x80, 0x80, 0x8C, 5, 5, 0, 0x1E
+byte_D171:
+       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+plyr_spr_2_scratchpad:
+       byte 0, 0, 0, 0, 0, 0, 0, 0
+start_loc_2:
+       byte 0, 0, 0, 0, 0, 0, 0, 0
+byte_D191:
+       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+plyr_spr_init_data:
+       byte >78, >80, >80, >80, >05, >05, >17, >1C
+       byte >78, >80, >80, >8C, >05, >05, >00, >1E
 *
 * =============== S U B R O U T I N E =======================================
 *
 init_start_location:
 ;RAM:D1B1 21 A1 D1                    ld      hl, #plyr_spr_init_data
+       li   hl,plyr_spr_init_data
 ;RAM:D1B4 11 61 D1                    ld      de, #plyr_spr_1_scratchpad
+       li   de,plyr_spr_1_scratchpad
 ;RAM:D1B7 01 08 00                    ld      bc, #8
+       li   bc,8
 ;RAM:D1BA ED B0                       ldir
+!      movb *hl+,*de+
+       dec  bc
+       jne  -!
 ;RAM:D1BC 11 81 D1                    ld      de, #plyr_spr_2_scratchpad
+       li   de,plyr_spr_2_scratchpad
 ;RAM:D1BF 01 08 00                    ld      bc, #8
+       li   bc,8
 ;RAM:D1C2 ED B0                       ldir
+!      movb *hl+,*de+
+       dec  bc
+       jne  -!
 ;RAM:D1C4 3E 12                       ld      a, #18                                  ; graphic_no (player top half)
+       li   a,>1200
 ;RAM:D1C6 32 71 D1                    ld      (byte_D171), a                          ; plyr_spr_1_scratchpad (byte 16)
+       movb a,@byte_D171
 ;RAM:D1C9 3E 22                       ld      a, #34                                  ; graphic_no (player bottom half)
+       li   a,>22
 ;RAM:D1CB 32 91 D1                    ld      (byte_D191), a                          ; plyr_spr_2_scratchpad (byte 16)
+       movb a,@byte_D191
 ;RAM:D1CE 3A A0 5B                    ld      a, (seed_1)
+       movb @seed_1,a
 ;RAM:D1D1 E6 03                       and     #3                                      ; random 0-3
+       andi a,>0300
 ;RAM:D1D3 6F                          ld      l, a
+       movb a,@l
 ;RAM:D1D4 26 00                       ld      h, #0
+       movb @b00h,h
 ;RAM:D1D6 01 E2 D1                    ld      bc, #start_locations
+       li   bc,start_locations
 ;RAM:D1D9 09                          add     hl, bc                                  ; offset to random entry
+       a    bc,hl
 ;RAM:D1DA 7E                          ld      a, (hl)                                 ; start location
+       movb *hl,a
 ;RAM:D1DB 32 69 D1                    ld      (start_loc_1), a
+       movb a,@start_loc_1
 ;RAM:D1DE 32 89 D1                    ld      (start_loc_2), a
+       movb a,@start_loc_2
 ;RAM:D1E1 C9                          ret
        rt
 *
 * End of function init_start_location
 *
-;RAM:D1E1             ; ---------------------------------------------------------------------------
-;RAM:D1E2 2F 44 B3 8F start_locations:.db 0x2F, 0x44, 0xB3, 0x8F
+* ---------------------------------------------------------------------------
+start_locations:
+       byte >2F, >44, >B3, >8F
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -6830,15 +6904,15 @@ blit_to_screen:
 *
 * End of function blit_to_screen
 *
-;RAM:D69E             ;
-;RAM:D69E             ; Build a look-up table of values shifted left 1-7 bits
-;RAM:D69E             ; $F200-$FFFF
-;RAM:D69E             ;
-;RAM:D69E
-;RAM:D69E
 *=============== S U B R O U T I N E =======================================
 *
 build_lookup_tbls:
+*
+* Build a look-up table of values (0-255) shifted left 1-7 bits
+* $F200 - $FFFF
+* Each shifted byte is stored as a word.
+* $100 entries x 2 bytes/entry * 7 = $e00 bytes
+*
 ;RAM:D69E 2E 00                       ld      l, #0
 ;RAM:D6A0
 loc_D6A0:
@@ -6861,9 +6935,11 @@ loc_D6A7:
 ;RAM:D6B3 10 F2                       djnz    loc_D6A7
 ;RAM:D6B5 2C                          inc     l
 ;RAM:D6B6 20 E8                       jr      NZ, loc_D6A0
-;RAM:D6B8             ;
-;RAM:D6B8             ; Build a look-up table of bit-reversed bytes
-;RAM:D6B8             ;
+*
+* Build a look-up table of bit-reversed bytes (0-255)
+* $F100 - $F1FF
+* $100 entries x 1 byte/entry = $100 bytes
+*
 ;RAM:D6B8 21 00 F1                    ld      hl, #0xF100
 ;RAM:D6BB
 loc_D6BB:                                                                             ; byte offset from $F100
@@ -6938,7 +7014,7 @@ flip_sprite:
        li   bc,sprite_tbl
 ;RAM:D6F8 09                          add     hl, bc                                  ; sprite table entry
        a    bc,hl
-;RAM:D6F9 5E                          ld      e, (hl)
+;RAM:D6F9 5E                          ld      e, (hl)                                 ; little endian!
 ;RAM:D6FA 23                          inc     hl
 ;RAM:D6FB 56                          ld      d, (hl)                                 ; DE = sprite address
        mov  *hl,de
@@ -6946,10 +7022,13 @@ flip_sprite:
        movb *de,a
 ;RAM:D6FD A7                          and     a                                       ; null sprite?
 ;RAM:D6FE C2 65 D8                    jp      NZ, vflip_sprite_data                   ; no, skip
-       jne  vflip_sprite_data
+       jeq  !
+       b    @vflip_sprite_data
+
 ;RAM:D701 33                          inc     sp
 ;RAM:D702 33                          inc     sp                                      ; exit from caller
-       dect sp
+!      dect sp                                                                        ; do not return to print_sprite
+                                                                                      ; but to the caller of print_sprite
 ;RAM:D703 C9                          ret
        dect sp
        mov  *sp,r11
@@ -7003,13 +7082,13 @@ print_sprite_1:
        andi a,>0700
 ;RAM:D720 28 4D                       jr      Z, loc_D76F                             ; no, skip
        jeq  loc_D76F
-;RAM:D722 07                          rlca
+;RAM:D722 07                          rlca                                            ; 0x02, 0x04, ..., 0x0e
        sla  a,1
-;RAM:D723 E6 0E                       and     #0xE
+;RAM:D723 E6 0E                       and     #0xE                                    ; necessary?
        andi a,>0e00
-;RAM:D725 F6 F0                       or      #0xF0 ; '�'
+;RAM:D725 F6 F0                       or      #0xF0 ; '�'                            ; 0xf2, 0xf4, ..., 0xfe
        ori  a,>f000
-;RAM:D727 67                          ld      h, a
+;RAM:D727 67                          ld      h, a                                    ; hl = bit shift lookup table base
        movb a,h
 ;RAM:D728 1A                          ld      a, (de)                                 ; sprite width
 ;RAM:D729 13                          inc     de
@@ -7242,6 +7321,8 @@ loc_D800:
 * b: pixel Y
 * c: pixel X
 *
+* Result in bc
+*
 calc_vidbuf_addr:
 ;RAM:D811 E5                          push    hl
 ;RAM:D812 CB 38                       srl     b                                       ; y >> 1, bit 0 to Carry
@@ -7263,6 +7344,11 @@ calc_vidbuf_addr:
 * End of function calc_vidbuf_addr
 *
 * =============== S U B R O U T I N E =======================================
+*
+* b: pixel Y
+* c: pixel X
+*
+* Result in de
 *
 calc_vram_addr:
 ;RAM:D826 79                          ld      a, c
@@ -7294,6 +7380,14 @@ calc_vram_addr:
 ;RAM:D844 C6 38                       add     a, #0x38 ; '8'
 ;RAM:D846 57                          ld      d, a
 ;RAM:D847 C9                          ret
+       movb b,@e                       ; ????????yyyyyyyy
+       sla  de,5                       ; ???yyyyyyyy00000
+       socb b,@e                       ; ???yyyyy???yyyyy
+       andi de,>1f07                   ; 000yyyyy00000yyy
+       mov  bc,r0                      ; yyyyyyyyxxxxxxxx
+       andi r0,7                       ; 0000000000000xxx
+       ab   @c,@e                      ; 000yyyyyxxxxx???
+       s    r0,de                      ; 000yyyyyxxxxxyyy
        rt
 *
 * End of function calc_vram_addr
@@ -7328,6 +7422,7 @@ calc_attrib_addr:
 * START OF FUNCTION CHUNK FOR flip_sprite
 *
 vflip_sprite_data:                                                                    ; sprite data address
+* Do not push return address because this routine is jumped into
 ;RAM:D865 D5                          push    de
 ;RAM:D866 1A                          ld      a, (de)                                 ; width
 ;RAM:D867 DD AE 07                    xor     7(ix)                                   ; same Vflip as stored?
@@ -7433,6 +7528,8 @@ vflip_sprite_data:                                                              
 ;RAM:D8DC             loc_D8DC:
 ;RAM:D8DC D1                          pop     de
 ;RAM:D8DD C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * END OF FUNCTION CHUNK FOR flip_sprite
@@ -7442,41 +7539,41 @@ vflip_sprite_data:                                                              
 *
 * Set graphics mode
 *
-gmode  mov  r11, *r10+                  ; Push return address onto the stack
+gmode  mov  r11,*r10+                      ; Push return address onto the stack
        clr  r0
-       li   r1, vregs
-       li   r2, 8
-gmode1 movb *r1+, @r0lb
-       bl   @vwtr                      ; Set register
-       ai   r0, >0100
+       li   r1,vregs
+       li   r2,8
+gmode1 movb *r1+,@r0lb
+       bl   @vwtr                          ; Set register
+       ai   r0,>0100
        dec  r2
        jne  gmode1
 *      Setup name table for bitmap drawing
        li   r0, nametb
        bl   @vwad
        clr  r1
-       li   r2, >300
-gmode2 movb r1, @vdpwd
-       ai   r1, >0100
+       li   r2,>300
+gmode2 movb r1,@vdpwd
+       ai   r1,>0100
        dec  r2
        jne  gmode2
 *      Disable sprites
-       li   r0, spratb
-       li   r1, >d000
+       li   r0,spratb
+       li   r1,>d000
        bl   @vsbw
 *      Return
-       dect r10                        ; Pop return address off the stack
-       mov  *r10, r11
+       dect r10                            ; Pop return address off the stack
+       mov  *r10,r11
        b    *r11
 *      VDP registers
-vregs  byte >02                        ; Graphics II mode
-       byte >e2                        ; 16K, display on, interrupt enabled
-       byte nametb/>400                ; Name table
-       byte >ff                        ; Color table
-       byte ptrntb/>800+>03            ; Pattern table
-       byte spratb/>80                 ; Sprite attribute table
-       byte sprptb/>800                ; Sprite pattern table
-       byte >01                        ; Backdrop color
+vregs  byte >02                            ; Graphics II mode
+       byte >e2                            ; 16K, display on, interrupt enabled
+       byte nametb/>400                    ; Name table
+       byte >ff                            ; Color table
+       byte ptrntb/>800+>03                ; Pattern table
+       byte spratb/>80                     ; Sprite attribute table
+       byte sprptb/>800                    ; Sprite pattern table
+       byte >01                            ; Backdrop color
 *// GMODE
 
 *********************************************************************
