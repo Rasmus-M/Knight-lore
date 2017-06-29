@@ -2421,18 +2421,18 @@ upd_185_187:
 upd_119:
 ;RAM:BF3F CD D8 C4                    call    adj_m4_m12
 ;RAM:BF42 C3 5E B9                    jp      upd_111
-;RAM:BF45
-;RAM:BF45             ; =============== S U B R O U T I N E =======================================
-;RAM:BF45
-;RAM:BF45
-;RAM:BF45             display_objects_carried:
+*
+* =============== S U B R O U T I N E =======================================
+*
+display_objects_carried:
+       rt
 ;RAM:BF45 3A B4 5B                    ld      a, (objects_carried_changed)
 ;RAM:BF48 A7                          and     a                                       ; anything changed?
 ;RAM:BF49 C8                          ret     Z                                       ; no, return
 ;RAM:BF4A AF                          xor     a                                       ; clear changed flag
 ;RAM:BF4B 32 B4 5B                    ld      (objects_carried_changed), a
-;RAM:BF4B             ; End of function display_objects_carried
-;RAM:BF4B
+*
+* End of function display_objects_carried
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -3091,18 +3091,18 @@ upd_92_to_95:
 ;RAM:C394 C3 92 C6                    jp      set_wipe_and_draw_flags
 ;RAM:C394             ; End of function chk_and_init_transform
 ;RAM:C394
-;RAM:C397
-;RAM:C397             ; =============== S U B R O U T I N E =======================================
-;RAM:C397
-;RAM:C397
-;RAM:C397             print_sun_moon:
+*
+* =============== S U B R O U T I N E =======================================
+*
+print_sun_moon:
+       rt
 ;RAM:C397 3A A2 5B                    ld      a, (seed_2)
 ;RAM:C39A E6 07                       and     #7
 ;RAM:C39C C0                          ret     NZ
 ;RAM:C39D DD 21 4D C4                 ld      ix, #sun_moon_scratchpad
 ;RAM:C3A1 DD 34 1A                    inc     26(ix)                                  ; pixel X
-;RAM:C3A1             ; End of function print_sun_moon
-;RAM:C3A1
+*
+* End of function print_sun_moon
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -5126,9 +5126,9 @@ loc_CE72:
        jeq  loc_CE80
 ;RAM:CE78 DD CB 07 66                 bit     4, 7(ix)                                ; draw flag set?
        movb @7(ix),r0
-       coc  @b10h,r0
+       andi r0,>1000
 ;RAM:CE7C 28 02                       jr      Z, loc_CE80                             ; no, skip
-       jne  loc_CE80
+       jeq  loc_CE80
 ;RAM:CE7E 71                          ld      (hl), c                                 ; add object index to list
 ;RAM:CE7F 23                          inc     hl                                      ; ptr next list address
        movb @c,*hl+
@@ -5158,10 +5158,9 @@ objects_to_draw:
        data 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
        data 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 *
-;RAM:CEBB             ; =============== S U B R O U T I N E =======================================
-;RAM:CEBB
-;RAM:CEBB
-;RAM:CEBB             calc_display_order_and_render:
+* =============== S U B R O U T I N E =======================================
+*
+calc_display_order_and_render:
 ;RAM:CEBB AF                          xor     a
 ;RAM:CEBC 32 BE 5B                    ld      (rendered_objs_cnt), a
 ;RAM:CEBF DD E5                       push    ix
@@ -5385,8 +5384,10 @@ objects_to_draw:
 ;RAM:D015 FD E1                       pop     iy
 ;RAM:D017 DD E1                       pop     ix
 ;RAM:D019 C9                          ret
-;RAM:D019             ; End of function calc_display_order_and_render
-;RAM:D019
+       rt
+*
+* End of function calc_display_order_and_render
+*
 ;RAM:D019             ; ---------------------------------------------------------------------------
 ;RAM:D01A FF          render_list:    .db 0xFF
 ;RAM:D01B FF                          .db 0xFF
@@ -6044,26 +6045,33 @@ adjust_plyr_xyz_for_room_size:
 ;RAM:D3B4 C9                          ret
 ;RAM:D3B4             ; End of function adjust_plyr_Z_for_arch
 ;RAM:D3B4
-;RAM:D3B5
-;RAM:D3B5             ; =============== S U B R O U T I N E =======================================
-;RAM:D3B5
-;RAM:D3B5
-;RAM:D3B5             get_ptr_object:
+*
+* =============== S U B R O U T I N E =======================================
+*
+get_ptr_object:
 ;RAM:D3B5 C5                          push    bc
 ;RAM:D3B6 E6 7F                       and     #0x7F ; ''
+       andi a,>7f00
 ;RAM:D3B8 6F                          ld      l, a
 ;RAM:D3B9 26 00                       ld      h, #0                                   ; HL=A
+       clr  hl
+       movb a,@l
 ;RAM:D3BB 29                          add     hl, hl                                  ; x2
 ;RAM:D3BC 29                          add     hl, hl                                  ; x4
 ;RAM:D3BD 29                          add     hl, hl                                  ; x8
 ;RAM:D3BE 29                          add     hl, hl                                  ; x16
 ;RAM:D3BF 29                          add     hl, hl                                  ; x32
+       sla  hl,5
 ;RAM:D3C0 01 08 5C                    ld      bc, #graphic_objs_tbl                   ; base of graphical object table
 ;RAM:D3C3 09                          add     hl, bc                                  ; get table entry
+       ai   hl,graphic_objs_tbl
 ;RAM:D3C4 C1                          pop     bc
 ;RAM:D3C5 C9                          ret
-;RAM:D3C5             ; End of function get_ptr_object
-
+       rt
+*
+* End of function get_ptr_object
+*
+* =============== S U B R O U T I N E =======================================
 *
 * Retrieves graphics objects to render screen
 * - background object sprites, then
@@ -6071,8 +6079,6 @@ adjust_plyr_xyz_for_room_size:
 * Populates graphics_object_tbl
 *
 * IX=player object
-*
-* =============== S U B R O U T I N E =======================================
 *
 retrieve_screen:
        mov  r11,*sp+
@@ -6739,147 +6745,247 @@ updscr2:
 * =============== S U B R O U T I N E =======================================
 *
 render_dynamic_objects:
+       mov  r11,*sp+
 ;RAM:D59F AF                          xor     a
+       clr  a
 ;RAM:D5A0 32 A8 5B                    ld      (objs_wiped_cnt), a                     ; zero count of wiped objects
+       movb a,@objs_wiped_cnt
 ;RAM:D5A3 DD E5                       push    ix
+       mov  ix,*sp+
 ;RAM:D5A5 3A B7 5B                    ld      a, (render_status_info)
+       movb @render_status_info,a
 ;RAM:D5A8 A7                          and     a                                       ; initial rendering?
 ;RAM:D5A9 C2 53 D6                    jp      NZ, loc_D653                            ; yes, no need to wipe anything
+       jeq  !
+       b    @loc_D653
 ;RAM:D5AC 21 8B CE                    ld      hl, #objects_to_draw
+!      li   hl,objects_to_draw
 ;RAM:D5AF 22 CB 5B                    ld      (tmp_objects_to_draw), hl               ; temp storage
-;RAM:D5B2
-;RAM:D5B2             wipe_next_object:
+       mov  hl,@tmp_objects_to_draw
+wipe_next_object:
 ;RAM:D5B2 2A CB 5B                    ld      hl, (tmp_objects_to_draw)
+       mov  @tmp_objects_to_draw,hl
 ;RAM:D5B5 7E                          ld      a, (hl)                                 ; object index
 ;RAM:D5B6 23                          inc     hl                                      ; next list entry
+       movb *hl+,a
 ;RAM:D5B7 22 CB 5B                    ld      (tmp_objects_to_draw), hl               ; store
+       mov  hl,@tmp_objects_to_draw
 ;RAM:D5BA FE FF                       cp      #0xFF                                   ; end of list?
+       cb   @bffh,a
 ;RAM:D5BC CA 53 D6                    jp      Z, loc_D653                             ; yes, skip
+       jeq  loc_D653
 ;RAM:D5BF CD B5 D3                    call    get_ptr_object
+       bl   @get_ptr_object
 ;RAM:D5C2 E5                          push    hl
 ;RAM:D5C3 DD E1                       pop     ix
+       mov  hl,ix
 ;RAM:D5C5 DD CB 07 6E                 bit     5, 7(ix)                                ; wipe flag?
+       movb @7(ix),r0
+       andi r0,>1000
 ;RAM:D5C9 28 E7                       jr      Z, wipe_next_object                     ; no, go
+       jeq  wipe_next_object
 ;RAM:D5CB DD CB 07 AE                 res     5, 7(ix)                                ; clear wipe flag
+       szcb @b10h,@7(ix)
 ;RAM:D5CF DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
+       movb @26(ix),a
 ;RAM:D5D2 DD 96 1E                    sub     30(ix)                                  ; old pixel X
+       sb   @30(ix),a
 ;RAM:D5D5 DA 49 D6                    jp      C, loc_D649
+       jlt  loc_D649                   ; TODO: check if this works
 ;RAM:D5D8 DD 4E 1E                    ld      c, 30(ix)                               ; old pixel X
-;RAM:D5DB
-;RAM:D5DB             loc_D5DB:                                                       ; old pixel X
-;RAM:D5DB DD 7E 1E                    ld      a, 30(ix)
+       movb @30(ix),@c
+loc_D5DB:
+;RAM:D5DB DD 7E 1E                    ld      a, 30(ix)                               ; old pixel X
+       movb @30(ix),a
 ;RAM:D5DE 0F                          rrca
 ;RAM:D5DF 0F                          rrca
 ;RAM:D5E0 0F                          rrca
+       srl  a,3
 ;RAM:D5E1 E6 1F                       and     #0x1F                                   ; old pixel X byte address
+       andi a,>1f00
 ;RAM:D5E3 DD 86 1C                    add     a, 28(ix)                               ; old data width (bytes)
+       ab   @28(ix),a
 ;RAM:D5E6 5F                          ld      e, a
+       movb a,@e
 ;RAM:D5E7 DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
+       movb @26(ix),a
 ;RAM:D5EA 0F                          rrca
 ;RAM:D5EB 0F                          rrca
 ;RAM:D5EC 0F                          rrca
+       srl  a,3
 ;RAM:D5ED E6 1F                       and     #0x1F                                   ; pixel X byte address
+       andi a,>1f00
 ;RAM:D5EF DD 86 18                    add     a, 24(ix)                               ; data width (bytes)
+       ab   @24(ix),a
 ;RAM:D5F2 BB                          cp      e
+       cb   a,@e
 ;RAM:D5F3 38 01                       jr      C, loc_D5F6
+       jl   loc_D5F6                   ; TODO: test if this works
 ;RAM:D5F5 5F                          ld      e, a
-;RAM:D5F6
-;RAM:D5F6             loc_D5F6:
+       movb a,@e
+loc_D5F6:
 ;RAM:D5F6 79                          ld      a, c
+       movb @c,a
 ;RAM:D5F7 0F                          rrca
 ;RAM:D5F8 0F                          rrca
 ;RAM:D5F9 0F                          rrca
+       srl  a,3
 ;RAM:D5FA E6 1F                       and     #0x1F                                   ; old/pixel X byte address
+       andi a,>1f00
 ;RAM:D5FC 47                          ld      b, a
+       movb a,b
 ;RAM:D5FD 7B                          ld      a, e
+       movb @e,a
 ;RAM:D5FE 90                          sub     b
+       sb   b,a
 ;RAM:D5FF 67                          ld      h, a                                    ; H=number of bytes to wipe
+       movb a,h
 ;RAM:D600 DD 7E 1B                    ld      a, 27(ix)                               ; pixel Y
+       movb @27(ix),a
 ;RAM:D603 DD 96 1F                    sub     31(ix)                                  ; pixel Y < old pixel Y?
+       sb   @31(ix),a
 ;RAM:D606 38 46                       jr      C, loc_D64E                             ; yes, go
+       jlt  loc_D64E
 ;RAM:D608 DD 46 1F                    ld      b, 31(ix)                               ; old pixel Y
-;RAM:D60B
-;RAM:D60B             loc_D60B:                                                       ; old pixel Y
-;RAM:D60B DD 7E 1F                    ld      a, 31(ix)
+       movb @31(ix),b
+loc_D60B:
+;RAM:D60B DD 7E 1F                    ld      a, 31(ix)                               ; old pixel Y
+       movb @31(ix),a
 ;RAM:D60E DD 86 1D                    add     a, 29(ix)                               ; old data height (lines)
+       ab   @29(ix),a
 ;RAM:D611 5F                          ld      e, a
+       movb a,@e
 ;RAM:D612 DD 7E 1B                    ld      a, 27(ix)                               ; pixel Y
+       movb @27(ix),a
 ;RAM:D615 DD 86 19                    add     a, 25(ix)                               ; data height (lines)
+       ab   @25(ix),a
 ;RAM:D618 BB                          cp      e
+       cb   a,@e
 ;RAM:D619 30 01                       jr      NC, loc_D61C
+       jhe  loc_D61C                   ; TODO: test if this works
 ;RAM:D61B 7B                          ld      a, e
-;RAM:D61C
-;RAM:D61C             loc_D61C:
+       movb @e,a
+loc_D61C:
 ;RAM:D61C 90                          sub     b
+       ab   b,a
 ;RAM:D61D 6F                          ld      l, a
+       movb a,@l
 ;RAM:D61E 78                          ld      a, b
+       movb b,a
 ;RAM:D61F FE C0                       cp      #192                                    ; off bottom of screen?
+       cb   a,@bc0h
 ;RAM:D621 30 8F                       jr      NC, wipe_next_object                    ; yes, go
+       jh   wipe_next_object
 ;RAM:D623 85                          add     a, l
+       ab   @l,a
 ;RAM:D624 D6 C0                       sub     #192
+       sb   @bc0h,a
 ;RAM:D626 38 04                       jr      C, loc_D62C
+       jlt  loc_D62C                   ; TODO: test if this works
 ;RAM:D628 ED 44                       neg
+       inv  a
+       ab   @b01h,a
 ;RAM:D62A 85                          add     a, l
+       ab   @l,a
 ;RAM:D62B 6F                          ld      l, a
-;RAM:D62C
-;RAM:D62C             loc_D62C:
+       movb a,@l
+loc_D62C:
 ;RAM:D62C CD 26 D8                    call    calc_vram_addr
+       bl   @calc_vram_addr
 ;RAM:D62F CD 11 D8                    call    calc_vidbuf_addr                        ; in BC
+       bl   @calc_vidbuf_addr
 ;RAM:D632 7D                          ld      a, l
 ;RAM:D633 69                          ld      l, c
 ;RAM:D634 4F                          ld      c, a
 ;RAM:D635 7C                          ld      a, h
 ;RAM:D636 60                          ld      h, b
 ;RAM:D637 47                          ld      b, a                                    ; swap HL & BC
+       mov  hl,r0
+       mov  bc,hl
+       mov  r0,bc
 ;RAM:D638 3A A8 5B                    ld      a, (objs_wiped_cnt)
+       movb @objs_wiped_cnt,a
 ;RAM:D63B 3C                          inc     a
+       ab   @b01h,a
 ;RAM:D63C 32 A8 5B                    ld      (objs_wiped_cnt), a
+       movb a,@objs_wiped_cnt
 ;RAM:D63F C5                          push    bc
+       mov  bc,*sp+
 ;RAM:D640 D5                          push    de
+       mov  de,*sp+
 ;RAM:D641 E5                          push    hl                                      ; screen buffer address
+       mov  hl,*sp+
 ;RAM:D642 AF                          xor     a                                       ; wipe sprite
+       clr  a
 ;RAM:D643 CD 15 C5                    call    fill_window
+       bl   @fill_window
 ;RAM:D646 C3 B2 D5                    jp      wipe_next_object
-;RAM:D649             ; ---------------------------------------------------------------------------
-;RAM:D649
-;RAM:D649             loc_D649:                                                       ; pixel X
-;RAM:D649 DD 4E 1A                    ld      c, 26(ix)
+       b    @wipe_next_object
+* ---------------------------------------------------------------------------
+loc_D649:
+;RAM:D649 DD 4E 1A                    ld      c, 26(ix)                               ; pixel X
+       movb @26(ix),@c
 ;RAM:D64C 18 8D                       jr      loc_D5DB
-;RAM:D64E             ; ---------------------------------------------------------------------------
-;RAM:D64E
-;RAM:D64E             loc_D64E:                                                       ; pixel Y
-;RAM:D64E DD 46 1B                    ld      b, 27(ix)
+       jmp  loc_D5DB
+* ---------------------------------------------------------------------------
+loc_D64E:
+;RAM:D64E DD 46 1B                    ld      b, 27(ix)                               ; pixel Y
+       movb @27(ix),b
 ;RAM:D651 18 B8                       jr      loc_D60B
-;RAM:D653             ; ---------------------------------------------------------------------------
-;RAM:D653
-;RAM:D653             loc_D653:
+       jmp  loc_D60B
+* ---------------------------------------------------------------------------
+loc_D653:
 ;RAM:D653 CD BB CE                    call    calc_display_order_and_render
+       bl   @calc_display_order_and_render
 ;RAM:D656 CD 97 C3                    call    print_sun_moon
+       bl   @print_sun_moon
 ;RAM:D659 CD 45 BF                    call    display_objects_carried
+       bl   @display_objects_carried
 ;RAM:D65C 21 A8 5B                    ld      hl, #objs_wiped_cnt
+       li   hl,objs_wiped_cnt
 ;RAM:D65F 3A BE 5B                    ld      a, (rendered_objs_cnt)
+       movb @rendered_objs_cnt,a
 ;RAM:D662 86                          add     a, (hl)                                 ; add the number of wipes
+       ab   *hl,a
 ;RAM:D663 32 BE 5B                    ld      (rendered_objs_cnt), a
-;RAM:D666
-;RAM:D666             loc_D666:
+       movb a,@rendered_objs_cnt
+loc_D666:
 ;RAM:D666 21 A8 5B                    ld      hl, #objs_wiped_cnt
+       li   hl,objs_wiped_cnt
 ;RAM:D669 7E                          ld      a, (hl)
+       movb *hl,a
 ;RAM:D66A A7                          and     a                                       ; done all wipes?
 ;RAM:D66B 28 0C                       jr      Z, loc_D679                             ; yes, exit
+       jeq  loc_D679
 ;RAM:D66D 35                          dec     (hl)
+       sb   @b01h,*hl
 ;RAM:D66E E1                          pop     hl                                      ; source
+       dect sp
+       mov  *sp,hl
 ;RAM:D66F D1                          pop     de                                      ; destination
+       dect sp
+       mov  *sp,de
 ;RAM:D670 C1                          pop     bc
+       dect sp
+       mov  *sp,bc
 ;RAM:D671 78                          ld      a, b
+       movb b,a
 ;RAM:D672 41                          ld      b, c                                    ; lines
+       movb @c,b
 ;RAM:D673 4F                          ld      c, a                                    ; bytes/line
+       movb a,@c
 ;RAM:D674 CD 7C D6                    call    blit_to_screen
+       bl   @blit_to_screen
 ;RAM:D677 18 ED                       jr      loc_D666                                ; loop
-;RAM:D679             ; ---------------------------------------------------------------------------
-;RAM:D679
-;RAM:D679             loc_D679:
+       jmp  loc_D666
+* ---------------------------------------------------------------------------
+loc_D679:
 ;RAM:D679 DD E1                       pop     ix
+       dect sp
+       mov  *sp,ix
 ;RAM:D67B C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function render_dynamic_objects
