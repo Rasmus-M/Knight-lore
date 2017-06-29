@@ -346,7 +346,7 @@ start:
 *
 start_menu:                                                                           ; location to clear
 ;RAM:AF7F 21 A8 5B                    ld      hl, #objs_wiped_cnt
-       li   hl,objs_wiped_cnt
+       li   hl,tmp_SP                  ; Swapped tmp_SP and objs_wiped_cnt
 ;RAM:AF82 01 60 05                    ld      bc, #0x560                              ; # bytes to clear
        li   bc,>560
 ;RAM:AF85 CD 3A D5                    call    clr_mem
@@ -1426,6 +1426,7 @@ upd_178_179:                                                    ; adjust (-4,-8)
 * =============== S U B R O U T I N E =======================================
 *
 init_cauldron_bubbles:
+       rt
 ;RAM:B8A9 3A 10 5C                    ld      a, (graphic_objs_tbl+8)                 ; plyr_spr_1 screen
 ;RAM:B8AC FE 88                       cp      #136                                    ; cauldron room?
 ;RAM:B8AE C0                          ret     NZ                                      ; no, exit
@@ -1944,7 +1945,8 @@ print_lives_gfx:
 ;RAM:BC9B 11 62 5A                    ld      de, # zx_aram+0x262
 ;RAM:BC9E 06 04                       ld      b, #4
 ;RAM:BCA0 C3 09 D5                    jp      fill_DE
-       b    @fill_DE
+;       b    @fill_DE
+       rt
 *
 * End of function print_lives_gfx
 *
@@ -2017,10 +2019,9 @@ display_day:
 ;RAM:BCF4 00 01 82 C6+                .db 0, 1, 0x82, 0xC6, 0x64, 0x6C, 0x6D, 0xC6
 ;RAM:BCFC C8 C6 E1 60+                .db 0xC8, 0xC6, 0xE1, 0x60, 0x60, 0xE0, 0x64, 0x63
 ;RAM:BD04 60 60 60 E0+                .db 0x60, 0x60, 0x60, 0xE0, 0x60, 0x40, 0xC0, 0x80
-;RAM:BD0C
-;RAM:BD0C             ; =============== S U B R O U T I N E =======================================
-;RAM:BD0C
-;RAM:BD0C
+*
+* =============== S U B R O U T I N E =======================================
+*
 do_menu_selection:
 ;RAM:BD0C AF                          xor     a
 ;RAM:BD0D 32 B8 5B                    ld      (suppress_border), a
@@ -2094,8 +2095,10 @@ do_menu_selection:
 ;RAM:BD85             clr_debounce:
 ;RAM:BD85 CB 86                       res     0, (hl)
 ;RAM:BD87 18 E3                       jr      check_for_start_game                    ; continue
-;RAM:BD87             ; End of function do_menu_selection
-;RAM:BD87
+       rt
+*
+* End of function do_menu_selection
+*
 ;RAM:BD89
 ;RAM:BD89             ; =============== S U B R O U T I N E =======================================
 ;RAM:BD89
@@ -6492,13 +6495,13 @@ fill_DE:
 * =============== S U B R O U T I N E =======================================
 *
 handle_pause:
+       rt
 ;RAM:D50E 3E 7E                       ld      a, #0x7E ; '~'                          ; SPACE,SYMSHIFT,M,N,B
 ;RAM:D510 CD F7 B5                    call    read_port
 ;RAM:D513 CB 47                       bit     0, a                                    ; SPACE?
 ;RAM:D515 C8                          ret     Z                                       ; no, exit
 ;RAM:D516 E6 1E                       and     #0x1E                                   ; any other key?
 ;RAM:D518 C0                          ret     NZ                                      ; yes, exit
-       rt
 ;RAM:D519
 ;RAM:D519             debounce_space_press:
 ;RAM:D519 3E 7E                       ld      a, #0x7E ; '~'
@@ -6524,31 +6527,27 @@ handle_pause:
 *
 * =============== S U B R O U T I N E =======================================
 *
+; TODO: optimize
 clr_mem:
-       mov  r11,*sp+
-clr_mem_1:
 ;RAM:D53A 1E 00                       ld      e, #0
        clr  de
 clr_byte:
-       movb @e,d
 ;RAM:D53C 73                          ld      (hl), e                                 ; zero location
 ;RAM:D53D 23                          inc     hl                                      ; next location
        movb d,*hl+
 ;RAM:D53E 0B                          dec     bc
-       dect  bc
+       dec  bc
 ;RAM:D53F 78                          ld      a, b
 ;RAM:D540 B1                          or      c                                       ; done?
 ;RAM:D541 20 F9                       jr      NZ, clr_byte                            ; no, loop
        jne  clr_byte
 ;RAM:D543 C9                          ret
-       dect sp
-       mov  *sp,r11
        rt
 *
 * End of function clr_mem
 *
 * ---------------------------------------------------------------------------
-* START OF FUNCTION CHUNK FOR clear_scrn
+* START OF FUNCTION CHUNK FOR clr_bitmap_memory
 *
 clr_bitmap_memory:                                              ; screen memory
        mov  r11,*sp+
@@ -6559,10 +6558,11 @@ clr_bitmap_memory:                                              ; screen memory
        clr  r1                         ; bright yellow on black
        li   r2,>1800
        bl   @vdpwr
+* Return
        dect sp
        mov  *sp,r11
        rt
-* END OF FUNCTION CHUNK FOR clear_scrn
+* END OF FUNCTION CHUNK FOR clr_bitmap_memory
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -6576,6 +6576,7 @@ clr_attribute_memory:
        li   r1,>b100                   ; bright yellow on black
        li   r2,>1800
        bl   @vdpwr
+* Return
        dect sp
        mov  *sp,r11
        rt
@@ -6584,7 +6585,6 @@ clr_attribute_memory:
 *
 * =============== S U B R O U T I N E =======================================
 *
-; TODO
 fill_attr:
        mov  r11,*sp+
 ;RAM:D556 21 00 58                    ld      hl, #zx_aram                            ; colour data
@@ -6592,9 +6592,10 @@ fill_attr:
 ;RAM:D55C 5F                          ld      e, a                                    ; attribute to set
 ;RAM:D55D 18 DD                       jr      clr_byte                                ; fill
        li   r0,COLRTB
-       mov  a,r1
+       movb a,r1
        li   r2,>1800
        bl   @vdpwr
+*      Return
        dect sp
        mov  *sp,r11
        rt
@@ -6623,13 +6624,12 @@ clear_scrn:
 * =============== S U B R O U T I N E =======================================
 *
 clear_scrn_buffer:
-       mov  r11,*sp+
 ;RAM:D567 01 00 18                    ld      bc, #0x1800                             ; # bytes to clear
        li   bc,>1800
 ;RAM:D56A 21 F3 D8                    ld      hl, #vidbuf                             ; screen buffer
        li   hl,vidbuf
 ;RAM:D56D 18 CB                       jr      clr_mem
-       jmp  clr_mem_1
+       jmp  clr_mem
 ;RAM:D56D             ; End of function clear_scrn_buffer
 *
 * =============== S U B R O U T I N E =======================================

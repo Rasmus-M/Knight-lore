@@ -62,6 +62,7 @@ play_audio_until_keypress:
 ;RAM:B2CF
 ;RAM:B2CF
 play_audio:
+       rt
 ;RAM:B2CF 1A                          ld      a, (de)                                 ; audio data byte
 ;RAM:B2D0 FE FF                       cp      #0xFF                                   ; done?
 ;RAM:B2D2 28 05                       jr      Z, end_audio                            ; yes, return
