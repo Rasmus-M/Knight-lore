@@ -319,9 +319,10 @@ other_objs_here:
        aorg >2000
 
 start:
-*      Init TMS9900
+*      Init TI-99/4A
        limi 0
-       li   sp,stack
+       lwpi WRKSP
+       li   sp,STACK
        bl   @gmode
 *
 ;RAM:AF6C 21 A0 5B                    ld      hl, #seed_1                             ; location to clear
@@ -456,9 +457,9 @@ ret_from_tbl_jp:
 ;RAM:AFF9 A7                          and     a
 *      Clear carry flag
 ;RAM:AFFA ED 42                       sbc     hl, bc                                  ; past end of table?
-       s    bc,hl
+       c    hl,bc
 ;RAM:AFFC 30 02                       jr      NC, loc_B000                            ; yes, exit
-       jnc  loc_B000
+       jhe  loc_B000
 ;RAM:AFFE 18 C7                       jr      update_sprite_loop                      ; loop
        jmp  update_sprite_loop
 *
@@ -496,7 +497,6 @@ loc_B000:
 ;RAM:B021 3A C5 5B                    ld      a, (rising_blocks_z)
        movb @rising_blocks_z,a
 ;RAM:B024 A7                          and     a                                       ; any blocks rising?
-       movb a,a
 ;RAM:B025 C4 54 B4                    call    NZ, audio_B454                          ; yes, play audio
        jeq  !
        bl   @audio_B454
@@ -504,7 +504,8 @@ loc_B000:
 ;RAM:B028 3A BE 5B                    ld      a, (rendered_objs_cnt)
        movb @rendered_objs_cnt,a
 ;RAM:B02B ED 44                       neg
-       neg  a
+       inv  a
+       ab   @b01h,a
 ;RAM:B02D C6 06                       add     a, #6                                   ; calculate delay loop value
        ai   a,>0600
 ;RAM:B02F 47                          ld      b, a
@@ -530,7 +531,6 @@ no_delay:
 ;RAM:B03F 3A B7 5B                    ld      a, (render_status_info)
        movb @render_status_info,a
 ;RAM:B042 A7                          and     a                                       ; rendered before?
-       movb a,a
 ;RAM:B043 28 2F                       jr      Z, loc_B074                             ; yes, skip
        jeq  loc_B074
 ;RAM:B045 AF                          xor     a                                       ; reset flag
@@ -3198,6 +3198,7 @@ sun_moon_yoff:
 sun_moon_scratchpad:
        byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
        byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+       even
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -5714,7 +5715,7 @@ start_locations:
 * =============== S U B R O U T I N E =======================================
 *
 build_screen_objects:
-       movb r11,*sp+
+       mov  r11,*sp+
 ;RAM:D1E6 3A B2 5B                    ld      a, (not_1st_screen)
        movb @not_1st_screen,a
 ;RAM:D1E9 A7                          and     a                                       ; 1st screen of the game?
@@ -6077,11 +6078,10 @@ find_screen:                                                                    
 ;RAM:D3DA A7                          and     a
 *      Clear carry flag
 ;RAM:D3DB ED 42                       sbc     hl, bc                                  ; end of location table?
-       s    bc,hl
+       c    hl,bc
 ;RAM:D3DD 30 03                       jr      NC, zero_end_of_graphic_objs_tbl        ; yes, exit
-       jnc  zero_end_of_graphic_objs_tbl
+       jhe  zero_end_of_graphic_objs_tbl
 ;RAM:D3DF 09                          add     hl, bc
-       a    bc,hl
 ;RAM:D3E0 18 ED                       jr      find_screen                             ; loop
        jmp  find_screen
 ;RAM:D3E2             ; ---------------------------------------------------------------------------
@@ -6160,7 +6160,7 @@ found_screen:
        movb a,@room_size_Z
 ;RAM:D41A 05                          dec     b
 ;RAM:D41B 05                          dec     b                                       ; adjust entry size
-       sb   @b02h,@b
+       sb   @b02h,b
 ;RAM:D41C EB                          ex      de, hl
        mov  de,hl
 ;RAM:D41D D1                          pop     de
@@ -6218,7 +6218,7 @@ next_bg_obj_sprite:                                                             
        dect sp
        mov  *sp,hl
 ;RAM:D446 C1                          pop     bc
-       dect bc
+       dect sp
        mov  *sp,bc
 ;RAM:D447 10 D5                       djnz    next_bg_obj                             ; done location? no, loop
        sb   @b01h,b
@@ -6442,7 +6442,7 @@ add_HL_A:
 ;RAM:D4F5 CE 00                       adc     a, #0
 ;RAM:D4F7 67                          ld      h, a
        clr  r0
-       mov  a,@r0lb
+       movb a,@r0lb
        a    r0,hl
 ;RAM:D4F8 C9                          ret
        rt
@@ -7136,16 +7136,14 @@ loc_D73C:                                                                       
 ;RAM:D74B DD 86 1B                    add     a, 27(ix)                               ; add Y
        ab   @27(ix),a
 ;RAM:D74E D6 C0                       sub     #192                                    ; off bottom of screen?
-       sb   @bc0h,a
+       cb   a,@bc0h
 ;RAM:D750 38 08                       jr      C, loc_D75A                             ; no, skip
-       joc   loc_D75A                  ; TODO
+       jl   loc_D75A
 ;RAM:D752 ED 44                       neg                                             ; -lines outside screen
-       neg  a
-       ab   @b01h,a
 ;RAM:D754 DD 86 19                    add     a, 25(ix)                               ; height-lines outside screen
-       ab   @25(ix),a
 ;RAM:D757 DD 77 19                    ld      25(ix), a                               ; store actual height_lines
-       movb a,@25(ix)
+       sb   @bc0h,a
+       sb   a,@25(ix)
 ;RAM:D75A
 loc_D75A:
 ;RAM:D75A DD 4E 1A                    ld      c, 26(ix)                               ; pixel X
