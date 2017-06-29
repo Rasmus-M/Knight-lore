@@ -5107,38 +5107,57 @@ save_2d_info:
 *
 list_objects_to_draw:
 ;RAM:CE62 DD E5                       push    ix
+       mov  ix,*sp+
 ;RAM:CE64 06 28                       ld      b, #40                                  ; max 40 objects in list
+       movb @b28h,b
 ;RAM:CE66 11 20 00                    ld      de, #32                                 ; object size = 32 bytes
+       li   de,32
 ;RAM:CE69 DD 21 08 5C                 ld      ix, #graphic_objs_tbl                   ; base of object table
+       li   ix,graphic_objs_tbl
 ;RAM:CE6D 21 8B CE                    ld      hl, #objects_to_draw
+       li   hl,objects_to_draw
 ;RAM:CE70 0E 00                       ld      c, #0                                   ; init object index
-;RAM:CE72
-;RAM:CE72             loc_CE72:                                                       ; graphic no.
-;RAM:CE72 DD 7E 00                    ld      a, 0(ix)
+       movb @b00h,@c
+loc_CE72:
+;RAM:CE72 DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
+       movb @0(ix),a
 ;RAM:CE75 A7                          and     a                                       ; null?
 ;RAM:CE76 28 08                       jr      Z, loc_CE80                             ; yes, skip
+       jeq  loc_CE80
 ;RAM:CE78 DD CB 07 66                 bit     4, 7(ix)                                ; draw flag set?
+       movb @7(ix),r0
+       coc  @b10h,r0
 ;RAM:CE7C 28 02                       jr      Z, loc_CE80                             ; no, skip
+       jne  loc_CE80
 ;RAM:CE7E 71                          ld      (hl), c                                 ; add object index to list
 ;RAM:CE7F 23                          inc     hl                                      ; ptr next list address
-;RAM:CE80
-;RAM:CE80             loc_CE80:                                                       ; next object index
-;RAM:CE80 0C                          inc     c
+       movb @c,*hl+
+loc_CE80:
+;RAM:CE80 0C                          inc     c                                       ; next object index
+       ab   @b01h,@c
 ;RAM:CE81 DD 19                       add     ix, de                                  ; ptr next object in table
+       a    de,ix
 ;RAM:CE83 10 ED                       djnz    loc_CE72                                ; loop through all objects
+       sb   @b01h,b
+       jne  loc_CE72
 ;RAM:CE85 3E FF                       ld      a, #0xFF
+       li   a,>ff00
 ;RAM:CE87 77                          ld      (hl), a                                 ; flag end of list
+       movb a,*hl
 ;RAM:CE88 DD E1                       pop     ix
+       dect sp
+       mov  *sp,ix
 ;RAM:CE8A C9                          ret
        rt
 *
 * End of function list_objects_to_draw
 *
-;RAM:CE8A             ; ---------------------------------------------------------------------------
-;RAM:CE8B 00 00 00 00+objects_to_draw:.db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-;RAM:CE8B 00 00 00 00+                .db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-;RAM:CE8B 00 00 00 00+                .db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-;RAM:CEBB
+* ---------------------------------------------------------------------------
+objects_to_draw:
+       data 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+       data 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+       data 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+*
 ;RAM:CEBB             ; =============== S U B R O U T I N E =======================================
 ;RAM:CEBB
 ;RAM:CEBB
@@ -7764,6 +7783,7 @@ b0dh   byte >0d
 b10h   byte >10
 b20h   byte >20
 b22h   byte >22
+b28h   byte >28
 b68h   byte >68
 b80h   byte >80
 bc0h   byte >c0
