@@ -3403,12 +3403,12 @@ upd_88_to_90:                                                   ; -12, -16
 ;RAM:C510 21 F4 03                    ld      hl, #0x3F4                              ; +3, -12
 ;RAM:C513 18 CB                       jr      jp_set_pixel_adj
 ;RAM:C513             ; End of function adj_p3_m12
-;RAM:C513
-;RAM:C515             ; HL = starting location
-;RAM:C515             ; B = width (bytes)
-;RAM:C515             ; C = height (lines)
 *
 * =============== S U B R O U T I N E =======================================
+*
+* HL = starting location
+* B = width (bytes)
+* C = height (lines)
 *
 fill_window:
 ;RAM:C515 11 20 00                    ld      de, #32
@@ -3431,14 +3431,14 @@ fill_window:
 *
 * End of function fill_window
 *
-;RAM:C525             ; Build a list of special objects in this room
-;RAM:C525             ; - traverses special object list
-;RAM:C525             ; - adds to special_objs_here
-;RAM:C525             ;
-;RAM:C525             ; IX=graphics object table
-;RAM:C525             ;    00=player sprite
-*
 * =============== S U B R O U T I N E =======================================
+*
+* Build a list of special objects in this room
+* - traverses special object list
+* - adds to special_objs_here
+*
+* IX=graphics object table
+*    00=player sprite
 *
 find_special_objs_here:
 ;RAM:C525 11 48 5C                    ld      de, #special_objs_here
@@ -3517,19 +3517,18 @@ find_special_objs_here:
 *
 * End of function find_special_objs_here
 *
-;RAM:C591             ; updates special objects table with current data (coords etc)
-;RAM:C591             ; - traverses special_objs_here table
-;RAM:C591             ; - writes to special_objs_tbl
-;RAM:C591             ;
-;RAM:C591             ; Another bug related to ptr special_objs_tbl
-;RAM:C591             ; - the cauldron bubbles are inserted in the object table
-;RAM:C591             ;   dynamically when you enter the room. This routine checks
-;RAM:C591             ;   the graphic_no for null, but (again) not the ptr
-;RAM:C591             ;   and (again) writes to ROM @$0000
-;RAM:C591             ; * VERIFIED on the ZX Spectrum emulator!
-;RAM:C591             ;
-*
 * =============== S U B R O U T I N E =======================================
+*
+* updates special objects table with current data (coords etc)
+* - traverses special_objs_here table
+* - writes to special_objs_tbl
+*
+* Another bug related to ptr special_objs_tbl
+* - the cauldron bubbles are inserted in the object table
+*   dynamically when you enter the room. This routine checks
+*   the graphic_no for null, but (again) not the ptr
+*   and (again) writes to ROM @$0000
+* * VERIFIED on the ZX Spectrum emulator!        ;
 *
 update_special_objs:
 ;RAM:C591 FD 21 48 5C                 ld      iy, #special_objs_here
