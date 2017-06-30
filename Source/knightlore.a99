@@ -71,6 +71,7 @@ PADVAR EQU  STACK+>40
 **
 * Z80 register mapping
 *
+one    equ  3
 af     equ  4
 a      equ  4
 bc     equ  5
@@ -323,6 +324,7 @@ start:
        limi 0
        lwpi WRKSP
        li   sp,STACK
+       li   one,>0101
        bl   @gmode
 *
 ;RAM:AF6C 21 A0 5B                    ld      hl, #seed_1                             ; location to clear
@@ -408,7 +410,7 @@ update_sprite_loop:
 ;RAM:AFCA 21 BC 5B                    ld      hl, #fire_seed
        li   hl,fire_seed
 ;RAM:AFCD 34                          inc     (hl)
-       ab   @b01h,*hl
+       ab   one,*hl
 ;RAM:AFCE 21 E4 AF                    ld      hl, #ret_from_tbl_jp
        li   hl,ret_from_tbl_jp
 ;RAM:AFD1 E5                          push    hl                                      ; set return address
@@ -485,7 +487,7 @@ loc_B000:
 ;RAM:B010 21 B2 5B                    ld      hl, #not_1st_screen
        li   hl,not_1st_screen
 ;RAM:B013 CB C6                       set     0, (hl)                                 ; update special objects table next time
-       socb @b01h,*hl
+       socb one,*hl
 ;RAM:B015 CD 0E D5                    call    handle_pause
        bl   @handle_pause
 ;RAM:B018 CD A9 B8                    call    init_cauldron_bubbles
@@ -505,7 +507,7 @@ loc_B000:
        movb @rendered_objs_cnt,a
 ;RAM:B02B ED 44                       neg
        inv  a
-       ab   @b01h,a
+       ab   one,a
 ;RAM:B02D C6 06                       add     a, #6                                   ; calculate delay loop value
        ai   a,>0600
 ;RAM:B02F 47                          ld      b, a
@@ -525,7 +527,7 @@ delay_loop:
 ;RAM:B03B 20 FB                       jr      NZ, delay_loop
        jne  delay_loop
 ;RAM:B03D 10 F6                       djnz    game_delay
-       sb   @b01h,b
+       sb   one,b
        jne  game_delay
 no_delay:
 ;RAM:B03F 3A B7 5B                    ld      a, (render_status_info)
@@ -597,7 +599,7 @@ loc_B090:
 ;RAM:B092 19                          add     hl, de                                  ; next entry
        a    de,hl
 ;RAM:B093 10 FB                       djnz    loc_B090                                ; loop until done
-       sb   @b01h,b
+       sb   one,b
        jne  loc_B090
 ;RAM:B095 C9                          ret
        rt
@@ -886,12 +888,12 @@ loc_B555:
 ;RAM:B55B FD 23                       inc     iy
        inc  iy
 ;RAM:B55D 10 F6                       djnz    loc_B555
-       sb   @b01h,b
+       sb   one,b
        jne  loc_B555
 ;RAM:B55F FD 73 00                    ld      0(iy), e
        movb @e,@0(iy)
 ;RAM:B562 0D                          dec     c
-       sb   @b01h,@c
+       sb   one,@c
 ;RAM:B563 20 E7                       jr      NZ, loc_B54C
        jne  loc_B54C
 ;RAM:B565 C9                          ret
@@ -3107,6 +3109,7 @@ print_sun_moon:
 * =============== S U B R O U T I N E =======================================
 *
 display_sun_moon_frame:
+       rt
 ;RAM:C3A4 3A C3 5B                    ld      a, (all_objs_in_cauldron)
 ;RAM:C3A7 A7                          and     a
 ;RAM:C3A8 C0                          ret     NZ
@@ -3124,6 +3127,7 @@ display_sun_moon_frame:
 ;RAM:C3C0 DD 77 1B                    ld      27(ix), a                               ; pixel Y
 ;RAM:C3C3
 display_frame:                                                  ; 31 lines, 6 bytes (swapped below)
+       rt
 ;RAM:C3C3 01 06 1F                    ld      bc, #0x1F06
 ;RAM:C3C6 21 0A D9                    ld      hl, # vidbuf+0x17                       ; (184,0)
 ;RAM:C3C9 C5                          push    bc
@@ -3147,7 +3151,7 @@ display_frame:                                                  ; 31 lines, 6 by
 ;RAM:C3F8 C1                          pop     bc
 ;RAM:C3F9 11 F7 57                    ld      de, # zx_vram+0x17F7                    ; (184,0)
 ;RAM:C3FC C3 7C D6                    jp      blit_to_screen
-       b    @blit_to_screen
+;      b    @blit_to_screen
 ;RAM:C3FF             ; ---------------------------------------------------------------------------
 ;RAM:C3FF
 ;RAM:C3FF             toggle_day_night:                                               ; index
@@ -3174,24 +3178,32 @@ display_frame:                                                  ; 31 lines, 6 by
 ;RAM:C429 01 78 00                    ld      bc, #0x78 ; 'x'                         ; (120,0)
 ;RAM:C42C CD 32 C4                    call    blit_2x8
 ;RAM:C42F C3 C3 C3                    jp      display_frame
-       b    @display_frame
+;       b    @display_frame
 *
 * End of function display_sun_moon_frame
 *
-;RAM:C432
-;RAM:C432             ; =============== S U B R O U T I N E =======================================
-;RAM:C432
-;RAM:C432
-;RAM:C432             blit_2x8:
+*
+* =============== S U B R O U T I N E =======================================
+*
+blit_2x8:
+       mov  r11,*sp+
 ;RAM:C432 CD 26 D8                    call    calc_vram_addr            ; dest
+       bl   @calc_vram_addr
 ;RAM:C435 CD 11 D8                    call    calc_vidbuf_addr          ; source
+       bl   @calc_vidbuf_addr
 ;RAM:C438 69                          ld      l, c
 ;RAM:C439 60                          ld      h, b
+       mov  bc,hl
 ;RAM:C43A 01 02 08                    ld      bc, #0x802
+       li   bc,>0802
 ;RAM:C43D C3 7C D6                    jp      blit_to_screen
-;RAM:C43D             ; End of function blit_2x8
-;RAM:C43D
-;RAM:C43D             ; ---------------------------------------------------------------------------
+       dect sp
+       mov  *sp,r11
+       b    @blit_to_screen
+*
+* End of function blit_2x8
+*
+* ---------------------------------------------------------------------------
 *
 sun_moon_yoff:
        byte 5, 6, 7, 8, 9, 10, 10, 9, 8, 7, 6, 5, 5
@@ -3409,23 +3421,37 @@ upd_88_to_90:                                                   ; -12, -16
 * HL = starting location
 * B = width (bytes)
 * C = height (lines)
+* A = attribute
+*
+* Note that line length is fixed at 32.
 *
 fill_window:
-;RAM:C515 11 20 00                    ld      de, #32
-;RAM:C518
-;RAM:C518             loc_C518:
+;RAM:C515 11 20 00                    ld      de, #32                                 ; Line lenght
+       li   de,32
+loc_C518:
 ;RAM:C518 C5                          push    bc
+       mov  bc,*sp+
 ;RAM:C519 E5                          push    hl
-;RAM:C51A
-;RAM:C51A             loc_C51A:                                                       ; set byte
-;RAM:C51A 77                          ld      (hl), a
+       mov  hl,*sp+
+loc_C51A:
+;RAM:C51A 77                          ld      (hl), a                                 ; set byte
 ;RAM:C51B 23                          inc     hl                                      ; next location
+       movb a,*hl+
 ;RAM:C51C 10 FC                       djnz    loc_C51A                                ; loop for 1 line
+       sb   one,b
+       jne  loc_C51A
 ;RAM:C51E E1                          pop     hl
+       dect sp
+       mov  *sp,hl
 ;RAM:C51F 19                          add     hl, de                                  ; next line
+       a    de,hl
 ;RAM:C520 C1                          pop     bc
+       dect sp
+       mov  *sp,bc
 ;RAM:C521 0D                          dec     c                                       ; done all lines?
+       sb   one,@c
 ;RAM:C522 20 F4                       jr      NZ, loc_C518                            ; no, loop
+       jne  loc_C518
 ;RAM:C524 C9                          ret
        rt
 *
@@ -5133,11 +5159,11 @@ loc_CE72:
        movb @c,*hl+
 loc_CE80:
 ;RAM:CE80 0C                          inc     c                                       ; next object index
-       ab   @b01h,@c
+       ab   one,@c
 ;RAM:CE81 DD 19                       add     ix, de                                  ; ptr next object in table
        a    de,ix
 ;RAM:CE83 10 ED                       djnz    loc_CE72                                ; loop through all objects
-       sb   @b01h,b
+       sb   one,b
        jne  loc_CE72
 ;RAM:CE85 3E FF                       ld      a, #0xFF
        li   a,>ff00
@@ -5387,17 +5413,18 @@ calc_display_order_and_render:
 *
 * End of function calc_display_order_and_render
 *
-;RAM:D019             ; ---------------------------------------------------------------------------
-;RAM:D01A FF          render_list:    .db 0xFF
-;RAM:D01B FF                          .db 0xFF
-;RAM:D01C FF                          .db 0xFF
-;RAM:D01D FF                          .db 0xFF
-;RAM:D01E FF                          .db 0xFF
-;RAM:D01F FF                          .db 0xFF
-;RAM:D020 FF                          .db 0xFF
-;RAM:D021 FF                          .db 0xFF
-;RAM:D022
-;RAM:D022             ; =============== S U B R O U T I N E =======================================
+* ---------------------------------------------------------------------------
+render_list:
+       byte >FF
+       byte >FF
+       byte >FF
+       byte >FF
+       byte >FF
+       byte >FF
+       byte >FF
+       byte >FF
+*
+* =============== S U B R O U T I N E =======================================
 ;RAM:D022
 ;RAM:D022
 ;RAM:D022             check_user_input:
@@ -5763,7 +5790,7 @@ loc_D1EF:
 ;RAM:D205 32 BF 5B                    ld      (is_spike_ball_dropping), a
        movb a,@is_spike_ball_dropping
 ;RAM:D208 3E 01                       ld      a, #1                                   ; flag rendering of status information
-       movb @b01h,a
+       movb one,a
 ;RAM:D20A 32 B7 5B                    ld      (render_status_info), a
        movb a,@render_status_info
 ;RAM:D20D 3A 10 5C                    ld      a, (graphic_objs_tbl+8)                 ; plyr_spr_1 screen
@@ -5909,35 +5936,54 @@ display_panel:
 * =============== S U B R O U T I N E =======================================
 *
 colour_panel:
+       mov  r11,*sp+
 ;RAM:D2EF AF                          xor     a
+       clr  a
 ;RAM:D2F0 21 B6 5A                    ld      hl, # zx_aram+0x2B6
+       li   hl,zx_aram+>02B6
 ;RAM:D2F3 01 03 01                    ld      bc, #0x103                              ; 1 bytes, 3 lines
+       li   bc,>0103
 ;RAM:D2F6 CD 15 C5                    call    fill_window
+       bl   @fill_color_window
 ;RAM:D2F9 21 BD 5A                    ld      hl, # zx_aram+0x2BD
+       li   hl,zx_aram+>02BD
 ;RAM:D2FC 01 03 01                    ld      bc, #0x103                              ; 1 byte, 3 lines
+       li   bc,>0103
 ;RAM:D2FF CD 15 C5                    call    fill_window
+       bl   @fill_color_window
 ;RAM:D302 3E 42                       ld      a, #0x42 ; 'B'
+       li   a,>4200
 ;RAM:D304 21 97 5A                    ld      hl, # zx_aram+0x297
+       li   hl,zx_aram+>0297
 ;RAM:D307 01 04 06                    ld      bc, #0x604                              ; 6 bytes, 4 lines
+       li   bc,>0604
 ;RAM:D30A C3 15 C5                    jp      fill_window
-       b    @fill_window
+       dect sp
+       mov  *sp,r11
+       b    @fill_color_window
 *
 * End of function colour_panel
 *
 * =============== S U B R O U T I N E =======================================
 *
 colour_sun_moon:
+       li   a,>4600
 ;RAM:D30D 3A 4D C4                    ld      a, (sun_moon_scratchpad)                ; graphic_no
+       movb @sun_moon_scratchpad,b
 ;RAM:D310 E6 01                       and     #1                                      ; sun?
+       andi b,>0100
 ;RAM:D312 3E 46                       ld      a, #0x46 ; 'F'                          ; attribute
 ;RAM:D314 28 01                       jr      Z, loc_D317                             ; yes, skip
+       jeq  loc_D317
 ;RAM:D316 3C                          inc     a
-;RAM:D317
-;RAM:D317             loc_D317:                                                       ; attribute memory
+       ab   one,a
+loc_D317:                                                                             ; attribute memory
 ;RAM:D317 21 B8 5A                    ld      hl, # zx_aram+0x2B8
+       li   hl,zx_aram+>02B8
 ;RAM:D31A 01 02 04                    ld      bc, #0x402                              ; 4 bytes, 2 lines
+       li   bc,>0402
 ;RAM:D31D C3 15 C5                    jp      fill_window
-       b    @fill_window
+       b    @fill_color_window
 *
 * End of function colour_sun_moon
 *
@@ -6245,7 +6291,7 @@ next_bg_obj_sprite:                                                             
        dect sp
        mov  *sp,bc
 ;RAM:D447 10 D5                       djnz    next_bg_obj                             ; done location? no, loop
-       sb   @b01h,b
+       sb   one,b
        jne  next_bg_obj
 ;RAM:D449 C3 E2 D3                    jp      zero_end_of_graphic_objs_tbl
        b    @zero_end_of_graphic_objs_tbl
@@ -6254,7 +6300,7 @@ next_bg_obj_sprite:                                                             
 *
 find_fg_objs:                                                                         ; adjust bytes remaining
 ;RAM:D44C 05                          dec     b
-       sb    @b01h,b
+       sb    one,b
 ;RAM:D44D FD E5                       push    iy
        mov  iy,*sp+
 ;RAM:D44F D5                          push    de                                      ; graphic object table
@@ -6266,14 +6312,14 @@ next_fg_obj:
 ;RAM:D453 E6 07                       and     #7                                      ; count
        andi a,>0700
 ;RAM:D455 3C                          inc     a                                       ; adjust to 1-8
-       ab   @b01h,a
+       ab   one,a
 ;RAM:D456 4F                          ld      c, a                                    ; C = count
        movb a,@c
 ;RAM:D457 7E                          ld      a, (hl)                                 ; block/count
 ;RAM:D458 23                          inc     hl
        movb *hl+,a
 ;RAM:D459 05                          dec     b                                       ; adjust bytes remaining
-       sb    @b01h,b
+       sb    one,b
 ;RAM:D45A 56                          ld      d, (hl)                                 ; location (x/y/z)
 ;RAM:D45B 23                          inc     hl
        movb *hl+,d
@@ -6407,7 +6453,7 @@ loc_D4CD:                                                                       
 ;RAM:D4D1 FD 23                       inc     iy
        movb @b00h,*iy+
 ;RAM:D4D3 10 F8                       djnz    loc_D4CD
-       sb   @b01h,b
+       sb   one,b
        jne  loc_D4CD
 ;RAM:D4D5 C1                          pop     bc
        dect sp
@@ -6424,11 +6470,11 @@ loc_D4CD:                                                                       
        dect sp
        mov  *sp,hl
 ;RAM:D4DC 05                          dec     b
-       sb   @b01h,b
+       sb   one,b
 ;RAM:D4DD 28 0B                       jr      Z, loc_D4EA
        jne  loc_D4EA
 ;RAM:D4DF 0D                          dec     c                                       ; done count blocks?
-       sb   @b01h,@c
+       sb   one,@c
 ;RAM:D4E0 CA 52 D4                    jp      Z, next_fg_obj                          ; yes, exit loop
        jne  next_fg_obj
 ;RAM:D4E3 7E                          ld      a, (hl)
@@ -6509,7 +6555,7 @@ fill_DE:
 ;RAM:D50A 13                          inc     de
        movb a,*de+
 ;RAM:D50B 10 FC                       djnz    fill_DE
-       sb   @b01h,b
+       sb   one,b
        jne  fill_DE
 ;RAM:D50D C9                          ret
        rt
@@ -6573,13 +6619,13 @@ clr_byte:
 * ---------------------------------------------------------------------------
 * START OF FUNCTION CHUNK FOR clr_bitmap_memory
 *
-clr_bitmap_memory:                                              ; screen memory
+clr_bitmap_memory:
        mov  r11,*sp+
-;RAM:D544 21 00 40                    ld      hl, #zx_vram
+;RAM:D544 21 00 40                    ld      hl, #zx_vram                            ; screen memory
 ;RAM:D547 01 00 18                    ld      bc, #0x1800                             ; # bytes to clear
 ;RAM:D54A 18 EE                       jr      clr_mem
        li   r0,PTRNTB
-       clr  r1                         ; bright yellow on black
+       clr  r1
        li   r2,>1800
        bl   @vdpwr
 * Return
@@ -6597,7 +6643,7 @@ clr_attribute_memory:
 ;RAM:D552 1E 46                       ld      e, #0x46 ; 'F'                          ; bright yellow on black
 ;RAM:D554 18 E6                       jr      clr_byte
        li   r0,COLRTB
-       li   r1,>b100                   ; bright yellow on black
+       li   r1,>b100                  ; bright yellow on black
        li   r2,>1800
        bl   @vdpwr
 * Return
@@ -6615,8 +6661,9 @@ fill_attr:
 ;RAM:D559 01 00 03                    ld      bc, #0x300                              ; # bytes to clear
 ;RAM:D55C 5F                          ld      e, a                                    ; attribute to set
 ;RAM:D55D 18 DD                       jr      clr_byte                                ; fill
+       bl   @ti_color
        li   r0,COLRTB
-       movb a,r1
+       movb af_,r1
        li   r2,>1800
        bl   @vdpwr
 *      Return
@@ -6883,7 +6930,7 @@ loc_D61C:
        jlt  loc_D62C                   ; TODO: test if this works
 ;RAM:D628 ED 44                       neg
        inv  a
-       ab   @b01h,a
+       ab   one,a
 ;RAM:D62A 85                          add     a, l
        ab   @l,a
 ;RAM:D62B 6F                          ld      l, a
@@ -6905,7 +6952,7 @@ loc_D62C:
 ;RAM:D638 3A A8 5B                    ld      a, (objs_wiped_cnt)
        movb @objs_wiped_cnt,a
 ;RAM:D63B 3C                          inc     a
-       ab   @b01h,a
+       ab   one,a
 ;RAM:D63C 32 A8 5B                    ld      (objs_wiped_cnt), a
        movb a,@objs_wiped_cnt
 ;RAM:D63F C5                          push    bc
@@ -6957,7 +7004,7 @@ loc_D666:
 ;RAM:D66B 28 0C                       jr      Z, loc_D679                             ; yes, exit
        jeq  loc_D679
 ;RAM:D66D 35                          dec     (hl)
-       sb   @b01h,*hl
+       sb   one,*hl
 ;RAM:D66E E1                          pop     hl                                      ; source
        dect sp
        mov  *sp,hl
@@ -7020,11 +7067,65 @@ blit_to_screen:
 ;RAM:D696 7A                          ld      a, d
 ;RAM:D697 C6 08                       add     a, #8
 ;RAM:D699 57                          ld      d, a
-;RAM:D69A
 ;RAM:D69A             loc_D69A:                                                       ; done all lines?
 ;RAM:D69A C1                          pop     bc
 ;RAM:D69B 10 DF                       djnz    blit_to_screen                          ; no, loop
 ;RAM:D69D C9                          ret
+
+       mov  de,@wrksp2                 ; Destination: de -> r0
+       mov  hl,@wrksp2+2               ; Source: hl -> r1
+       mov  bc,@wrksp2+4               ; Dimensions: bc -> r2
+       lwpi wrksp2
+       mov  r2,r3
+       swpb r2
+       andi r2,>00ff                   ; Lines
+       andi r3,>00ff                   ; Bytes/line
+       mov  r0,r4
+       andi r4,7                       ; Number of lines into character row (n)
+       ci   r4,7                       ; If n is 7 it's a full row
+       jeq  blit1                      ; and we can skip adding more lines
+       neg  r4                         ; -n
+       a    r4,7                       ; 7 - n extra lines
+       a    r4,r2                      ; add extra lines
+blit1:
+       andi r0,>FFF8                   ; Move dest to top of character row
+       mov  r3,r4                      ; Copy bytes/line
+       li   r15,vdpwd
+blit2:
+       bl   @vwad                      ; Set VDP write address
+       li   r3,32
+       mov  r1,r5
+       s    r3,r1
+       mov  r1,r6
+       s    r3,r1
+       mov  r1,r7
+       s    r3,r1
+       mov  r1,r8
+       s    r3,r1
+       mov  r1,r9
+       s    r3,r1
+       mov  r1,r10
+       s    r3,r1
+       mov  r1,r11
+       s    r3,r1
+       mov  r1,r12
+       s    r3,r1
+       mov  r4,r3                      ; Reset bytes/line counter
+blit3:
+       movb *r5+,*r15
+       movb *r6+,*r15
+       movb *r7+,*r15
+       movb *r8+,*r15
+       movb *r9+,*r15
+       movb *r10+,*r15
+       movb *r11+,*r15
+       movb *r12+,*r15
+       dec  r3
+       jne  blit3
+       ai   r0,-256
+       ai   r2,-8
+       jgt  blit2
+       lwpi wrksp
        rt
 *
 * End of function blit_to_screen
@@ -7168,7 +7269,7 @@ calc_pixel_XY_and_render:
 ;RAM:D704 DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
        movb @0(ix),a
 ;RAM:D707 FE 01                       cp      #1                                      ; flagged as ???
-       cb   a,@b01h
+       cb   a,one
 ;RAM:D709 20 05                       jr      NZ, loc_D710                            ; no, continue
        jne  loc_D710
 ;RAM:D70B DD 36 00 00                 ld      0(ix), #0                               ; set to null
@@ -7222,13 +7323,13 @@ print_sprite_1:
 ;RAM:D72A E6 07                       and     #7
        andi a,>0700
 ;RAM:D72C 3C                          inc     a                                       ; width + 1
-       ab   @b01h,a
+       ab   one,a
 ;RAM:D72D 47                          ld      b, a                                    ; keep width+1
        movb a,b
 ;RAM:D72E DD 77 18                    ld      24(ix), a                               ; store width_bytes
        movb a,@24(ix)
 ;RAM:D731 3D                          dec     a                                       ; width  (1, 2, 3, 4, 5)
-       sb   @b01h,a
+       sb   one,a
 ;RAM:D732 E6 07                       and     #7                                      ; mod 8
        andi a,>0700
 ;RAM:D734 87                          add     a, a                                    ; multiply by 16
@@ -7238,7 +7339,7 @@ print_sprite_1:
        sla  a,4
 ;RAM:D738 ED 44                       neg                                             ; -16, -32, -48, -64, -80
        inv  a
-       ab   @b01h,a
+       ab   one,a
 ;RAM:D73A C6 50                       add     a, #0x50 ; 'P'                          ; 64, 48, 32, 16, 0
        ai   a,>5000
 loc_D73C:                                                                             ; self-modifying code
@@ -7304,7 +7405,7 @@ loc_D76F:
        sla  a,3
 ;RAM:D77A ED 44                       neg                                             ; -8, -16, -24, -32, -40
        inv  a
-       ab   @b01h,a
+       ab   one,a
 ;RAM:D77C D6 06                       sub     #6                                      ; -14, -20, -30, -38, -46
        ab   @b0ah,a                    ; 10 in this code
 * TMS9900 offsets are in words
@@ -7490,7 +7591,7 @@ loc_D800:
 ;RAM:D807 08                          ex      af, af'                                 ; restore height
        mov  af_,af
 ;RAM:D808 3D                          dec     a
-       sb   @b01h,a
+       sb   one,a
 ;RAM:D809 C2 AA D7                    jp      NZ, loc_D7AA                            ; line loop
        jne  loc_D7AA
 ;RAM:D80C ED 7B A9 5B                 ld      sp, (tmp_SP)                            ; restore stack pointer
@@ -7723,11 +7824,15 @@ vflip_sprite_data:                                                              
 *
 * Set graphics mode
 *
-gmode  mov  r11,*r10+                      ; Push return address onto the stack
+gmode:
+       lwpi wrksp2
        clr  r0
        li   r1,vregs
        li   r2,8
-gmode1 movb *r1+,@r0lb
+gmode1:
+       swpb r0
+       movb *r1+,r0
+       swpb r0
        bl   @vwtr                          ; Set register
        ai   r0,>0100
        dec  r2
@@ -7737,7 +7842,8 @@ gmode1 movb *r1+,@r0lb
        bl   @vwad
        clr  r1
        li   r2,>300
-gmode2 movb r1,@vdpwd
+gmode2:
+       movb r1,@vdpwd
        ai   r1,>0100
        dec  r2
        jne  gmode2
@@ -7746,11 +7852,11 @@ gmode2 movb r1,@vdpwd
        li   r1,>d000
        bl   @vsbw
 *      Return
-       dect r10                            ; Pop return address off the stack
-       mov  *r10,r11
+       lwpi wrksp
        b    *r11
 *      VDP registers
-vregs  byte >02                            ; Graphics II mode
+vregs:
+       byte >02                            ; Graphics II mode
        byte >e2                            ; 16K, display on, interrupt enabled
        byte nametb/>400                    ; Name table
        byte >ff                            ; Color table
@@ -7758,7 +7864,147 @@ vregs  byte >02                            ; Graphics II mode
        byte spratb/>80                     ; Sprite attribute table
        byte sprptb/>800                    ; Sprite pattern table
        byte >01                            ; Backdrop color
-*// GMODE
+*// gmode
+
+*********************************************************************************
+*
+* Fill color window
+*
+* HL = starting location in zx_aram
+* B = width (bytes)
+* C = height (lines)
+* A = attribute
+*
+fill_color_window:
+       mov  r11,*sp+
+       bl   @ti_color
+       mov  hl,r0
+       ai   r0,-zx_aram
+       mov  r0,r1
+       srl  r0,5                       ; Divide by 32 to get row
+       swpb r0                         ; Multiply by 256, this is the row offset
+       andi r1,>1f                     ; Column
+       sla  r1,3                       ; Multiply by 8, this is the column offset
+       a    r1,r0                      ; Add to row offset
+       ai   r0,COLRTB
+       li   r1,VDPWD
+       mov  bc,r2
+fill_color_window_1:
+       bl   @vwad
+       movb r2,b
+fill_color_window_2:
+       movb af_,*r1
+       movb af_,*r1
+       movb af_,*r1
+       movb af_,*r1
+       movb af_,*r1
+       movb af_,*r1
+       movb af_,*r1
+       movb af_,*r1
+       sb   one,b
+       jne  fill_color_window_2
+       ai   r0,256
+       sb   one,@c
+       jne  fill_color_window_1
+       dect sp
+       mov  *sp,r11
+       rt
+*// fill_color_window
+
+*********************************************************************************
+*
+* Get TI-99 color from ZX Spectrum color
+*
+* a: Colour-byte FBPPPIII
+*  - I - Ink colour (0-7)
+*  - P - Paper colour (0-7)
+*  - B - Bright (0-No, 1-Yes)
+*  - F - Flash  (0-No, 1-Yes)
+*
+* On return af_ contains the TI color FFFFBBBB.
+*
+ti_color:
+       movb a,@wrksp2
+       lwpi wrksp2
+       clr  r1
+*      Foreground
+       mov  r0,r2
+       andi r2,>0700                   ; Foreground bits
+       mov  r0,r3
+       andi r3,>4000                   ; Bright bit
+       srl  r3,3
+       soc  r3,r2
+       swpb r2
+       movb @tipal(r2),r1
+       sla  r1,4
+*      Background
+       mov  r0,r2
+       andi r2,>3800                   ; Background bits
+       srl  r2,3
+       soc  r3,r2
+       swpb r2
+       movb @tipal(r2),r3
+       socb r3,r1
+       lwpi wrksp
+       movb @wrksp2+2,af_
+       b    *r11
+
+* Spectrum palette
+* 0  Black,    1 D Blue,   2 D Red,     3 D Magenta
+* 4  D Green,  5 D Cyan,   6 D Yellow,  7 Grey
+* 8  Black,    9 Blue,    10 Red,      11 Magenta
+* 12 Green,   13 Cyan,    14 Yellow,   15 White
+
+* TI palette
+* 0  Trans,    1 Black,    2 M Green,   3 L Green
+* 4  D Blue,   5 L Blue,   6 D Red,     7 Cyan
+* 8  M Red,    9 L Red,   10 D Yellow, 11 L Yellow
+* 12 D Green, 13 Magenta, 14 Gray,     15 White
+
+tipal  byte 1,4,6,13,12,7,10,14,1,5,8,13,2,7,11,15
+* Not used: 3 L Green, 9 L Red
+* Not available: D Cyan, D Magenta
+*// ti_color
+       
+*********************************************************************
+*
+* Fast CPU to VDP write, replaces VSMW
+*
+* R0: Destination address
+* R1: Byte to write in MSB
+* R2: Number of bytes to copy
+*
+vdpwr:
+       mov  r0,@wrksp2
+       mov  r1,@wrksp2+2
+       mov  r2,@wrksp2+4
+       lwpi wrksp2
+       bl   @vwad
+       li   r0,vdpwd
+       mov  r2,r3
+       srl  r3,3                       ; Number of groups of 8
+       jeq  vdpwr2
+vdpwr1:
+       movb r1,*r0
+       movb r1,*r0
+       movb r1,*r0
+       movb r1,*r0
+       movb r1,*r0
+       movb r1,*r0
+       movb r1,*r0
+       movb r1,*r0
+       dec  r3
+       jne  vdpwr1
+       andi r2,>0007                   ; Isolate number of remaining bytes
+       jeq  vdpwr3
+vdpwr2:
+       movb r1,*r0
+       dec  r2
+       jne  vdpwr2
+vdpwr3:
+       lwpi wrksp
+       b    *r11
+*// vdpwr
 
 *********************************************************************
 *
@@ -7767,13 +8013,14 @@ vregs  byte >02                            ; Graphics II mode
 * R0 MSB: VDP register to write to
 * R0 LSB: Value to write
 *
-vwtr   swpb r0
-       movb r0, @vdpwa                  ; Send low byte (value) to write to VDP register
+vwtr:
        swpb r0
-       ori  r0, >8000                   ; Set up a VDP register write operation (10)
-       movb r0, @vdpwa                  ; Send high byte (address) of VDP register
+       movb r0,@vdpwa                  ; Send low byte (value) to write to VDP register
+       swpb r0
+       ori  r0,>8000                   ; Set up a VDP register write operation (10)
+       movb r0,@vdpwa                  ; Send high byte (address) of VDP register
        b    *r11
-*// VWTR
+*// vwtr
 
 *********************************************************************
 *
@@ -7783,13 +8030,14 @@ vwtr   swpb r0
 *
 * R0 is modified, but can be restored with: ANDI R0,>3FFF
 *
-vwad   swpb r0
-       movb r0, @vdpwa                  ; Send low byte of VDP RAM write address
+vwad:
        swpb r0
-       ori  r0, >4000                   ; Set read/write bits 14 and 15 to write (01)
-       movb r0, @vdpwa                  ; Send high byte of VDP RAM write address
+       movb r0,@vdpwa                  ; Send low byte of VDP RAM write address
+       swpb r0
+       ori  r0,>4000                   ; Set read/write bits 14 and 15 to write (01)
+       movb r0,@vdpwa                  ; Send high byte of VDP RAM write address
        b    *r11
-*// VWAD
+*// vwad
 
 *********************************************************************
 *
@@ -7800,86 +8048,20 @@ vwad   swpb r0
 *
 * R0 is modified, but can be restored with: ANDI R0,>3FFF
 *
-vsbw   swpb r0
-       movb r0, @vdpwa                  ; Send low byte of VDP RAM write address
+vsbw:
        swpb r0
-       ori  r0, >4000                   ; Set read/write bits 14 and 15 to write (01)
-       movb r0, @vdpwa                  ; Send high byte of VDP RAM write address
-       movb r1, @vdpwd                  ; Write byte to VDP RAM
+       movb r0,@vdpwa                  ; Send low byte of VDP RAM write address
+       swpb r0
+       ori  r0,>4000                   ; Set read/write bits 14 and 15 to write (01)
+       movb r0,@vdpwa                  ; Send high byte of VDP RAM write address
+       movb r1,@vdpwd                  ; Write byte to VDP RAM
        b    *r11
-*// VSBW
+*// vsbw
 
 *********************************************************************
 *
-* Fast CPU to VDP copy, replaces VMBW
-*
-* R0: Destination address
-* R1: Source address
-* R2: Number of bytes to copy
-*
-vdpcp  swpb r0
-       movb r0, @vdpwa                  ; Send low byte of VDP RAM write address
-       swpb r0
-       ori  r0, >4000                   ; Set the two MSbits to 01 for write
-       movb r0, @vdpwa                  ; Send high byte of VDP RAM write address
-       li   r0, vdpwd
-vdpcp0 mov  r2, r3
-       srl  r3, 3                       ; Number of groups of 8
-       jeq  vdpcp2
-vdpcp1 movb *r1+, *r0
-       movb *r1+, *r0
-       movb *r1+, *r0
-       movb *r1+, *r0
-       movb *r1+, *r0
-       movb *r1+, *r0
-       movb *r1+, *r0
-       movb *r1+, *r0
-       dec  r3
-       jne  vdpcp1
-       andi r2, >0007                   ; Isolate number of remaining bytes
-       jeq  vdpcp3
-vdpcp2 movb *r1+, *r0
-       dec  r2
-       jne  vdpcp2
-vdpcp3 b    *r11
-*// VDPCP
-
-*********************************************************************
-*
-* Fast CPU to VDP write, replaces VSMW
-*
-* R0: Destination address
-* R1: Byte to write in MSB
-* R2: Number of bytes to copy
-*
-vdpwr  swpb r0
-       movb r0, @vdpwa                  ; Send low byte of VDP RAM write address
-       swpb r0
-       ori  r0, >4000                   ; Set the two MSbits to 01 for write
-       movb r0, @vdpwa                  ; Send high byte of VDP RAM write address
-       li   r0, vdpwd
-       mov  r2, r3
-       srl  r3, 3                       ; Number of groups of 8
-       jeq  vdpwr2
-vdpwr1 movb r1, *r0
-       movb r1, *r0
-       movb r1, *r0
-       movb r1, *r0
-       movb r1, *r0
-       movb r1, *r0
-       movb r1, *r0
-       movb r1, *r0
-       dec  r3
-       jne  vdpwr1
-       andi r2, >0007                   ; Isolate number of remaining bytes
-       jeq  vdpwr3
-vdpwr2 movb r1, *r0
-       dec  r2
-       jne  vdpwr2
-vdpwr3 b    *r11
-*// VDPWR
-
 * Byte constants
+*
 b00h   byte >00
 b01h   byte >01
 b02h   byte >02
@@ -7894,9 +8076,14 @@ b80h   byte >80
 bc0h   byte >c0
 bffh   byte >ff
 
+*===========================================================================
+*
+* Copyright text
+*
        text 'COPYRIGHT 1984 A.C.G.'
+*
 * end of 'RAM'
-
+*
 *===========================================================================
 *
 * Segment type: Regular
