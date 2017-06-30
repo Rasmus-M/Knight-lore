@@ -435,7 +435,6 @@ jump_to_tbl_entry:
 ;RAM:AFE2 6F                          ld      l, a                                    ; HL=jump address
        mov  *hl,hl
 ;RAM:AFE3 E9                          jp      (hl)                                    ; go
-       li   hl,no_update               ; TODO: remove
        b    *hl
 *
 * END OF FUNCTION CHUNK FOR main
@@ -906,6 +905,7 @@ loc_B555:
 * at the end of the game
 *
 upd_131_to_133:
+       b    @no_update
 ;RAM:B566 CD D8 C4                    call    adj_m4_m12
 ;RAM:B569 DD 7E 03                    ld      a, 3(ix)                                ; Z
 ;RAM:B56C FE A4                       cp      #164                                    ; <164?
@@ -1012,6 +1012,7 @@ upd_131_to_133:
 ;RAM:B5FF             ; - bounces away from sabreman
 ;RAM:B5FF
 upd_182_183:                                                    ; adj(-4,-8)
+       b    @no_update
 ;RAM:B5FF CD F2 C4                    call    upd_12_to_15
 ;RAM:B602 DD 6E 09                    ld      l, 9(ix)                                ; dX
 ;RAM:B605 DD 66 0A                    ld      h, 10(ix)                               ; dY
@@ -1088,6 +1089,7 @@ upd_182_183:                                                    ; adj(-4,-8)
 ;RAM:B683             ; block (dropping)
 ;RAM:B683
 upd_91:
+       b    @no_update
 ;RAM:B683 CD E3 C4                    call    upd_6_7
 ;RAM:B686 DD CB 0D 5E                 bit     3, 13(ix)                               ; triggered?
 ;RAM:B68A C8                          ret     Z                                       ; no, exit
@@ -1104,6 +1106,7 @@ upd_91:
 ;RAM:B6A2             ; collapsing block
 ;RAM:B6A2
 upd_143:
+       b    @no_update
 ;RAM:B6A2 CD E3 C4                    call    upd_6_7
 ;RAM:B6A5 DD CB 0D 5E                 bit     3, 13(ix)                               ; triggered?
 ;RAM:B6A9 C8                          ret     Z                                       ; no, return
@@ -1113,6 +1116,7 @@ upd_143:
 ;RAM:B6B1             ; block (moving NS)
 ;RAM:B6B1
 upd_55:
+       b    @no_update
 ;RAM:B6B1 CD 62 B4                    call    audio_B462
 ;RAM:B6B4 21 0A 02                    ld      hl, #0x20A                              ; IX+2,IX+10 (Y,dY)
 ;RAM:B6B7 18 06                       jr      loc_B6BF
@@ -1120,6 +1124,7 @@ upd_55:
 ;RAM:B6B9             ; block (moving EW)
 ;RAM:B6B9
 upd_54:
+       b    @no_update
 ;RAM:B6B9 CD 5D B4                    call    audio_B45D
 ;RAM:B6BC 21 09 01                    ld      hl, #0x109                              ; IX+1,IX+9 (X,dX)
 ;RAM:B6BF
@@ -1163,6 +1168,7 @@ upd_54:
 ;RAM:B6F9             ; guard and wizard (bottom half)
 ;RAM:B6F9
 upd_144_to_149_152_to_157:
+       b    @no_update
 ;RAM:B6F9 CD DD C4                    call    adj_m6_m12
 ;RAM:B6FC DD 7E 09                    ld      a, 9(ix)                                ; dX
 ;RAM:B6FF DD B6 0A                    or      10(ix)                                  ; dX & dY both 0?
@@ -1205,6 +1211,7 @@ upd_144_to_149_152_to_157:
 ;RAM:B73C             ; guard (EW)
 ;RAM:B73C
 upd_150_151:
+       b    @no_update
 ;RAM:B73C CD 0B C5                    call    adj_p7_m12
 ;RAM:B73F DD CB 0D 46                 bit     0, 13(ix)                               ; E or W?
 ;RAM:B743 3E 02                       ld      a, #2
@@ -1270,12 +1277,14 @@ upd_150_151:
 ;RAM:B7A3             ; gargoyle
 ;RAM:B7A3
 upd_22:
+       b    @no_update
 ;RAM:B7A3 CD 5C B8                    call    set_both_deadly_flags
 ;RAM:B7A6 C3 FC C4                    jp      adj_m7_m12                              ; adj(-7,-12)
 ;RAM:B7A9             ; ---------------------------------------------------------------------------
 ;RAM:B7A9             ; spiked ball
 ;RAM:B7A9
 upd_63:
+       b    @no_update
 ;RAM:B7A9 CD 5C B8                    call    set_both_deadly_flags
 ;RAM:B7AC CD E3 C4                    call    upd_6_7
 ;RAM:B7AF 3A C0 5B                    ld      a, (disable_spike_ball_drop)
@@ -1314,12 +1323,14 @@ upd_63:
 ;RAM:B7E7             ; spikes
 ;RAM:B7E7
 upd_23:
+       b    @no_update
 ;RAM:B7E7 CD 5C B8                    call    set_both_deadly_flags
 ;RAM:B7EA C3 E3 C4                    jp      upd_6_7
 ;RAM:B7ED             ; ---------------------------------------------------------------------------
 ;RAM:B7ED             ; fire (moving EW)
 ;RAM:B7ED
 upd_86_87:
+       b    @no_update
 ;RAM:B7ED CD F2 C4                    call    upd_12_to_15
 ;RAM:B7F0 DD 36 0B 01                 ld      11(ix), #1                              ; pre-load dZ=1
 ;RAM:B7F4 DD CB 0D 46                 bit     0, 13(ix)                               ; moving east?
@@ -1338,6 +1349,7 @@ upd_86_87:
 ;RAM:B80F             ; fire (moving NS)
 ;RAM:B80F
 upd_180_181:
+       b    @no_update
 ;RAM:B80F CD F2 C4                    call    upd_12_to_15
 ;RAM:B812 DD 36 0B 01                 ld      11(ix), #1                              ; dZ=1
 ;RAM:B816 DD CB 0D 4E                 bit     1, 13(ix)                               ; moving north?
@@ -1365,6 +1377,7 @@ upd_180_181:
 ;RAM:B83F             ; fire (stationary) (not used)
 ;RAM:B83F
 upd_176_177:
+       b    @no_update
 ;RAM:B83F CD F2 C4                    call    upd_12_to_15
 ;RAM:B842 3A BC 5B                    ld      a, (fire_seed)
 ;RAM:B845 E6 01                       and     #1
@@ -1393,6 +1406,7 @@ upd_176_177:
 ;RAM:B865             ; ball up/down
 ;RAM:B865
 upd_178_179:                                                    ; adjust (-4,-8)
+       b    @no_update
 ;RAM:B865 CD F2 C4                    call    upd_12_to_15
 ;RAM:B868 3A BD 5B                    ld      a, (ball_bounce_height)
 ;RAM:B86B A7                          and     a                                       ; bouncing?
@@ -1454,6 +1468,7 @@ init_cauldron_bubbles:
 ;RAM:B8DA             ; even more sparkles (showing next object required)
 ;RAM:B8DA
 upd_160_to_163:
+       b    @no_update
 ;RAM:B8DA CD D8 C4                    call    adj_m4_m12
 ;RAM:B8DD 3A 48 5C                    ld      a, (special_objs_here)
 ;RAM:B8E0 A7                          and     a                                       ; null?
@@ -1491,6 +1506,7 @@ upd_160_to_163:
 ;RAM:B923             ; special objs when 1st being put into cauldron
 ;RAM:B923
 upd_168_to_175:
+       b    @no_update
 ;RAM:B923 CD D8 C4                    call    adj_m4_m12
 ;RAM:B926 DD 36 00 A0                 ld      0(ix), #160                             ; graphic_no (sparkles)
 ;RAM:B92A 18 EA                       jr      loc_B916
@@ -1498,6 +1514,7 @@ upd_168_to_175:
 ;RAM:B92C             ; repel spell
 ;RAM:B92C
 upd_164_to_167:
+       b    @no_update
 ;RAM:B92C CD D8 C4                    call    adj_m4_m12
 ;RAM:B92F DD 7E 08                    ld      a, 8(ix)                                ; object screen
 ;RAM:B932 FE 88                       cp      #136                                    ; cauldron room?
@@ -1527,6 +1544,7 @@ upd_164_to_167:
 ;RAM:B95E             ; final sparkles in cauldron
 ;RAM:B95E
 upd_111:                                                        ; invalid
+       b    @no_update
 ;RAM:B95E DD 36 00 01                 ld      0(ix), #1
 ;RAM:B962
 ;RAM:B962             loc_B962:
@@ -1587,17 +1605,20 @@ upd_111:                                                        ; invalid
 ;RAM:B99C             ; cauldron (bottom)
 ;RAM:B99C
 upd_141:
+       b    @no_update
 ;RAM:B99C C3 06 C5                    jp      upd_88_to_90
 ;RAM:B99F             ; ---------------------------------------------------------------------------
 ;RAM:B99F             ; cauldron (top)
 ;RAM:B99F
 upd_142:                                                        ; +12, -24
+       b    @no_update
 ;RAM:B99F 21 E8 0C                    ld      hl, #0xCE8
 ;RAM:B9A2 C3 2B C7                    jp      set_pixel_adj
 ;RAM:B9A5             ; ---------------------------------------------------------------------------
 ;RAM:B9A5             ; guard and wizard (top half)
 ;RAM:B9A5
 upd_30_31_158_159:
+       b    @no_update
 ;RAM:B9A5 CD 10 C5                    call    adj_p3_m12
 ;RAM:B9A8 CD 00 C7                    call    dec_dZ_and_update_XYZ
 ;RAM:B9AB CD CC B9                    call    move_guard_wizard_NSEW
@@ -2361,6 +2382,7 @@ print_text:
 ;RAM:BEFE             ; player appear sparkles
 ;RAM:BEFE
 upd_120_to_126:
+       b    @no_update
 ;RAM:BEFE CD D8 C4                    call    adj_m4_m12
 ;RAM:BF01 3A A2 5B                    ld      a, (seed_2)
 ;RAM:BF04 2F                          cpl
@@ -2373,6 +2395,7 @@ upd_120_to_126:
 ;RAM:BF11             ; last player appears sparkle
 ;RAM:BF11
 upd_127:
+       b    @no_update
 ;RAM:BF11 CD D8 C4                    call    adj_m4_m12
 ;RAM:BF14 DD CB 0D B6                 res     6, 13(ix)
 ;RAM:BF18 DD 7E 10                    ld      a, 16(ix)                               ; player graphic_no
@@ -2390,6 +2413,7 @@ upd_127:
 ;RAM:BF2B             ; death sparkles
 ;RAM:BF2B
 upd_112_to_118_184:
+       b    @no_update
 ;RAM:BF2B CD D8 C4                    call    adj_m4_m12
 ;RAM:BF2E DD 34 00                    inc     0(ix)                                   ; graphic_no
 ;RAM:BF31             ; START OF FUNCTION CHUNK FOR chk_and_init_transform
@@ -2402,6 +2426,7 @@ upd_112_to_118_184:
 ;RAM:BF37             ; sparkles (object in cauldron)
 ;RAM:BF37
 upd_185_187:
+       b    @no_update
 ;RAM:BF37 DD 6E 10                    ld      l, 16(ix)
 ;RAM:BF3A DD 66 11                    ld      h, 17(ix)
 ;RAM:BF3D             ;
@@ -2421,6 +2446,7 @@ upd_185_187:
 ;RAM:BF3F             ; last death sparkle
 ;RAM:BF3F
 upd_119:
+       b    @no_update
 ;RAM:BF3F CD D8 C4                    call    adj_m4_m12
 ;RAM:BF42 C3 5E B9                    jp      upd_111
 *
@@ -2788,6 +2814,7 @@ display_objects:
 ;RAM:C1AB             ; extra life
 ;RAM:C1AB
 upd_103:
+       b    @no_update
 ;RAM:C1AB CD D3 C4                    call    upd_128_to_130
 ;RAM:C1AE DD E5                       push    ix
 ;RAM:C1B0 FD E1                       pop     iy                                      ; iy=extra life object
@@ -2820,6 +2847,7 @@ upd_103:
 ;RAM:C1F1             ; special objects being put in cauldron
 ;RAM:C1F1
 upd_104_to_110:
+       b    @no_update
 ;RAM:C1F1 CD D8 C4                    call    adj_m4_m12
 ;RAM:C1F4 DD 7E 01                    ld      a, 1(ix)                                ; X
 ;RAM:C1F7 D6 80                       sub     #128
@@ -2911,6 +2939,7 @@ objects_required:
 ;RAM:C28B             ; special objects
 ;RAM:C28B
 upd_96_to_102:
+       b    @no_update
 ;RAM:C28B CD D8 C4                    call    adj_m4_m12
 ;RAM:C28E CD 00 C7                    call    dec_dZ_and_update_XYZ
 ;RAM:C291 DD CB 0D 46                 bit     0, 13(ix)                               ; just dropped?
@@ -3040,6 +3069,7 @@ no_update:
 ;RAM:C337             ; human/wulf transform
 ;RAM:C337
 upd_92_to_95:
+       b    @no_update
 ;RAM:C337 CD ED C4                    call    upd_11
 ;RAM:C33A DD CB 0D 76                 bit     6, 13(ix)
 ;RAM:C33E 28 09                       jr      Z, loc_C349
@@ -3268,6 +3298,7 @@ init_special_objects:
 ;RAM:C4AA             ; block
 ;RAM:C4AA
 upd_62:
+       b    @no_update
 ;RAM:C4AA CD E3 C4                    call    upd_6_7
 ;RAM:C4AD CD F3 C9                    call    clear_dX_dY
 ;RAM:C4B0 CD E9 B3                    call    audio_B3E9
@@ -3276,6 +3307,7 @@ upd_62:
 ;RAM:C4B6             ; chest
 ;RAM:C4B6
 upd_85:
+       b    @no_update
 ;RAM:C4B6 CD E3 C4                    call    upd_6_7
 ;RAM:C4B9 CD 00 C7                    call    dec_dZ_and_update_XYZ
 ;RAM:C4BC CD A1 C1                    call    is_obj_moving
@@ -3285,6 +3317,7 @@ upd_85:
 ;RAM:C4C3             ; table
 ;RAM:C4C3
 upd_84:
+       b    @no_update
 ;RAM:C4C3 CD E3 C4                    call    upd_6_7
 ;RAM:C4C6
 ;RAM:C4C6             dec_dZ_upd_XYZ_wipe_if_moving:
@@ -3299,6 +3332,7 @@ upd_84:
 ;RAM:C4D3
 ;RAM:C4D3
 upd_128_to_130:
+       b    @no_update
 ;RAM:C4D3 21 F8 FE                    ld      hl, #0xFEF8                             ; -2, -8
 ;RAM:C4D6 18 08                       jr      jp_set_pixel_adj
 ;RAM:C4D6             ; End of function upd_128_to_130
@@ -3336,6 +3370,7 @@ jp_set_pixel_adj:
 ;RAM:C4E3
 ;RAM:C4E3
 upd_6_7:
+       b    @no_update
 ;RAM:C4E3 21 F0 F8                    ld      hl, #0xF8F0                             ; -8, -16
 ;RAM:C4E6 18 F8                       jr      jp_set_pixel_adj
 ;RAM:C4E6             ; End of function upd_6_7
@@ -3344,6 +3379,7 @@ upd_6_7:
 ;RAM:C4E8             ; bricks
 ;RAM:C4E8
 upd_10:                                                         ; -1, -20
+       b    @no_update
 ;RAM:C4E8 21 EC FF                    ld      hl, #0xFFEC
 ;RAM:C4EB 18 F3                       jr      jp_set_pixel_adj
 ;RAM:C4ED             ; bricks
@@ -3352,6 +3388,7 @@ upd_10:                                                         ; -1, -20
 ;RAM:C4ED
 ;RAM:C4ED
 upd_11:
+       b    @no_update
 ;RAM:C4ED 21 F4 FE                    ld      hl, #0xFEF4                             ; -2, -12
 ;RAM:C4F0 18 EE                       jr      jp_set_pixel_adj
 ;RAM:C4F0             ; End of function upd_11
@@ -3362,6 +3399,7 @@ upd_11:
 ;RAM:C4F2
 ;RAM:C4F2
 upd_12_to_15:
+       b    @no_update
 ;RAM:C4F2 21 F8 FC                    ld      hl, #0xFCF8                             ; -4, -8
 ;RAM:C4F5 18 E9                       jr      jp_set_pixel_adj
 ;RAM:C4F5             ; End of function upd_12_to_15
@@ -3396,6 +3434,7 @@ upd_12_to_15:
 ;RAM:C506             ; ---------------------------------------------------------------------------
 ;RAM:C506
 upd_88_to_90:                                                   ; -12, -16
+       b    @no_update
 ;RAM:C506 21 F0 F4                    ld      hl, #0xF4F0
 ;RAM:C509 18 D5                       jr      jp_set_pixel_adj
 ;RAM:C50B
@@ -3598,6 +3637,7 @@ update_special_objs:
 ;RAM:C5C8             ; ghost
 ;RAM:C5C8
 upd_80_to_83:
+       b    @no_update
 ;RAM:C5C8 CD DD C4                    call    adj_m6_m12
 ;RAM:C5CB CD 00 C7                    call    dec_dZ_and_update_XYZ
 ;RAM:C5CE DD 7E 09                    ld      a, 9(ix)                                ; dX
@@ -3695,6 +3735,7 @@ upd_80_to_83:
 ;RAM:C65E             ; portcullis (static)
 ;RAM:C65E
 upd_8:
+       b    @no_update
 ;RAM:C65E CD DD C4                    call    adj_m6_m12
 ;RAM:C661 21 AF 5B                    ld      hl, #portcullis_moving
 ;RAM:C664 7E                          ld      a, (hl)
@@ -3761,6 +3802,7 @@ upd_8:
 ;RAM:C6BD             ; portcullis (moving)
 ;RAM:C6BD
 upd_9:
+       b    @no_update
 ;RAM:C6BD CD DD C4                    call    adj_m6_m12
 ;RAM:C6C0 DD CB 0D FE                 set     7, 13(ix)                               ; fatal if it hits player
 ;RAM:C6C4 3A 14 5C                    ld      a, (graphic_objs_tbl+0xC)
@@ -3816,6 +3858,7 @@ upd_9:
 ;RAM:C722             ; arch (far side)
 ;RAM:C722
 upd_3_5:                                                        ; hflip?
+       b    @no_update
 ;RAM:C722 DD CB 07 76                 bit     6, 7(ix)
 ;RAM:C726 20 0A                       jr      NZ, adj_3_5_hflip                       ; yes, go
 ;RAM:C728 21 F7 FD                    ld      hl, #0xFDF7                             ; -3, -9
@@ -3844,6 +3887,7 @@ set_pixel_adj:
 ;RAM:C73C             ; arch (near side)
 ;RAM:C73C
 upd_2_4:                                                        ; hflip?
+       b    @no_update
 ;RAM:C73C DD CB 07 76                 bit     6, 7(ix)
 ;RAM:C740 20 2A                       jr      NZ, adj_2_4_hflip                       ; yes, go
 ;RAM:C742 DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
@@ -3994,12 +4038,14 @@ upd_2_4:                                                        ; hflip?
 ;RAM:C823             ; sabreman legs
 ;RAM:C823
 upd_16_to_21_24_to_29:
+       b    @no_update
 ;RAM:C823 CD DD C4                    call    adj_m6_m12
 ;RAM:C826 18 03                       jr      upd_player_bottom
 ;RAM:C828             ; ---------------------------------------------------------------------------
 ;RAM:C828             ; wulf legs
 ;RAM:C828
 upd_48_to_53_56_to_61:
+       b    @no_update
 ;RAM:C828 CD FC C4                    call    adj_m7_m12
 ;RAM:C82B
 ;RAM:C82B             upd_player_bottom:                                              ; dead?
@@ -5034,12 +5080,14 @@ upd_48_to_53_56_to_61:
 ;RAM:CDDA             ; player (human top half)
 ;RAM:CDDA
 upd_32_to_47:
+       b    @no_update
 ;RAM:CDDA CD F7 C4                    call    adj_m8_m12
 ;RAM:CDDD 18 03                       jr      upd_player_top
 ;RAM:CDDF             ; ---------------------------------------------------------------------------
 ;RAM:CDDF             ; player (wulf top half)
 ;RAM:CDDF
 upd_64_to_79:
+       b    @no_update
 ;RAM:CDDF CD 01 C5                    call    adj_m12_m12
 ;RAM:CDE2             ;
 ;RAM:CDE2             ; copies most information from bottom half object
@@ -5186,153 +5234,228 @@ objects_to_draw:
 * =============== S U B R O U T I N E =======================================
 *
 calc_display_order_and_render:
+       mov  r11,*sp+
 ;RAM:CEBB AF                          xor     a
+       clr  a
 ;RAM:CEBC 32 BE 5B                    ld      (rendered_objs_cnt), a
+       movb a,@rendered_objs_cnt
 ;RAM:CEBF DD E5                       push    ix
+       mov  ix,*sp+
 ;RAM:CEC1 FD E5                       push    iy
-;RAM:CEC3
-;RAM:CEC3             process_remaining_objs:
+       mov  iy,*sp+
+process_remaining_objs:
 ;RAM:CEC3 11 8B CE                    ld      de, #objects_to_draw
-;RAM:CEC6
-;RAM:CEC6             loc_CEC6:                                                       ; graphic no.
-;RAM:CEC6 1A                          ld      a, (de)
+       li   de,objects_to_draw
+loc_CEC6:
+;RAM:CEC6 1A                          ld      a, (de)                                 ; graphic no.
 ;RAM:CEC7 13                          inc     de
+       movb *de+,a
 ;RAM:CEC8 FE FF                       cp      #0xFF                                   ; end of list?
+       cb   a,@bffh
 ;RAM:CECA CA 15 D0                    jp      Z, render_done                          ; yes, exit
+       jne  !
+       b    @render_done
 ;RAM:CECD CB 7F                       bit     7, a                                    ; already rendered?
+!      movb a,a
 ;RAM:CECF 20 F5                       jr      NZ, loc_CEC6                            ; yes, skip
+       jlt  loc_CEC6
 ;RAM:CED1 CD B5 D3                    call    get_ptr_object                          ; ret=HL
+       bl   @get_ptr_object
 ;RAM:CED4 ED 53 CD 5B                 ld      (render_obj_1), de
+       mov  de,@render_obj_1
 ;RAM:CED8 E5                          push    hl
 ;RAM:CED9 DD E1                       pop     ix                                      ; IX=ptr graphic object table entry #1
-;RAM:CEDB
-;RAM:CEDB             loc_CEDB:                                                       ; next object graphic no.
-;RAM:CEDB 1A                          ld      a, (de)
+       mov  hl,ix
+loc_CEDB:
+;RAM:CEDB 1A                          ld      a, (de)                                 ; next object graphic no.
 ;RAM:CEDC 13                          inc     de
+       movb *de+,a
 ;RAM:CEDD FE FF                       cp      #0xFF                                   ; end of list?
+       cb   @bffh,a
 ;RAM:CEDF CA 00 D0                    jp      Z, render_obj_no1
+       jne  !
+       b    @render_obj_no1
 ;RAM:CEE2 CB 7F                       bit     7, a
+!      movb a,a
 ;RAM:CEE4 20 F5                       jr      NZ, loc_CEDB
+       jlt  loc_CEDB
 ;RAM:CEE6 CD B5 D3                    call    get_ptr_object
+       bl   @get_ptr_object
 ;RAM:CEE9 ED 53 CF 5B                 ld      (render_obj_2), de
+       mov  de,@render_obj_2
 ;RAM:CEED E5                          push    hl
 ;RAM:CEEE FD E1                       pop     iy                                      ; HL,IY=ptr graphic object table entry #2
+       mov  hl,iy
 ;RAM:CEF0 DD E5                       push    ix
 ;RAM:CEF2 C1                          pop     bc                                      ; IX,BC=ptr graphic object table entry #1
+       mov  ix,bc
 ;RAM:CEF3 A7                          and     a
 ;RAM:CEF4 ED 42                       sbc     hl, bc                                  ; same objects?
+       s    bc,hl
 ;RAM:CEF6 28 E3                       jr      Z, loc_CEDB                             ; yes, loop
+       jeq  loc_CEDB
 ;RAM:CEF8 0E 00                       ld      c, #0
+       movb @b00h,@c
 ;RAM:CEFA FD 7E 03                    ld      a, 3(iy)                                ; Z2
+       movb @3(iy),a
 ;RAM:CEFD FD 86 06                    add     a, 6(iy)                                ; add height(H2)
+       ab   @6(iy),a
 ;RAM:CF00 6F                          ld      l, a                                    ; Z2+H2
+       movb a,@l
 ;RAM:CF01 DD 7E 03                    ld      a, 3(ix)                                ; Z1
+       movb @3(ix),a
 ;RAM:CF04 95                          sub     l                                       ; Z1-(Z2+H2)
+       cb   a,@l                      ; TODO: is this correct?
 ;RAM:CF05 30 0F                       jr      NC, loc_CF16                            ; no overlap (C+=0)
+       jhe  loc_CF16
 ;RAM:CF07 DD 7E 03                    ld      a, 3(ix)                                ; Z1
+       movb @3(ix),a
 ;RAM:CF0A DD 86 06                    add     a, 6(ix)                                ; add H1
+       ab   @6(ix),a
 ;RAM:CF0D 6F                          ld      l, a
+       movb a,@l
 ;RAM:CF0E FD 7E 03                    ld      a, 3(iy)                                ; Z2
+       movb @3(iy),a
 ;RAM:CF11 95                          sub     l                                       ; Z2-(Z1+H1)
+       cb   a,@l                      ; TODO: is this correct?
 ;RAM:CF12 38 01                       jr      C, loc_CF15                             ; overlap (C+=1)
+       jl   loc_CF15
 ;RAM:CF14 0C                          inc     c                                       ; no overlap (C+=2)
-;RAM:CF15
-;RAM:CF15             loc_CF15:
+       ab   one,@c
+loc_CF15:
 ;RAM:CF15 0C                          inc     c
-;RAM:CF16
-;RAM:CF16             loc_CF16:                                                       ; Y2
-;RAM:CF16 FD 7E 02                    ld      a, 2(iy)
+       ab   one,@c
+loc_CF16:
+;RAM:CF16 FD 7E 02                    ld      a, 2(iy)                                ; Y2
+       movb @2(iy),a
 ;RAM:CF19 FD 86 05                    add     a, 5(iy)                                ; add depth (D2)
+       ab   @5(iy),a
 ;RAM:CF1C 6F                          ld      l, a
+       movb a,@l
 ;RAM:CF1D DD 7E 02                    ld      a, 2(ix)                                ; Y1
+       movb @2(ix),a
 ;RAM:CF20 DD 96 05                    sub     5(ix)                                   ; sub D1
+       sb   @5(ix),a
 ;RAM:CF23 95                          sub     l                                       ; Y1-D1-(Y2+d2)
+       cb   a,@l                      ; TODO: is this correct?
 ;RAM:CF24 30 16                       jr      NC, loc_CF3C                            ; no overlap (C+=0)
+       jhe  loc_CF3C
 ;RAM:CF26 DD 7E 02                    ld      a, 2(ix)                                ; Y1
+       movb @2(ix),a
 ;RAM:CF29 DD 86 05                    add     a, 5(ix)                                ; add D1
+       ab   @5(ix),a
 ;RAM:CF2C 6F                          ld      l, a
+       movb a,@l
 ;RAM:CF2D FD 7E 02                    ld      a, 2(iy)                                ; Y2
+       movb @2(iy),a
 ;RAM:CF30 FD 96 05                    sub     5(iy)                                   ; sub D2
+       ab   @5(iy),a
 ;RAM:CF33 95                          sub     l                                       ; Y2-D2-(Y1+D1)
+       mov  af,af_                    ; TODO: is this correct?
 ;RAM:CF34 79                          ld      a, c
+       movb @c,a
+       cb   af_,@l
 ;RAM:CF35 38 02                       jr      C, loc_CF39                             ; overlap (C+=3)
+       jl   loc_CF39
 ;RAM:CF37 C6 03                       add     a, #3                                   ; no overlap (C+=6)
-;RAM:CF39
-;RAM:CF39             loc_CF39:
+       ab   @b03h,a
+loc_CF39:
 ;RAM:CF39 C6 03                       add     a, #3
+       ab   @b03h,a
 ;RAM:CF3B 4F                          ld      c, a
-;RAM:CF3C
-;RAM:CF3C             loc_CF3C:                                                       ; X2
-;RAM:CF3C FD 7E 01                    ld      a, 1(iy)
+       movb   a,@c
+loc_CF3C:
+;RAM:CF3C FD 7E 01                    ld      a, 1(iy)                                ; X2
+       movb @1(iy),a
 ;RAM:CF3F FD 86 04                    add     a, 4(iy)                                ; add width (W2)
+       ab   @4(iy),a
 ;RAM:CF42 6F                          ld      l, a
+       movb a,@l
 ;RAM:CF43 DD 7E 01                    ld      a, 1(ix)                                ; X1
+       movb @1(ix),a
 ;RAM:CF46 DD 96 04                    sub     4(ix)                                   ; sub W1
+       ab   @4(ix),a
 ;RAM:CF49 95                          sub     l                                       ; X1-W1-(X2+W2)
+       cb   @a,@l                     ; TODO: is this correct?
 ;RAM:CF4A 30 16                       jr      NC, loc_CF62                            ; no overlap (C+=0)
+       jhe  loc_CF62
 ;RAM:CF4C DD 7E 01                    ld      a, 1(ix)                                ; X1
+       movb @1(ix),a
 ;RAM:CF4F DD 86 04                    add     a, 4(ix)                                ; add W1
+       ab   @4(ix),a
 ;RAM:CF52 6F                          ld      l, a
+       movb a,@l
 ;RAM:CF53 FD 7E 01                    ld      a, 1(iy)                                ; X2
+       movb @1(iy),a
 ;RAM:CF56 FD 96 04                    sub     4(iy)                                   ; sub W2
+       ab   @4(iy),a
 ;RAM:CF59 95                          sub     l                                       ; X2-W2-(X1+W1)
+       movb af,af_
 ;RAM:CF5A 79                          ld      a, c
+       movb @c,a
+       cb   af_,@l
 ;RAM:CF5B 38 02                       jr      C, loc_CF5F                             ; overlap (C+=9)
+       jl   loc_Cf5F
 ;RAM:CF5D C6 09                       add     a, #9                                   ; no overlap (c+=18)
-;RAM:CF5F
-;RAM:CF5F             loc_CF5F:
+       ab   @b09h,a
+loc_CF5F:
 ;RAM:CF5F C6 09                       add     a, #9
+       ab   @b09h,a
 ;RAM:CF61 4F                          ld      c, a
-;RAM:CF62
-;RAM:CF62             loc_CF62:
+       movb a,@c
+loc_CF62:
 ;RAM:CF62 69                          ld      l, c
+       movb @c,@l
 ;RAM:CF63 01 69 CF                    ld      bc, #off_CF69                           ; jump table
+       li   bc,off_CF69
 ;RAM:CF66 C3 DB AF                    jp      jump_to_tbl_entry
-;RAM:CF66             ; ---------------------------------------------------------------------------
-;RAM:CF69 9F CF       off_CF69:       .dw continue_1
-;RAM:CF6B 9F CF                       .dw continue_1
-;RAM:CF6D 9F CF                       .dw continue_1
-;RAM:CF6F A5 CF                       .dw d_3467121516
-;RAM:CF71 A5 CF                       .dw d_3467121516
-;RAM:CF73 9F CF                       .dw continue_1
-;RAM:CF75 A5 CF                       .dw d_3467121516
-;RAM:CF77 A5 CF                       .dw d_3467121516
-;RAM:CF79 9F CF                       .dw continue_1
-;RAM:CF7B 9F CF                       .dw continue_1
-;RAM:CF7D A2 CF                       .dw continue_2
-;RAM:CF7F A2 CF                       .dw continue_2
-;RAM:CF81 A5 CF                       .dw d_3467121516
-;RAM:CF83 E1 CF                       .dw objs_coincide
-;RAM:CF85 A2 CF                       .dw continue_2
-;RAM:CF87 A5 CF                       .dw d_3467121516
-;RAM:CF89 A5 CF                       .dw d_3467121516
-;RAM:CF8B 9F CF                       .dw continue_1
-;RAM:CF8D 9F CF                       .dw continue_1
-;RAM:CF8F A2 CF                       .dw continue_2
-;RAM:CF91 A2 CF                       .dw continue_2
-;RAM:CF93 9F CF                       .dw continue_1
-;RAM:CF95 A2 CF                       .dw continue_2
-;RAM:CF97 A2 CF                       .dw continue_2
-;RAM:CF99 9F CF                       .dw continue_1
-;RAM:CF9B 9F CF                       .dw continue_1
-;RAM:CF9D 9F CF                       .dw continue_1
-;RAM:CF9F             ; ---------------------------------------------------------------------------
+       b    @jump_to_tbl_entry
+* ---------------------------------------------------------------------------
+off_CF69:
+       data continue_1
+       data continue_1
+       data continue_1
+       data d_3467121516
+       data d_3467121516
+       data continue_1
+       data d_3467121516
+       data d_3467121516
+       data continue_1
+       data continue_1
+       data continue_2
+       data continue_2
+       data d_3467121516
+       data objs_coincide
+       data continue_2
+       data d_3467121516
+       data d_3467121516
+       data continue_1
+       data continue_1
+       data continue_2
+       data continue_2
+       data continue_1
+       data continue_2
+       data continue_2
+       data continue_1
+       data continue_1
+       data continue_1
+* ---------------------------------------------------------------------------
 ;RAM:CF9F
-;RAM:CF9F             continue_1:
+continue_1:
 ;RAM:CF9F C3 DB CE                    jp      loc_CEDB
 ;RAM:CFA2             ; ---------------------------------------------------------------------------
 ;RAM:CFA2
-;RAM:CFA2             continue_2:
+continue_2:
 ;RAM:CFA2 C3 DB CE                    jp      loc_CEDB
 ;RAM:CFA5             ; ---------------------------------------------------------------------------
 ;RAM:CFA5
-;RAM:CFA5             d_3467121516:                                                   ; object following obj#2
+d_3467121516:                                                   ; object following obj#2
 ;RAM:CFA5 2A CF 5B                    ld      hl, (render_obj_2)
 ;RAM:CFA8 2B                          dec     hl                                      ; ptr obj#2
 ;RAM:CFA9 4E                          ld      c, (hl)                                 ; index
 ;RAM:CFAA 11 1A D0                    ld      de, #render_list
 ;RAM:CFAD
-;RAM:CFAD             loc_CFAD:
+loc_CFAD:
 ;RAM:CFAD 1A                          ld      a, (de)
 ;RAM:CFAE FE FF                       cp      #0xFF                                   ; empty entry?
 ;RAM:CFB0 28 06                       jr      Z, loc_CFB8                             ; yes, go
@@ -5342,7 +5465,7 @@ calc_display_order_and_render:
 ;RAM:CFB6 18 F5                       jr      loc_CFAD                                ; loop
 ;RAM:CFB8             ; ---------------------------------------------------------------------------
 ;RAM:CFB8
-;RAM:CFB8             loc_CFB8:                                                       ; index
+loc_CFB8:                                                       ; index
 ;RAM:CFB8 79                          ld      a, c
 ;RAM:CFB9 12                          ld      (de), a                                 ; add to list
 ;RAM:CFBA 13                          inc     de                                      ; next entry
@@ -5356,10 +5479,10 @@ calc_display_order_and_render:
 ;RAM:CFCB C3 DB CE                    jp      loc_CEDB                                ; go again
 ;RAM:CFCE             ; ---------------------------------------------------------------------------
 ;RAM:CFCE
-;RAM:CFCE             loc_CFCE:
+loc_CFCE:
 ;RAM:CFCE 21 8B CE                    ld      hl, #objects_to_draw
 ;RAM:CFD1
-;RAM:CFD1             loc_CFD1:                                                       ; graphic_no
+loc_CFD1:                                                       ; graphic_no
 ;RAM:CFD1 7E                          ld      a, (hl)
 ;RAM:CFD2 23                          inc     hl
 ;RAM:CFD3 FE FF                       cp      #0xFF                                   ; end of list?
@@ -5371,7 +5494,7 @@ calc_display_order_and_render:
 ;RAM:CFDF 18 22                       jr      render_obj
 ;RAM:CFE1             ; ---------------------------------------------------------------------------
 ;RAM:CFE1
-;RAM:CFE1             objs_coincide:                                                  ; obj#1 graphic no.
+objs_coincide:                                                  ; obj#1 graphic no.
 ;RAM:CFE1 DD 7E 00                    ld      a, 0(ix)
 ;RAM:CFE4 D6 60                       sub     #0x60 ; '`'
 ;RAM:CFE6 FE 07                       cp      #7                                      ; special object?
@@ -5380,21 +5503,21 @@ calc_display_order_and_render:
 ;RAM:CFEE 18 0D                       jr      loc_CFFD
 ;RAM:CFF0             ; ---------------------------------------------------------------------------
 ;RAM:CFF0
-;RAM:CFF0             loc_CFF0:                                                       ; object #2 graphic no.
+loc_CFF0:                                                       ; object #2 graphic no.
 ;RAM:CFF0 FD 7E 00                    ld      a, 0(iy)
 ;RAM:CFF3 D6 60                       sub     #0x60 ; '`'
 ;RAM:CFF5 FE 07                       cp      #7                                      ; special object?
 ;RAM:CFF7 30 04                       jr      NC, loc_CFFD                            ; no, skip
 ;RAM:CFF9 FD 36 00 BB                 ld      0(iy), #187                             ; set to twinkle sprite
 ;RAM:CFFD
-;RAM:CFFD             loc_CFFD:                                                       ; continue
+loc_CFFD:                                                       ; continue
 ;RAM:CFFD C3 DB CE                    jp      loc_CEDB
 ;RAM:D000             ; ---------------------------------------------------------------------------
 ;RAM:D000
-;RAM:D000             render_obj_no1:
+render_obj_no1:
 ;RAM:D000 2A CD 5B                    ld      hl, (render_obj_1)
 ;RAM:D003
-;RAM:D003             render_obj:                                                     ; back to entry we're searching for
+render_obj:                                                     ; back to entry we're searching for
 ;RAM:D003 2B                          dec     hl
 ;RAM:D004 CB FE                       set     7, (hl)                                 ; flag as rendered
 ;RAM:D006 3E FF                       ld      a, #0xFF
@@ -5405,7 +5528,7 @@ calc_display_order_and_render:
 ;RAM:D012 C3 C3 CE                    jp      process_remaining_objs                  ; restart processing again
 ;RAM:D015             ; ---------------------------------------------------------------------------
 ;RAM:D015
-;RAM:D015             render_done:
+render_done:
 ;RAM:D015 FD E1                       pop     iy
 ;RAM:D017 DD E1                       pop     ix
 ;RAM:D019 C9                          ret
@@ -6835,9 +6958,9 @@ wipe_next_object:
 ;RAM:D5CF DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
        movb @26(ix),a
 ;RAM:D5D2 DD 96 1E                    sub     30(ix)                                  ; old pixel X
-       sb   @30(ix),a
+       cb   @30(ix),a
 ;RAM:D5D5 DA 49 D6                    jp      C, loc_D649
-       jlt  loc_D649                   ; TODO: check if this works
+       jh  loc_D649                   ; TODO: check if this works
 ;RAM:D5D8 DD 4E 1E                    ld      c, 30(ix)                               ; old pixel X
        movb @30(ix),@c
 loc_D5DB:
@@ -6866,7 +6989,7 @@ loc_D5DB:
 ;RAM:D5F2 BB                          cp      e
        cb   a,@e
 ;RAM:D5F3 38 01                       jr      C, loc_D5F6
-       jl   loc_D5F6                   ; TODO: test if this works
+       jl   loc_D5F6                  ; TODO: test if this works
 ;RAM:D5F5 5F                          ld      e, a
        movb a,@e
 loc_D5F6:
@@ -6925,9 +7048,10 @@ loc_D61C:
 ;RAM:D623 85                          add     a, l
        ab   @l,a
 ;RAM:D624 D6 C0                       sub     #192
-       sb   @bc0h,a
+       cb   a,@bc0h
 ;RAM:D626 38 04                       jr      C, loc_D62C
-       jlt  loc_D62C                   ; TODO: test if this works
+       jl   loc_D62C                  ; TODO: test if this works
+       sb   @bc0h,a
 ;RAM:D628 ED 44                       neg
        inv  a
        ab   one,a
@@ -7216,7 +7340,7 @@ calc_pixel_XY:
 ;RAM:D6E9 DD 77 1B                    ld      27(ix), a                               ; pixel Y
        movb @27(ix),a
 ;RAM:D6EC FE C0                       cp      #192                                    ; bottom line of screen?
-       cb   a,@bc0h ; This set not set carry on the TI if out of screen, but JHE should work
+       cb   a,@bc0h ; This does not set carry on the TI if out of screen, but JHE should work
 ;RAM:D6EE C9                          ret
        rt
 * End of function calc_pixel_XY
@@ -8065,6 +8189,8 @@ vsbw:
 b00h   byte >00
 b01h   byte >01
 b02h   byte >02
+b03h   byte >03
+b09h   byte >09
 b0ah   byte >0a
 b0dh   byte >0d
 b10h   byte >10
