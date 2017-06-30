@@ -3246,18 +3246,22 @@ sun_moon_scratchpad:
 *
 init_sun:
 ;RAM:C46D DD 21 4D C4                 ld      ix, #sun_moon_scratchpad
+       li   ix,sun_moon_scratchpad
 ;RAM:C471 DD 36 00 58                 ld      0(ix), #0x58 ; 'X'                      ; sprite index
+       movb @b58h,@0(ix)
 ;RAM:C475 DD 36 1A B0                 ld      26(ix), #176                            ; pixel X
+       movb @bb0h,@0(ix)
 ;RAM:C479 DD 36 1B 09                 ld      27(ix), #9                              ; pixel Y
+       movb @b09h,@0(ix)
 ;RAM:C47D C9                          ret
        rt
 *
 * End of function init_sun
 *
+* =============== S U B R O U T I N E =======================================
+*
 * loops through the object table
 * copying start X,Y,Z,screen to current
-*
-* =============== S U B R O U T I N E =======================================
 *
 init_special_objects:
 ;RAM:C47E 21 F2 6F                    ld      hl, #special_objs_tbl
@@ -5227,9 +5231,9 @@ loc_CE80:
 *
 * ---------------------------------------------------------------------------
 objects_to_draw:
-       data 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-       data 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-       data 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -5349,7 +5353,7 @@ loc_CF16:
 ;RAM:CF2D FD 7E 02                    ld      a, 2(iy)                                ; Y2
        movb @2(iy),a
 ;RAM:CF30 FD 96 05                    sub     5(iy)                                   ; sub D2
-       ab   @5(iy),a
+       sb   @5(iy),a
 ;RAM:CF33 95                          sub     l                                       ; Y2-D2-(Y1+D1)
        mov  af,af_                    ; TODO: is this correct?
 ;RAM:CF34 79                          ld      a, c
@@ -5374,7 +5378,7 @@ loc_CF3C:
 ;RAM:CF43 DD 7E 01                    ld      a, 1(ix)                                ; X1
        movb @1(ix),a
 ;RAM:CF46 DD 96 04                    sub     4(ix)                                   ; sub W1
-       ab   @4(ix),a
+       sb   @4(ix),a
 ;RAM:CF49 95                          sub     l                                       ; X1-W1-(X2+W2)
        cb   @a,@l                     ; TODO: is this correct?
 ;RAM:CF4A 30 16                       jr      NC, loc_CF62                            ; no overlap (C+=0)
@@ -5388,7 +5392,7 @@ loc_CF3C:
 ;RAM:CF53 FD 7E 01                    ld      a, 1(iy)                                ; X2
        movb @1(iy),a
 ;RAM:CF56 FD 96 04                    sub     4(iy)                                   ; sub W2
-       ab   @4(iy),a
+       sb   @4(iy),a
 ;RAM:CF59 95                          sub     l                                       ; X2-W2-(X1+W1)
        movb af,af_
 ;RAM:CF5A 79                          ld      a, c
@@ -8244,9 +8248,11 @@ b10h   byte >10
 b20h   byte >20
 b22h   byte >22
 b28h   byte >28
+b58h   byte >58
 b68h   byte >68
 b60h   byte >60
 b80h   byte >80
+bb0h   byte >b0
 bbbh   byte >bb
 bc0h   byte >c0
 bffh   byte >ff
