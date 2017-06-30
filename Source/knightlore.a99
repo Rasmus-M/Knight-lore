@@ -5440,98 +5440,144 @@ off_CF69:
        data continue_1
        data continue_1
 * ---------------------------------------------------------------------------
-;RAM:CF9F
 continue_1:
 ;RAM:CF9F C3 DB CE                    jp      loc_CEDB
-;RAM:CFA2             ; ---------------------------------------------------------------------------
-;RAM:CFA2
+       b    @loc_CEDB
+* ---------------------------------------------------------------------------
 continue_2:
 ;RAM:CFA2 C3 DB CE                    jp      loc_CEDB
-;RAM:CFA5             ; ---------------------------------------------------------------------------
-;RAM:CFA5
-d_3467121516:                                                   ; object following obj#2
-;RAM:CFA5 2A CF 5B                    ld      hl, (render_obj_2)
+       b    @loc_CEDB
+* ---------------------------------------------------------------------------
+d_3467121516:
+;RAM:CFA5 2A CF 5B                    ld      hl, (render_obj_2)                      ; object following obj#2
+       mov  @render_obj_2,hl
 ;RAM:CFA8 2B                          dec     hl                                      ; ptr obj#2
+       dec  hl
 ;RAM:CFA9 4E                          ld      c, (hl)                                 ; index
+       movb *hl,@c
 ;RAM:CFAA 11 1A D0                    ld      de, #render_list
-;RAM:CFAD
+       li   de,render_list
 loc_CFAD:
 ;RAM:CFAD 1A                          ld      a, (de)
+       movb *de,a
 ;RAM:CFAE FE FF                       cp      #0xFF                                   ; empty entry?
+       cb   @bffh,a
 ;RAM:CFB0 28 06                       jr      Z, loc_CFB8                             ; yes, go
+       jeq  loc_CFB8
 ;RAM:CFB2 B9                          cp      c                                       ; already listed?
+       cb   a,@c
 ;RAM:CFB3 28 19                       jr      Z, loc_CFCE                             ; yes, go
+       jeq  loc_CFCE
 ;RAM:CFB5 13                          inc     de                                      ; next entry
+       inc  de
 ;RAM:CFB6 18 F5                       jr      loc_CFAD                                ; loop
-;RAM:CFB8             ; ---------------------------------------------------------------------------
-;RAM:CFB8
-loc_CFB8:                                                       ; index
-;RAM:CFB8 79                          ld      a, c
+       jmp  loc_CFAD
+* ---------------------------------------------------------------------------
+loc_CFB8:
+;RAM:CFB8 79                          ld      a, c                                    ; index
+       movb @c,a
 ;RAM:CFB9 12                          ld      (de), a                                 ; add to list
 ;RAM:CFBA 13                          inc     de                                      ; next entry
+       movb a,*de+
 ;RAM:CFBB 3E FF                       ld      a, #0xFF
+       movb @bffh,a
 ;RAM:CFBD 12                          ld      (de), a                                 ; flag empty
+       movb a,*de
 ;RAM:CFBE FD E5                       push    iy
 ;RAM:CFC0 DD E1                       pop     ix                                      ; obj#2=obj#1
+       mov  iy,ix
 ;RAM:CFC2 2A CF 5B                    ld      hl, (render_obj_2)                      ; object following obj#2
+       mov  @render_obj_2,hl
 ;RAM:CFC5 22 CD 5B                    ld      (render_obj_1), hl                      ; set to object following #1
+       mov  hl,@render_obj_1
 ;RAM:CFC8 11 8B CE                    ld      de, #objects_to_draw
+       li   de,objects_to_draw
 ;RAM:CFCB C3 DB CE                    jp      loc_CEDB                                ; go again
-;RAM:CFCE             ; ---------------------------------------------------------------------------
-;RAM:CFCE
+       b    @loc_CEDB
+* ---------------------------------------------------------------------------
 loc_CFCE:
 ;RAM:CFCE 21 8B CE                    ld      hl, #objects_to_draw
-;RAM:CFD1
-loc_CFD1:                                                       ; graphic_no
-;RAM:CFD1 7E                          ld      a, (hl)
+       li   hl,objects_to_draw
+loc_CFD1:
+;RAM:CFD1 7E                          ld      a, (hl)                                 ; graphic_no
 ;RAM:CFD2 23                          inc     hl
+       movb *hl+,a
 ;RAM:CFD3 FE FF                       cp      #0xFF                                   ; end of list?
+       cb   a,@bffh
 ;RAM:CFD5 CA C3 CE                    jp      Z, process_remaining_objs               ; yes, exit
+       jne  !
+       b    @process_remaining_objs
 ;RAM:CFD8 B9                          cp      c                                       ; what we're looking for?
+!      cb   a,@c
 ;RAM:CFD9 20 F6                       jr      NZ, loc_CFD1                            ; no, loop
+       jne  loc_CFD1
 ;RAM:CFDB FD E5                       push    iy
 ;RAM:CFDD DD E1                       pop     ix                                      ; obj#2=obj#1
+       mov  iy,ix
 ;RAM:CFDF 18 22                       jr      render_obj
-;RAM:CFE1             ; ---------------------------------------------------------------------------
-;RAM:CFE1
-objs_coincide:                                                  ; obj#1 graphic no.
-;RAM:CFE1 DD 7E 00                    ld      a, 0(ix)
+       jmp  render_obj
+* ---------------------------------------------------------------------------
+objs_coincide:
+;RAM:CFE1 DD 7E 00                    ld      a, 0(ix)                                ; obj#1 graphic no.
+       movb @0(ix),a
 ;RAM:CFE4 D6 60                       sub     #0x60 ; '`'
+       sb   @b60h,a
 ;RAM:CFE6 FE 07                       cp      #7                                      ; special object?
+       cb   a,@b07h
 ;RAM:CFE8 30 06                       jr      NC, loc_CFF0                            ; no, skip
+       jhe  loc_CFF0
 ;RAM:CFEA DD 36 00 BB                 ld      0(ix), #187                             ; set to twinkle sprite
+       movb @bbbh,@0(ix)
 ;RAM:CFEE 18 0D                       jr      loc_CFFD
-;RAM:CFF0             ; ---------------------------------------------------------------------------
-;RAM:CFF0
-loc_CFF0:                                                       ; object #2 graphic no.
-;RAM:CFF0 FD 7E 00                    ld      a, 0(iy)
+       jmp  loc_CFFD
+* ---------------------------------------------------------------------------
+loc_CFF0:
+;RAM:CFF0 FD 7E 00                    ld      a, 0(iy)                                ; object #2 graphic no.
+       movb @0(iy),a
 ;RAM:CFF3 D6 60                       sub     #0x60 ; '`'
+       sb   @b60h,a
 ;RAM:CFF5 FE 07                       cp      #7                                      ; special object?
+       cb   a,@b07h
 ;RAM:CFF7 30 04                       jr      NC, loc_CFFD                            ; no, skip
+       jhe  loc_CFFD
 ;RAM:CFF9 FD 36 00 BB                 ld      0(iy), #187                             ; set to twinkle sprite
+       movb @bbbh,@0(iy)
 ;RAM:CFFD
-loc_CFFD:                                                       ; continue
-;RAM:CFFD C3 DB CE                    jp      loc_CEDB
-;RAM:D000             ; ---------------------------------------------------------------------------
-;RAM:D000
+loc_CFFD:
+;RAM:CFFD C3 DB CE                    jp      loc_CEDB                                ; continue
+       b    @loc_CEDB
+* ---------------------------------------------------------------------------
 render_obj_no1:
 ;RAM:D000 2A CD 5B                    ld      hl, (render_obj_1)
-;RAM:D003
-render_obj:                                                     ; back to entry we're searching for
-;RAM:D003 2B                          dec     hl
+       mov  @render_obj_1,hl
+render_obj:
+;RAM:D003 2B                          dec     hl                                      ; back to entry we're searching for
+       dec  hl
 ;RAM:D004 CB FE                       set     7, (hl)                                 ; flag as rendered
+       socb @b80h,*hl
 ;RAM:D006 3E FF                       ld      a, #0xFF
+       movb @bffh,a
 ;RAM:D008 32 1A D0                    ld      (render_list), a                        ; set entry to empty
+       movb a,@render_list
 ;RAM:D00B 21 BE 5B                    ld      hl, #rendered_objs_cnt
+       li   hl,rendered_objs_cnt
 ;RAM:D00E 34                          inc     (hl)
+       ab   one,*hl
 ;RAM:D00F CD 04 D7                    call    calc_pixel_XY_and_render                ; render object to video buffer
+       bl   @calc_pixel_XY_and_render
 ;RAM:D012 C3 C3 CE                    jp      process_remaining_objs                  ; restart processing again
-;RAM:D015             ; ---------------------------------------------------------------------------
-;RAM:D015
+       b    @process_remaining_objs
+* ---------------------------------------------------------------------------
 render_done:
 ;RAM:D015 FD E1                       pop     iy
+       dect sp
+       mov  *sp,iy
 ;RAM:D017 DD E1                       pop     ix
+       dect sp
+       mov  *sp,ix
 ;RAM:D019 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function calc_display_order_and_render
@@ -8190,6 +8236,7 @@ b00h   byte >00
 b01h   byte >01
 b02h   byte >02
 b03h   byte >03
+b07h   byte >07
 b09h   byte >09
 b0ah   byte >0a
 b0dh   byte >0d
@@ -8198,7 +8245,9 @@ b20h   byte >20
 b22h   byte >22
 b28h   byte >28
 b68h   byte >68
+b60h   byte >60
 b80h   byte >80
+bbbh   byte >bb
 bc0h   byte >c0
 bffh   byte >ff
 
