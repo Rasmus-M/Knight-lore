@@ -419,7 +419,7 @@ update_sprite_loop:
        bl   @save_2d_info
 jump_to_upd_object:
 ;RAM:AFD5 DD 6E 00                    ld      l, 0(ix)                                ; sprite graphic to render
-       movb @0(ix),@l
+       movb *ix,@l
 ;RAM:AFD8 01 96 B0                    ld      bc, #upd_sprite_jmp_tbl
        li   bc,upd_sprite_jmp_tbl
 jump_to_tbl_entry:
@@ -574,7 +574,7 @@ loc_B074:
 ;RAM:B078 DD 21 08 5C                 ld      ix, #graphic_objs_tbl
        li   ix,graphic_objs_tbl
 ;RAM:B07C DD 7E 00                    ld      a, 0(ix)                                ; player sprite half
-       movb @0(ix),a
+       movb *ix,a
 ;RAM:B07F DD B6 20                    or      0x20(ix)                                ; player other sprite half
        soc  @20(ix),a
 ;RAM:B082 CA B7 AF                    jp      Z, player_dies                          ; both null? yes, lose a life
@@ -878,19 +878,19 @@ loc_B54C:                                                       ; 14 items (13 s
 ;RAM:B54E FD 21 7D C2                 ld      iy, #objects_required
        li   iy,objects_required
 ;RAM:B552 FD 5E 00                    ld      e, 0(iy)
-       movb @0(iy),@e
+       movb *iy,@e
 loc_B555:
 ;RAM:B555 FD 7E 01                    ld      a, 1(iy)
        movb @1(iy),a
 ;RAM:B558 FD 77 00                    ld      0(iy), a
-       movb a,@0(iy)
+       movb a,*iy
 ;RAM:B55B FD 23                       inc     iy
        inc  iy
 ;RAM:B55D 10 F6                       djnz    loc_B555
        sb   one,b
        jne  loc_B555
 ;RAM:B55F FD 73 00                    ld      0(iy), e
-       movb @e,@0(iy)
+       movb @e,*iy
 ;RAM:B562 0D                          dec     c
        sb   one,@c
 ;RAM:B563 20 E7                       jr      NZ, loc_B54C
@@ -1959,7 +1959,7 @@ print_lives_gfx:
 ;RAM:BC7A DD 21 DB BF                 ld      ix, #sprite_scratchpad
        li   ix,sprite_scratchpad
 ;RAM:BC7E DD 36 00 8C                 ld      0(ix), #0x8C ; '�'                      ; sprite index
-       movb @b8ch,@0(ix)
+       movb @b8ch,*ix
 ;RAM:BC82 DD 36 07 00                 ld      7(ix), #0                               ; clear flags
        movb @b00h,@7(ix)
 ;RAM:BC86 DD 36 1A 10                 ld      26(ix), #16                             ; pixel X
@@ -2373,28 +2373,52 @@ print_text:
 ;RAM:BEE1             ; End of function display_text_list
 ;RAM:BEE1
 ;RAM:BEE4
-;RAM:BEE4             ; =============== S U B R O U T I N E =======================================
-;RAM:BEE4
-;RAM:BEE4
-;RAM:BEE4             multiple_print_sprite:
+* =============== S U B R O U T I N E =======================================
+*
+multiple_print_sprite:
+       mov  r11,*sp+
+multiple_print_sprite_loop:
 ;RAM:BEE4 C5                          push    bc
+       mov  bc,*sp+
 ;RAM:BEE5 D5                          push    de
+       mov  de,*sp+
 ;RAM:BEE6 E5                          push    hl
+       mov  hl,*sp+
 ;RAM:BEE7 CD 18 D7                    call    print_sprite
+       bl   @print_sprite
 ;RAM:BEEA E1                          pop     hl
+       dect sp
+       mov  *sp,hl
 ;RAM:BEEB D1                          pop     de
+       dect sp
+       mov  *sp,de
 ;RAM:BEEC C1                          pop     bc
+       dect sp
+       mov  *sp,bc
 ;RAM:BEED DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
+       movb @26(ix),a
 ;RAM:BEF0 83                          add     a, e                                    ; add offset
+       ab   @e,a
 ;RAM:BEF1 DD 77 1A                    ld      26(ix), a                               ; store new pixel X
+       movb a,@26(ix)
 ;RAM:BEF4 DD 7E 1B                    ld      a, 27(ix)                               ; pixel Y
+       movb @27(ix),a
 ;RAM:BEF7 82                          add     a, d                                    ; add offset
+       ab   d,a
 ;RAM:BEF8 DD 77 1B                    ld      27(ix), a                               ; store new pixel Y
+       movb a,@27(ix)
 ;RAM:BEFB 10 E7                       djnz    multiple_print_sprite                   ; loop though all sprites
+       sb   one,b
+       jne  multiple_print_sprite_loop
 ;RAM:BEFD C9                          ret
-;RAM:BEFD             ; End of function multiple_print_sprite
-;RAM:BEFD
-;RAM:BEFE             ; ---------------------------------------------------------------------------
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function multiple_print_sprite
+*
+* ---------------------------------------------------------------------------
+*
 ;RAM:BEFE             ; player appear sparkles
 ;RAM:BEFE
 upd_120_to_126:
@@ -3266,11 +3290,11 @@ init_sun:
 ;RAM:C46D DD 21 4D C4                 ld      ix, #sun_moon_scratchpad
        li   ix,sun_moon_scratchpad
 ;RAM:C471 DD 36 00 58                 ld      0(ix), #0x58 ; 'X'                      ; sprite index
-       movb @b58h,@0(ix)
+       movb @b58h,*ix
 ;RAM:C475 DD 36 1A B0                 ld      26(ix), #176                            ; pixel X
-       movb @bb0h,@0(ix)
+       movb @bb0h,*ix
 ;RAM:C479 DD 36 1B 09                 ld      27(ix), #9                              ; pixel Y
-       movb @b09h,@0(ix)
+       movb @b09h,*ix
 ;RAM:C47D C9                          ret
        rt
 *
@@ -5215,7 +5239,7 @@ list_objects_to_draw:
        movb @b00h,@c
 loc_CE72:
 ;RAM:CE72 DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
-       movb @0(ix),a
+       movb *ix,a
 ;RAM:CE75 A7                          and     a                                       ; null?
 ;RAM:CE76 28 08                       jr      Z, loc_CE80                             ; yes, skip
        jeq  loc_CE80
@@ -5541,7 +5565,7 @@ loc_CFD1:
 * ---------------------------------------------------------------------------
 objs_coincide:
 ;RAM:CFE1 DD 7E 00                    ld      a, 0(ix)                                ; obj#1 graphic no.
-       movb @0(ix),a
+       movb *ix,a
 ;RAM:CFE4 D6 60                       sub     #0x60 ; '`'
        sb   @b60h,a
 ;RAM:CFE6 FE 07                       cp      #7                                      ; special object?
@@ -5549,13 +5573,13 @@ objs_coincide:
 ;RAM:CFE8 30 06                       jr      NC, loc_CFF0                            ; no, skip
        jhe  loc_CFF0
 ;RAM:CFEA DD 36 00 BB                 ld      0(ix), #187                             ; set to twinkle sprite
-       movb @bbbh,@0(ix)
+       movb @bbbh,*ix
 ;RAM:CFEE 18 0D                       jr      loc_CFFD
        jmp  loc_CFFD
 * ---------------------------------------------------------------------------
 loc_CFF0:
 ;RAM:CFF0 FD 7E 00                    ld      a, 0(iy)                                ; object #2 graphic no.
-       movb @0(iy),a
+       movb *iy,a
 ;RAM:CFF3 D6 60                       sub     #0x60 ; '`'
        sb   @b60h,a
 ;RAM:CFF5 FE 07                       cp      #7                                      ; special object?
@@ -5563,7 +5587,7 @@ loc_CFF0:
 ;RAM:CFF7 30 04                       jr      NC, loc_CFFD                            ; no, skip
        jhe  loc_CFFD
 ;RAM:CFF9 FD 36 00 BB                 ld      0(iy), #187                             ; set to twinkle sprite
-       movb @bbbh,@0(iy)
+       movb @bbbh,*iy
 ;RAM:CFFD
 loc_CFFD:
 ;RAM:CFFD C3 DB CE                    jp      loc_CEDB                                ; continue
@@ -6028,32 +6052,49 @@ flag_room_visited:                                              ; plyr_spr_1_scr
 *
 * =============== S U B R O U T I N E =======================================
 *
-;RAM:D237
-;RAM:D237             transfer_sprite:
+transfer_sprite:
 ;RAM:D237 7E                          ld      a, (hl)                                 ; sprite index
 ;RAM:D238 23                          inc     hl
+       movb *hl+,a
 ;RAM:D239 DD 77 00                    ld      0(ix), a                                ; store sprite index
+       movb a,*ix
 ;RAM:D23C 7E                          ld      a, (hl)                                 ; flags
 ;RAM:D23D 23                          inc     hl
+       movb *hl+,a
 ;RAM:D23E DD 77 07                    ld      7(ix), a                                ; store flags
+       movb a,@7(ix)
 ;RAM:D241 7E                          ld      a, (hl)                                 ; X
 ;RAM:D242 23                          inc     hl
+       movb *hl+,a
 ;RAM:D243 DD 77 1A                    ld      26(ix), a                               ; pixel X
+       movb a,@26(ix)
 ;RAM:D246 7E                          ld      a, (hl)                                 ; Y
 ;RAM:D247 23                          inc     hl
+       movb *hl+,a
 ;RAM:D248 DD 77 1B                    ld      27(ix), a                               ; pixel Y
+       movb a,@27(ix)
 ;RAM:D24B C9                          ret
-;RAM:D24B             ; End of function transfer_sprite
-;RAM:D24B
+       rt
+*
+* End of function transfer_sprite
 *
 * =============== S U B R O U T I N E =======================================
 *
 transfer_sprite_and_print:
+       mov  r11,*sp+
 ;RAM:D24C CD 37 D2                    call    transfer_sprite                         ; copy to scratchpad
+transfer_sprite_and_print_1:
+       bl   @transfer_sprite
 ;RAM:D24F E5                          push    hl
+       mov  hl,*sp+
 ;RAM:D250 CD 18 D7                    call    print_sprite
+       bl   @print_sprite
 ;RAM:D253 E1                          pop     hl
+       dect sp
+       mov  *sp,hl
 ;RAM:D254 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function transfer_sprite_and_print
@@ -6061,35 +6102,49 @@ transfer_sprite_and_print:
 * =============== S U B R O U T I N E =======================================
 *
 display_panel:
+       mov  r11,*sp+
 ;RAM:D255 DD 21 DB BF                 ld      ix, #sprite_scratchpad
+       li   ix,sprite_scratchpad
 ;RAM:D259 21 7E D2                    ld      hl, #panel_data
+       li   hl,panel_data
 ;RAM:D25C CD 37 D2                    call    transfer_sprite
+       bl   @transfer_sprite
 ;RAM:D25F 11 10 F8                    ld      de, #0xF810                             ; x+=16,y-=8
+       li   de,>F810
 ;RAM:D262 06 05                       ld      b, #5                                   ; 5 sprites
+       movb @b05h,b
 ;RAM:D264 CD E4 BE                    call    multiple_print_sprite
+       bl   @multiple_print_sprite
 ;RAM:D267 CD 4C D2                    call    transfer_sprite_and_print
+       bl   @transfer_sprite_and_print
 ;RAM:D26A CD 4C D2                    call    transfer_sprite_and_print
+       bl   @transfer_sprite_and_print
 ;RAM:D26D CD 37 D2                    call    transfer_sprite
+       bl   @transfer_sprite
 ;RAM:D270 11 10 08                    ld      de, #0x810                              ; x+=16,y+=8
+       li   de,>0810
 ;RAM:D273 06 05                       ld      b, #5                                   ; 5 sprites
+       movb @b05h,b
 ;RAM:D275 CD E4 BE                    call    multiple_print_sprite
+       bl   @multiple_print_sprite
 ;RAM:D278 CD 4C D2                    call    transfer_sprite_and_print
+       bl   @transfer_sprite_and_print
 ;RAM:D27B C3 4C D2                    jp      transfer_sprite_and_print
-       b    @transfer_sprite_and_print
+       b    @transfer_sprite_and_print_1
 *
 * End of function display_panel
 *
-;RAM:D27B             ; ---------------------------------------------------------------------------
-;RAM:D27E 86 00 10 34 panel_data:     .db 0x86, 0, 0x10, 0x34
-;RAM:D282 87 00 F0 00                 .db 0x87, 0, 0xF0, 0
-;RAM:D286 88 00 90 04                 .db 0x88, 0, 0x90, 4
-;RAM:D28A 86 40 A0 14                 .db 0x86, 0x40, 0xA0, 0x14
-;RAM:D28E 87 40 00 00                 .db 0x87, 0x40, 0, 0
-;RAM:D292 88 40 60 04                 .db 0x88, 0x40, 0x60, 4
-;RAM:D296
-;RAM:D296             ; =============== S U B R O U T I N E =======================================
-;RAM:D296
-;RAM:D296
+* ---------------------------------------------------------------------------
+panel_data:
+       byte >86, >00, >10, >34
+       byte >87, >00, >F0, >00
+       byte >88, >00, >90, >04
+       byte >86, >40, >A0, >14
+       byte >87, >40, >00, >00
+       byte >88, >40, >60, >04
+*
+* =============== S U B R O U T I N E =======================================
+*
 ;RAM:D296             print_border:
 ;RAM:D296 DD 21 DB BF                 ld      ix, #sprite_scratchpad
 ;RAM:D29A 21 CF D2                    ld      hl, #border_data
@@ -6537,7 +6592,7 @@ next_fg_obj_sprite:                                                             
 ;RAM:D46C 7E                          ld      a, (hl)
 ;RAM:D46D 23                          inc     hl
 ;RAM:D46E FD 77 00                    ld      0(iy), a
-       movb *hl+,@0(iy)
+       movb *hl+,*iy
 ;RAM:D471 7E                          ld      a, (hl)                                 ; width
 ;RAM:D472 23                          inc     hl
 ;RAM:D473 FD 77 04                    ld      4(iy), a
@@ -7423,7 +7478,7 @@ flip_sprite:
 *
        mov  r11,*sp+
 ;RAM:D6EF DD 6E 00                    ld      l, 0(ix)                                ; sprite index
-       movb @0(ix),@l
+       movb *ix,@l
 ;RAM:D6F2 26 00                       ld      h, #0
        movb @b00h,h
 ;RAM:D6F4 29                          add     hl, hl                                  ; word offset
@@ -7459,13 +7514,13 @@ flip_sprite:
 calc_pixel_XY_and_render:
        mov  r11,*sp+
 ;RAM:D704 DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
-       movb @0(ix),a
+       movb *ix,a
 ;RAM:D707 FE 01                       cp      #1                                      ; flagged as ???
        cb   a,one
 ;RAM:D709 20 05                       jr      NZ, loc_D710                            ; no, continue
        jne  loc_D710
 ;RAM:D70B DD 36 00 00                 ld      0(ix), #0                               ; set to null
-       movb @b00h,@0(ix)
+       movb @b00h,*ix
 ;RAM:D70F C9                          ret
        dect sp
        mov  *sp,r11
@@ -8258,6 +8313,7 @@ b00h   byte >00
 b01h   byte >01
 b02h   byte >02
 b03h   byte >03
+b05h   byte >05
 b07h   byte >07
 b09h   byte >09
 b0ah   byte >0a
