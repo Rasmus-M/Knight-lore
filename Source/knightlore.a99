@@ -65,8 +65,8 @@ R7LB   EQU  WRKSP+15
 R8LB   EQU  WRKSP+17
 R9LB   EQU  WRKSP+19
 WRKSP2 EQU  WRKSP+>20
-STACK  EQU  WRKSP2+>20                      ; Stack grows up
-PADVAR EQU  STACK+>40
+STACK  EQU  WRKSP2+>20                 ; Stack grows up
+PADVAR EQU  STACK+>80
 
 **
 * Z80 register mapping
@@ -8000,7 +8000,6 @@ calc_attrib_addr:
 * START OF FUNCTION CHUNK FOR flip_sprite
 *
 vflip_sprite_data:                                                                    ; sprite data address
-       b    @vflip_sprite_data_return
 ;RAM:D865 D5                          push    de
        mov  de,*sp+
 ;RAM:D866 1A                          ld      a, (de)                                 ; width
@@ -8018,7 +8017,7 @@ vflip_sprite_data:                                                              
        li   r0,>8000
        xor  r0,a
 ;RAM:D871 12                          ld      (de), a                                 ; store updated flag
-       movb a,@de
+       movb a,*de
 ;RAM:D872 07                          rlca                                            ; *2
        sla  a,1
 ;RAM:D873 E6 1E                       and     #0x1E
@@ -8099,6 +8098,9 @@ vflip_sprite_line_pair:
 ;RAM:D8A0 20 EA                       jr      NZ, loc_D88C                            ; no, loop
        jne  loc_D88C
 loc_D8A2:
+;RAM:D8A2 D1                          pop     de
+       dect sp
+       mov  *sp,de
 ;RAM:D8A3 D5                          push    de                                      ; sprite data address
        mov  de,*sp+
 ;RAM:D8A4 1A                          ld      a, (de)                                 ; width (bytes)
@@ -8142,32 +8144,33 @@ loc_D8A2:
 ;RAM:D8BA D9                          exx
        bl   @exx
 ;RAM:D8BB E1                          pop     hl                                      ; HL'=sprite data
-       dect hl
+       dect sp
        mov  *sp,hl
 ;RAM:D8BC 06 F1                       ld      b, #0xF1 ; '�'
-       movb @bf1h,b
+;       movb @bf1h,b
+       movb @bf4h,b                   ; Mirrored bytes stored at >F400 on TI
 ;RAM:D8BE D9                          exx
        bl   @exx
 loc_D8BF:
 ;RAM:D8BF D9                          exx
        bl   @exx
 ;RAM:D8C0 4E                          ld      c, (hl)                                 ; sprite data byte
-       movb *hl,@c
-;RAM:D8C1 0A                          ld      a, (bc)
+       movb *hl+,@c
+;RAM:D8C1 0A                          ld      a, (bc)                                 ; mirrored byte
        movb *bc,a
-;RAM:D8C2 5F                          ld      e, a
+;RAM:D8C2 5F                          ld      e, a                                    ; store in e
        movb a,@e
 ;RAM:D8C3 23                          inc     hl
-       inc  hl
-;RAM:D8C4 4E                          ld      c, (hl)
-       movb *hl,@a
-;RAM:D8C5 0A                          ld      a, (bc)
-       movb *hl,a
-;RAM:D8C6 57                          ld      d, a
+;      inc  hl                        ; already done
+;RAM:D8C4 4E                          ld      c, (hl)                                 ; mask byte
+       movb *hl+,@c
+;RAM:D8C5 0A                          ld      a, (bc)                                 ; mirrored mask byte
+       movb *bc,a
+;RAM:D8C6 57                          ld      d, a                                    ; store in d
        movb a,d
 ;RAM:D8C7 23                          inc     hl
-       inc  hl
-;RAM:D8C8 D5                          push    de
+;      inc  hl                        ; already done
+;RAM:D8C8 D5                          push    de                                      ; push mirrored
        mov  de,*sp+
 ;RAM:D8C9 D9                          exx
        bl   @exx
@@ -8177,13 +8180,13 @@ loc_D8BF:
 ;RAM:D8CC 41                          ld      b, c
        movb @c,b
 loc_D8CD:
-;RAM:D8CD D1                          pop     de
+;RAM:D8CD D1                          pop     de                                      ; pop mirrored
        dect sp
        mov  *sp,de
-;RAM:D8CE 73                          ld      (hl), e
+;RAM:D8CE 73                          ld      (hl), e                                 ; write date byte
 ;RAM:D8CF 23                          inc     hl
        movb @e,*hl+
-;RAM:D8D0 72                          ld      (hl), d
+;RAM:D8D0 72                          ld      (hl), d                                 ; write mask
 ;RAM:D8D1 23                          inc     hl
        movb d,*hl+
 ;RAM:D8D2 10 F9                       djnz    loc_D8CD
@@ -8196,7 +8199,7 @@ loc_D8CD:
 ;RAM:D8D5 3D                          dec     a
        sb   one,a
 ;RAM:D8D6 28 04                       jr      Z, loc_D8DC
-       jne  loc_D8DC
+       jeq  loc_D8DC
 ;RAM:D8D8 08                          ex      af, af'
        mov  af,r0
        mov  af_,af
@@ -8211,7 +8214,6 @@ loc_D8DC:
        dect sp
        mov  *sp,de
 ;RAM:D8DD C9                          ret
-vflip_sprite_data_return:
        dect sp
        mov  *sp,r11
        rt
@@ -8460,13 +8462,13 @@ vsbw:
 
 exx:   mov  bc,r0
        mov  bc_,bc
-       mov  r0,bc
+       mov  r0,bc_
        mov  hl,r0
        mov  hl_,hl
-       mov  r0,hl
+       mov  r0,hl_
        mov  de,r0
        mov  de_,de
-       mov  r0,de
+       mov  r0,de_
        rt
 
 *********************************************************************
@@ -8502,6 +8504,7 @@ bc0h   byte >c0
 bd0h   byte >d0
 be1h   byte >e1
 bf1h   byte >f1
+bf4h   byte >f4
 bffh   byte >ff
 
 *===========================================================================
