@@ -494,7 +494,7 @@ loc_B000:
 ;RAM:B01B CD 62 CE                    call    list_objects_to_draw                    ; builds a list of screen objects
        bl   @list_objects_to_draw
 ;RAM:B01E CD 9F D5                    call    render_dynamic_objects                  ; renders above list
-;       bl   @render_dynamic_objects
+       bl   @render_dynamic_objects
 ;RAM:B021 3A C5 5B                    ld      a, (rising_blocks_z)
        movb @rising_blocks_z,a
 ;RAM:B024 A7                          and     a                                       ; any blocks rising?
@@ -7512,7 +7512,7 @@ calc_pixel_XY:
 ;RAM:D6E6 DD 86 13                    add     a, 19(ix)                               ; pixel_y_adj
        ab   @19(ix),a
 ;RAM:D6E9 DD 77 1B                    ld      27(ix), a                               ; pixel Y
-       movb @27(ix),a
+       movb a,@27(ix)
 ;RAM:D6EC FE C0                       cp      #192                                    ; bottom line of screen?
        cb   a,@bc0h ; This does not set carry on the TI if out of screen, but JHE should work
 ;RAM:D6EE C9                          ret
