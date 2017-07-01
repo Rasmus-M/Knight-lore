@@ -6806,10 +6806,10 @@ add_HL_A:
 *
 * End of function add_HL_A
 *
-;RAM:D4F9             ; =============== S U B R O U T I N E =======================================
-;RAM:D4F9             ; Set HL = DE x A
-;RAM:D4F9
-;RAM:D4F9             HL_equals_DE_x_A:
+;* =============== S U B R O U T I N E =======================================
+* Set HL = DE x A
+*
+HL_equals_DE_x_A:
 ;RAM:D4F9 C5                          push    bc
 ;RAM:D4FA 21 00 00                    ld      hl, #0
 ;RAM:D4FD 06 08                       ld      b, #8
@@ -6829,8 +6829,8 @@ add_HL_A:
        mov  r1,hl
 ;RAM:D507 C9                          ret
        rt
-;RAM:D507             ; End of function HL_equals_DE_x_A
-;RAM:D507
+*
+* End of function HL_equals_DE_x_A
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -7462,7 +7462,7 @@ loc_D6BB:
        movb @b08h,b
        movb @b00h,de_
 loc_D6BE:
-;RAM:D6BE CB 3A                       srl     d
+;RAM:D6BE CB 3A                     srl     d
 ;RAM:D6C0 CB 13                       rl      e                                       ; reverse bits
        srl  de_,1
        sla  d,1
@@ -7524,9 +7524,6 @@ calc_pixel_XY:
 * Flips sprite data (H,V) if required in-place
 *
 flip_sprite:
-*
-* FUNCTION CHUNK AT RAM:D865 SIZE 00000079 BYTES
-*
        mov  r11,*sp+
 ;RAM:D6EF DD 6E 00                    ld      l, 0(ix)                                ; sprite index
        movb *ix,@l
@@ -7548,13 +7545,12 @@ flip_sprite:
 ;RAM:D6FE C2 65 D8                    jp      NZ, vflip_sprite_data                   ; no, skip
        jeq  !
        b    @vflip_sprite_data
-
 ;RAM:D701 33                          inc     sp
 ;RAM:D702 33                          inc     sp                                      ; exit from caller
 !      dect sp                                                                        ; do not return to print_sprite
                                                                                       ; but to the caller of print_sprite
 ;RAM:D703 C9                          ret
-       dect sp
+!      dect sp
        mov  *sp,r11
        rt
 *
@@ -8004,117 +8000,223 @@ calc_attrib_addr:
 * START OF FUNCTION CHUNK FOR flip_sprite
 *
 vflip_sprite_data:                                                                    ; sprite data address
-* Do not push return address because this routine is jumped into
+       b    @vflip_sprite_data_return
 ;RAM:D865 D5                          push    de
+       mov  de,*sp+
 ;RAM:D866 1A                          ld      a, (de)                                 ; width
+       movb *de,a
 ;RAM:D867 DD AE 07                    xor     7(ix)                                   ; same Vflip as stored?
+       movb @7(ix),r0
+       xor  r0,a
 ;RAM:D86A E6 80                       and     #0x80 ; '�'
+       andi a,>8000
 ;RAM:D86C 28 34                       jr      Z, loc_D8A2                             ; yes, skip
+       jeq  loc_D8A2
 ;RAM:D86E 1A                          ld      a, (de)                                 ; width
+       movb *de,a
 ;RAM:D86F EE 80                       xor     #0x80 ; '�'                             ; toggle Vflip
+       li   r0,>8000
+       xor  r0,a
 ;RAM:D871 12                          ld      (de), a                                 ; store updated flag
+       movb a,@de
 ;RAM:D872 07                          rlca                                            ; *2
+       sla  a,1
 ;RAM:D873 E6 1E                       and     #0x1E
+       andi a,>1e00
 ;RAM:D875 47                          ld      b, a                                    ; B = width x 2 (data+mask)
+       movb a,b
 ;RAM:D876 13                          inc     de
+       inc  de
 ;RAM:D877 1A                          ld      a, (de)                                 ; height
+       movb *de,a
 ;RAM:D878 4F                          ld      c, a
+       movb a,@c
 ;RAM:D879 13                          inc     de                                      ; sprite data
+       inc  de
 ;RAM:D87A D5                          push    de
+       mov  de,*sp+
 ;RAM:D87B 58                          ld      e, b
+       movb b,@e
 ;RAM:D87C 16 00                       ld      d, #0                                   ; DE = width x 2
+       movb @b00h,d
 ;RAM:D87E CD F9 D4                    call    HL_equals_DE_x_A                        ; HL = width x 2 x height
+       bl   @HL_equals_DE_x_A
 ;RAM:D881 D1                          pop     de                                      ; sprite data
+       dect sp
+       movb *sp,de
 ;RAM:D882 19                          add     hl, de                                  ; skip sprite data (including mask bytes)
+       a    de,hl
 ;RAM:D883 EB                          ex      de, hl                                  ; DE=end of sprite data, HL=sprite data
+       mov  de,r0
+       mov  hl,de
+       mov  r0,hl
 ;RAM:D884 78                          ld      a, b                                    ; width x 2
+       movb b,a
 ;RAM:D885 CD F2 D4                    call    add_HL_A                                ; HL=sprite data + width x 2
+       bl   @add_HL_A
 ;RAM:D888 1B                          dec     de                                      ; last byte of sprite data
+       dec  de
 ;RAM:D889 2B                          dec     hl                                      ; (height+1) x width x 2 - 1
+       dec  hl
 ;RAM:D88A CB 39                       srl     c                                       ; height / 2
-;RAM:D88C
-;RAM:D88C             loc_D88C:                                                       ; B=widthx2, C=height/2
-;RAM:D88C C5                          push    bc
-;RAM:D88D
-;RAM:D88D             vflip_sprite_line_pair:                                         ; sprite data byte from end
-;RAM:D88D 1A                          ld      a, (de)
+       movb @c,r0
+       srl  r0,1
+       movb r0,@c
+loc_D88C:
+;RAM:D88C C5                          push    bc                                      ; B=widthx2, C=height/2
+       mov  bc,*sp+
+vflip_sprite_line_pair:
+;RAM:D88D 1A                          ld      a, (de)                                 ; sprite data byte from end
+       movb *de,a
 ;RAM:D88E 4E                          ld      c, (hl)                                 ; sprite data from start
+       movb *hl,@c
 ;RAM:D88F 77                          ld      (hl), a                                 ; store end data at start
+       movb a,*hl
 ;RAM:D890 79                          ld      a, c
+       movb @c,a
 ;RAM:D891 12                          ld      (de), a                                 ; store start data at end
+       movb a,*de
 ;RAM:D892 2B                          dec     hl                                      ; next start byte
+       dec  hl
 ;RAM:D893 1B                          dec     de                                      ; next end byte
+       dec  de
 ;RAM:D894 10 F7                       djnz    vflip_sprite_line_pair                  ; flip sprite and mask data for line pair
+       sb   one,b
+       jne  vflip_sprite_line_pair
 ;RAM:D896 C1                          pop     bc
+       dect sp
+       mov  *sp,bc
 ;RAM:D897 78                          ld      a, b
+       movb b,a
 ;RAM:D898 CD F2 D4                    call    add_HL_A
+       bl   @add_HL_A
 ;RAM:D89B 78                          ld      a, b
+       movb b,a
 ;RAM:D89C CD F2 D4                    call    add_HL_A                                ; next line
+       bl   @add_HL_A
 ;RAM:D89F 0D                          dec     c                                       ; done all lines?
+       sb   one,@c
 ;RAM:D8A0 20 EA                       jr      NZ, loc_D88C                            ; no, loop
-;RAM:D8A2
-;RAM:D8A2             loc_D8A2:                                                       ; sprite data address
-;RAM:D8A2 D1                          pop     de
-;RAM:D8A3 D5                          push    de
+       jne  loc_D88C
+loc_D8A2:
+;RAM:D8A3 D5                          push    de                                      ; sprite data address
+       mov  de,*sp+
 ;RAM:D8A4 1A                          ld      a, (de)                                 ; width (bytes)
+       movb *de,a
 ;RAM:D8A5 DD AE 07                    xor     7(ix)                                   ; same Hflip as stored?
+       movb @7(ix),r0
+       xor  r0,a
 ;RAM:D8A8 E6 40                       and     #0x40 ; '@'
+       andi a,>4000
 ;RAM:D8AA 28 30                       jr      Z, loc_D8DC                             ; yes, skip
+       jeq  loc_D8DC
 ;RAM:D8AC 1A                          ld      a, (de)                                 ; width
+       movb *de,a
 ;RAM:D8AD EE 40                       xor     #0x40 ; '@'                             ; toggle Hflip flag
+       li   r0,>4000
+       xor  r0,a
 ;RAM:D8AF 12                          ld      (de), a                                 ; store updated flag
+       movb a,*de
 ;RAM:D8B0 E6 0F                       and     #0xF                                    ; width
+       andi a,>0f00
 ;RAM:D8B2 47                          ld      b, a
+       movb a,b
 ;RAM:D8B3 4F                          ld      c, a
+       movb a,@c
 ;RAM:D8B4 13                          inc     de
+       inc  de
 ;RAM:D8B5 1A                          ld      a, (de)                                 ; height
+       movb *de,a
 ;RAM:D8B6 08                          ex      af, af'
+       mov  af,r0
+       mov  af_,af
+       mov r0,af_
 ;RAM:D8B7 13                          inc     de                                      ; sprite data
+       inc  de
 ;RAM:D8B8 EB                          ex      de, hl                                  ; HL=sprite data
+       mov  de,r0
+       mov  hl,de
+       mov  r0,hl
 ;RAM:D8B9 E5                          push    hl
+       mov  hl,*sp+
 ;RAM:D8BA D9                          exx
+       bl   @exx
 ;RAM:D8BB E1                          pop     hl                                      ; HL'=sprite data
+       dect hl
+       mov  *sp,hl
 ;RAM:D8BC 06 F1                       ld      b, #0xF1 ; '�'
+       movb @bf1h,b
 ;RAM:D8BE D9                          exx
-;RAM:D8BF
-;RAM:D8BF             loc_D8BF:
+       bl   @exx
+loc_D8BF:
 ;RAM:D8BF D9                          exx
+       bl   @exx
 ;RAM:D8C0 4E                          ld      c, (hl)                                 ; sprite data byte
+       movb *hl,@c
 ;RAM:D8C1 0A                          ld      a, (bc)
+       movb *bc,a
 ;RAM:D8C2 5F                          ld      e, a
+       movb a,@e
 ;RAM:D8C3 23                          inc     hl
+       inc  hl
 ;RAM:D8C4 4E                          ld      c, (hl)
+       movb *hl,@a
 ;RAM:D8C5 0A                          ld      a, (bc)
+       movb *hl,a
 ;RAM:D8C6 57                          ld      d, a
+       movb a,d
 ;RAM:D8C7 23                          inc     hl
+       inc  hl
 ;RAM:D8C8 D5                          push    de
+       mov  de,*sp+
 ;RAM:D8C9 D9                          exx
+       bl   @exx
 ;RAM:D8CA 10 F3                       djnz    loc_D8BF
+       sb   one,b
+       jne  loc_D8BF
 ;RAM:D8CC 41                          ld      b, c
-;RAM:D8CD
-;RAM:D8CD             loc_D8CD:
+       movb @c,b
+loc_D8CD:
 ;RAM:D8CD D1                          pop     de
+       dect sp
+       mov  *sp,de
 ;RAM:D8CE 73                          ld      (hl), e
 ;RAM:D8CF 23                          inc     hl
+       movb @e,*hl+
 ;RAM:D8D0 72                          ld      (hl), d
 ;RAM:D8D1 23                          inc     hl
+       movb d,*hl+
 ;RAM:D8D2 10 F9                       djnz    loc_D8CD
+       sb   one,b
+       jne  loc_D8CD
 ;RAM:D8D4 08                          ex      af, af'
+       mov  af,r0
+       mov  af_,af
+       mov r0,af_
 ;RAM:D8D5 3D                          dec     a
+       sb   one,a
 ;RAM:D8D6 28 04                       jr      Z, loc_D8DC
+       jne  loc_D8DC
 ;RAM:D8D8 08                          ex      af, af'
+       mov  af,r0
+       mov  af_,af
+       mov r0,af_
 ;RAM:D8D9 41                          ld      b, c
+       movb @c,b
 ;RAM:D8DA 18 E3                       jr      loc_D8BF
-;RAM:D8DC             ; ---------------------------------------------------------------------------
-;RAM:D8DC
-;RAM:D8DC             loc_D8DC:
+       jmp  loc_D8BF
+* ---------------------------------------------------------------------------
+loc_D8DC:
 ;RAM:D8DC D1                          pop     de
+       dect sp
+       mov  *sp,de
 ;RAM:D8DD C9                          ret
+vflip_sprite_data_return:
        dect sp
        mov  *sp,r11
        rt
 *
-* END OF FUNCTION CHUNK FOR flip_sprite
+* END OF FUNCTION CHUNK FOR vflip_sprite_data
 * ---------------------------------------------------------------------------
 
 *********************************************************************************
@@ -8356,6 +8458,17 @@ vsbw:
        b    *r11
 *// vsbw
 
+exx:   mov  bc,r0
+       mov  bc_,bc
+       mov  r0,bc
+       mov  hl,r0
+       mov  hl_,hl
+       mov  r0,hl
+       mov  de,r0
+       mov  de_,de
+       mov  r0,de
+       rt
+
 *********************************************************************
 *
 * Byte constants
@@ -8388,6 +8501,7 @@ bbbh   byte >bb
 bc0h   byte >c0
 bd0h   byte >d0
 be1h   byte >e1
+bf1h   byte >f1
 bffh   byte >ff
 
 *===========================================================================
