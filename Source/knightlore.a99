@@ -7454,18 +7454,29 @@ loc_D6A7:
 * $100 entries x 1 byte/entry = $100 bytes
 *
 ;RAM:D6B8 21 00 F1                    ld      hl, #0xF100
-;RAM:D6BB
-loc_D6BB:                                                                             ; byte offset from $F100
-;RAM:D6BB 55                          ld      d, l
+       li   hl,>f400
+loc_D6BB:
+;RAM:D6BB 55                          ld      d, l                                    ; byte offset from $F100
+       movb @l,d
 ;RAM:D6BC 06 08                       ld      b, #8                                   ; 8 bits
-;RAM:D6BE
+       movb @b08h,b
+       movb @b00h,de_
 loc_D6BE:
 ;RAM:D6BE CB 3A                       srl     d
 ;RAM:D6C0 CB 13                       rl      e                                       ; reverse bits
+       srl  de_,1
+       sla  d,1
+       jnc  !
+       socb @b80h,de_
 ;RAM:D6C2 10 FA                       djnz    loc_D6BE                                ; loop all bits
+!      sb   one,b
+       jne  loc_D6BE
 ;RAM:D6C4 73                          ld      (hl), e                                 ; store
+       movb de_,*hl
 ;RAM:D6C5 2C                          inc     l                                       ; next index/location
+       ab   one,@l
 ;RAM:D6C6 20 F3                       jr      NZ, loc_D6BB                            ; loop 256 bytes
+       jne  loc_D6BB
 ;RAM:D6C8 C9                          ret
        rt
 *
@@ -8355,6 +8366,7 @@ b02h   byte >02
 b03h   byte >03
 b05h   byte >05
 b07h   byte >07
+b08h   byte >08
 b09h   byte >09
 b0ah   byte >0a
 b0dh   byte >0d
