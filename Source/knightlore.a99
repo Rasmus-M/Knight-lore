@@ -3181,53 +3181,95 @@ print_sun_moon:
 * =============== S U B R O U T I N E =======================================
 *
 display_sun_moon_frame:
-       rt
+       mov  r11,*sp+
 ;RAM:C3A4 3A C3 5B                    ld      a, (all_objs_in_cauldron)
 ;RAM:C3A7 A7                          and     a
+       movb @all_objs_in_cauldron,a
 ;RAM:C3A8 C0                          ret     NZ
+       jne  display_frame_return
 ;RAM:C3A9 DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
+       movb @26(ix),a
 ;RAM:C3AC FE E1                       cp      #225
+       cb   a,@be1h
 ;RAM:C3AE 28 4F                       jr      Z, toggle_day_night
+       jeq  toggle_day_night
 ;RAM:C3B0 DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
+       movb @26(ix),a
 ;RAM:C3B3 C6 10                       add     a, #16
+       ab   @b10h,a
 ;RAM:C3B5 21 40 C4                    ld      hl, #sun_moon_yoff
+       li   hl,sun_moon_yoff
 ;RAM:C3B8 0F                          rrca
 ;RAM:C3B9 0F                          rrca
+       srl  a,2
 ;RAM:C3BA E6 0F                       and     #0xF
+       andi a,>0f00
 ;RAM:C3BC CD F2 D4                    call    add_HL_A                                ; ptr entry
+       bl   @add_HL_A
 ;RAM:C3BF 7E                          ld      a, (hl)                                 ; get entry
+       movb *hl,a
 ;RAM:C3C0 DD 77 1B                    ld      27(ix), a                               ; pixel Y
-;RAM:C3C3
-display_frame:                                                  ; 31 lines, 6 bytes (swapped below)
-       rt
-;RAM:C3C3 01 06 1F                    ld      bc, #0x1F06
+       movb a,@27(ix)
+display_frame:
+;RAM:C3C3 01 06 1F                    ld      bc, #0x1F06                             ; 31 lines, 6 bytes (swapped below)
+       li   bc,>1f06
 ;RAM:C3C6 21 0A D9                    ld      hl, # vidbuf+0x17                       ; (184,0)
+       li   hl,vidbuf+>17
 ;RAM:C3C9 C5                          push    bc
+       mov  bc,*sp+
 ;RAM:C3CA E5                          push    hl
+       mov  hl,*sp+
 ;RAM:C3CB 79                          ld      a, c
+       movb @c,a
 ;RAM:C3CC 48                          ld      c, b
+       movb b,@c
 ;RAM:C3CD 47                          ld      b, a
+       movb a,@b
 ;RAM:C3CE AF                          xor     a
+       clr  a
 ;RAM:C3CF CD 15 C5                    call    fill_window
+;      bl   @fill_window
 ;RAM:C3D2 CD 18 D7                    call    print_sprite                            ; display sun/moon
+;      bl   @print_sprite
 ;RAM:C3D5 DD 21 DB BF                 ld      ix, #sprite_scratchpad
+       li   ix,sprite_scratchpad
 ;RAM:C3D9 DD 36 07 00                 ld      7(ix), #0                               ; clear flags
+       movb @b00h,@7(ix)
 ;RAM:C3DD DD 36 00 5A                 ld      0(ix), #0x5A ; 'Z'                      ; sun/moon frame left
+       movb @b5ah,*ix
 ;RAM:C3E1 DD 36 1A B8                 ld      26(ix), #184                            ; pixel X
+       movb @bb8h,@26(ix)
 ;RAM:C3E5 DD 36 1B 00                 ld      27(ix), #0                              ; pixel Y
+       movb @b00h,@27(ix)
 ;RAM:C3E9 CD 18 D7                    call    print_sprite
+       bl   @print_sprite
 ;RAM:C3EC DD 36 1A D0                 ld      26(ix), #208                            ; pixel X
+       movb @bd0h,@26(ix)
 ;RAM:C3F0 DD 36 00 BA                 ld      0(ix), #0xBA ; '�'                      ; sun/moon frame right
+       movb @bbah,*ix
 ;RAM:C3F4 CD 18 D7                    call    print_sprite
+       bl   @print_sprite
 ;RAM:C3F7 E1                          pop     hl
+       dect sp
+       mov  *sp,hl
 ;RAM:C3F8 C1                          pop     bc
+       dect sp
+       mov  *sp,bc
 ;RAM:C3F9 11 F7 57                    ld      de, # zx_vram+0x17F7                    ; (184,0)
+       li   de,PTRNTB+>17f7
 ;RAM:C3FC C3 7C D6                    jp      blit_to_screen
-;      b    @blit_to_screen
-;RAM:C3FF             ; ---------------------------------------------------------------------------
-;RAM:C3FF
-;RAM:C3FF             toggle_day_night:                                               ; index
-;RAM:C3FF DD 7E 00                    ld      a, 0(ix)
+*       b    @blit_to_screen
+*      Return
+display_frame_return:
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* ---------------------------------------------------------------------------
+*
+toggle_day_night:
+       rt
+;RAM:C3FF DD 7E 00                    ld      a, 0(ix)                                ; index
 ;RAM:C402 EE 01                       xor     #1                                      ; toggle sun/moon
 ;RAM:C404 DD 77 00                    ld      0(ix), a
 ;RAM:C407 CD 0D D3                    call    colour_sun_moon
@@ -3253,7 +3295,6 @@ display_frame:                                                  ; 31 lines, 6 by
 ;       b    @display_frame
 *
 * End of function display_sun_moon_frame
-*
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -7318,7 +7359,6 @@ blit_to_screen:
 ;RAM:D69A C1                          pop     bc
 ;RAM:D69B 10 DF                       djnz    blit_to_screen                          ; no, loop
 ;RAM:D69D C9                          ret
-
        mov  de,@wrksp2                 ; Destination: de -> r0
        mov  hl,@wrksp2+2               ; Source: hl -> r1
        mov  bc,@wrksp2+4               ; Dimensions: bc -> r2
@@ -8324,13 +8364,18 @@ b22h   byte >22
 b28h   byte >28
 b47h   byte >47
 b58h   byte >58
+b5ah   byte >5a
 b68h   byte >68
 b60h   byte >60
 b80h   byte >80
 b8ch   byte >8c
 bb0h   byte >b0
+bb8h   byte >b8
+bbah   byte >ba
 bbbh   byte >bb
 bc0h   byte >c0
+bd0h   byte >d0
+be1h   byte >e1
 bffh   byte >ff
 
 *===========================================================================
