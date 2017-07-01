@@ -494,7 +494,7 @@ loc_B000:
 ;RAM:B01B CD 62 CE                    call    list_objects_to_draw                    ; builds a list of screen objects
        bl   @list_objects_to_draw
 ;RAM:B01E CD 9F D5                    call    render_dynamic_objects                  ; renders above list
-       bl   @render_dynamic_objects
+;       bl   @render_dynamic_objects
 ;RAM:B021 3A C5 5B                    ld      a, (rising_blocks_z)
        movb @rising_blocks_z,a
 ;RAM:B024 A7                          and     a                                       ; any blocks rising?
@@ -1955,12 +1955,19 @@ print_days:
 * =============== S U B R O U T I N E =======================================
 *
 print_lives_gfx:
+       mov  r11,*sp+
 ;RAM:BC7A DD 21 DB BF                 ld      ix, #sprite_scratchpad
+       li   ix,sprite_scratchpad
 ;RAM:BC7E DD 36 00 8C                 ld      0(ix), #0x8C ; '�'                      ; sprite index
+       movb @b8ch,@0(ix)
 ;RAM:BC82 DD 36 07 00                 ld      7(ix), #0                               ; clear flags
+       movb @b00h,@7(ix)
 ;RAM:BC86 DD 36 1A 10                 ld      26(ix), #16                             ; pixel X
+       movb @b10h,@26(ix)
 ;RAM:BC8A DD 36 1B 20                 ld      27(ix), #32                             ; pixel Y
+       movb @b20h,@27(ix)
 ;RAM:BC8E CD 18 D7                    call    print_sprite
+       bl   @print_sprite
 ;RAM:BC91 3E 47                       ld      a, #0x47 ; 'G'
 ;RAM:BC93 11 42 5A                    ld      de, # zx_aram+0x242
 ;RAM:BC96 06 02                       ld      b, #2
@@ -1968,7 +1975,8 @@ print_lives_gfx:
 ;RAM:BC9B 11 62 5A                    ld      de, # zx_aram+0x262
 ;RAM:BC9E 06 04                       ld      b, #4
 ;RAM:BCA0 C3 09 D5                    jp      fill_DE
-;       b    @fill_DE
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function print_lives_gfx
@@ -2543,14 +2551,16 @@ display_objects:
 *
 * End of function display_objects
 *
-;RAM:BFD2             ; ---------------------------------------------------------------------------
-;RAM:BFD3             ; diamond, poison, boot, challice, cup, bottle, globe, idol
-;RAM:BFD3             ; red, magenta, green, cyan, yellow, white, red, white
-;RAM:BFD3 42 43 44 45+object_attributes:.db 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x42, 0x47
-;RAM:BFDB 8A 00 00 00+sprite_scratchpad:.db 0x8A, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-;RAM:BFDB 00 00 00 00+                .db 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 0xE8, 0xA0, 0, 0, 0
-;RAM:BFDB 00 00 00 00+                .db 0
-;RAM:BFFB
+* ---------------------------------------------------------------------------
+* diamond, poison, boot, challice, cup, bottle, globe, idol
+* red, magenta, green, cyan, yellow, white, red, white
+object_attributes:
+       byte >42, >43, >44, >45, >46, >47, >42, >47
+*
+sprite_scratchpad:
+       byte >8A, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00
+       byte >00, >00, >00, >00, >00, >00, >00, >00, >03, >01, >E8, >A0, >00, >00, >00, >00
+*
 ;RAM:BFFB             ; =============== S U B R O U T I N E =======================================
 ;RAM:BFFB
 ;RAM:BFFB
@@ -7469,13 +7479,12 @@ loc_D710:
 * End of function calc_pixel_XY_and_render
 *
 * ix: holds the object address
-* de: holds the sprite address
 *
 print_sprite:
        mov  r11,*sp+
 ;RAM:D718 CD EF D6                    call    flip_sprite
 print_sprite_1:
-;       bl   @flip_sprite              ; TODO: enable
+       bl   @flip_sprite              ; de holds the sprite address
 ;RAM:D71B DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
        movb @26(ix),a
 ;RAM:D71E E6 07                       and     #7                                      ; bit offset?
@@ -7526,7 +7535,7 @@ loc_D73C:                                                                       
 ;RAM:D741 C6 22                       add     a, #0x22 ; '"'                          ; 34-(width+1)=33-width
        ab   @b22h,a
 ;RAM:D743 32 01 D8                    ld      (loc_D800+1), a                         ; self-modifying code
-       movb a,@loc_D800+2              ; patch LSB
+       movb a,@loc_D800+3              ; patch LSB
 ;RAM:D746 1A                          ld      a, (de)                                 ; get sprite height
 ;RAM:D747 13                          inc     de
        movb *de+,a
@@ -7556,7 +7565,7 @@ loc_D75A:
 ;RAM:D767 EB                          ex      de, hl
 ;RAM:D768 F9                          ld      sp, hl                                  ; sp=source data address
 ;RAM:D769 EB                          ex      de, hl
-       mov  hl,sp
+       mov  de,sp
 ;RAM:D76A DD 7E 19                    ld      a, 25(ix)                               ; height_lines
        movb @25(ix),a
 ;RAM:D76D 18 3B                       jr      loc_D7AA
@@ -7581,7 +7590,7 @@ loc_D76F:
        inv  a
        ab   one,a
 ;RAM:D77C D6 06                       sub     #6                                      ; -14, -20, -30, -38, -46
-       ab   @b0ah,a                    ; 10 in this code
+       sb   @b0ah,a                    ; 10 on th TI
 * TMS9900 offsets are in words
        sra  a,1
 ;RAM:D77E 18 BC                       jr      loc_D73C                                ; to self modifying code
@@ -8252,6 +8261,7 @@ b58h   byte >58
 b68h   byte >68
 b60h   byte >60
 b80h   byte >80
+b8ch   byte >8c
 bb0h   byte >b0
 bbbh   byte >bb
 bc0h   byte >c0
