@@ -1969,12 +1969,20 @@ print_lives_gfx:
 ;RAM:BC8E CD 18 D7                    call    print_sprite
        bl   @print_sprite
 ;RAM:BC91 3E 47                       ld      a, #0x47 ; 'G'
+       movb @b47h,a
 ;RAM:BC93 11 42 5A                    ld      de, # zx_aram+0x242
+       li   hl,zx_aram+>0242
 ;RAM:BC96 06 02                       ld      b, #2
+       li   bc,>0201
 ;RAM:BC98 CD 09 D5                    call    fill_DE
+       bl   @fill_color_window
 ;RAM:BC9B 11 62 5A                    ld      de, # zx_aram+0x262
+       li   hl,zx_aram+>0262
 ;RAM:BC9E 06 04                       ld      b, #4
+       li   bc,>0401
 ;RAM:BCA0 C3 09 D5                    jp      fill_DE
+       bl   @fill_color_window
+*      Return
        dect sp
        mov  *sp,r11
        rt
@@ -8058,6 +8066,7 @@ vregs:
 * C = height (lines)
 * A = attribute
 *
+       data 0
 fill_color_window:
        mov  r11,*sp+
        bl   @ti_color
@@ -8257,6 +8266,7 @@ b10h   byte >10
 b20h   byte >20
 b22h   byte >22
 b28h   byte >28
+b47h   byte >47
 b58h   byte >58
 b68h   byte >68
 b60h   byte >60
