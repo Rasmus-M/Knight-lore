@@ -333,7 +333,7 @@ start:
        li   bc,>568
 ;RAM:AF72 3A 78 5C                    ld      a, (0x5C78)                             ; FRAMES system variable (LSB)
        movb @RNDSD,a
-       clr  a
+;      clr  a
 ;RAM:AF75 F5                          push    af
        mov  af,*sp+
 ;RAM:AF76 CD 3A D5                    call    clr_mem
@@ -3172,11 +3172,10 @@ upd_92_to_95:
 * =============== S U B R O U T I N E =======================================
 *
 print_sun_moon:
-;       rt                             ; TODO: game crashes if I remove this
 ;RAM:C397 3A A2 5B                    ld      a, (seed_2)
        movb @seed_2,a
 ;RAM:C39A E6 07                       and     #7
-       andi a,>0700
+       andi a,>0700                                                                   ; print every 8th frame
 ;RAM:C39C C0                          ret     NZ
        jeq  !
        rt
@@ -3195,7 +3194,7 @@ display_sun_moon_frame:
 ;RAM:C3A7 A7                          and     a
        movb @all_objs_in_cauldron,a
 ;RAM:C3A8 C0                          ret     NZ
-       jne  display_frame_return
+       jne  display_sun_moon_frame_return
 ;RAM:C3A9 DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
        movb @26(ix),a
 ;RAM:C3AC FE E1                       cp      #225
@@ -3263,11 +3262,12 @@ display_frame:
        dect sp
        mov  *sp,bc
 ;RAM:C3F9 11 F7 57                    ld      de, # zx_vram+0x17F7                    ; (184,0)
-       li   de,PTRNTB+>17f7
+       li   de,PTRNTB+>17bf           ; Different vram layout on 9918A
 ;RAM:C3FC C3 7C D6                    jp      blit_to_screen
-       bl   @blit_to_screen           ; cannot jump because blit_to_screen doesn't pop return address
+       bl   @blit_to_screen           ; Cannot jump because blit_to_screen doesn't pop return address
+;       bl   @update_screen
 *      Return
-display_frame_return:
+display_sun_moon_frame_return:
        dect sp
        mov  *sp,r11
        rt
@@ -3275,31 +3275,50 @@ display_frame_return:
 * ---------------------------------------------------------------------------
 *
 toggle_day_night:
-       rt
 ;RAM:C3FF DD 7E 00                    ld      a, 0(ix)                                ; index
+       movb *ix,a
 ;RAM:C402 EE 01                       xor     #1                                      ; toggle sun/moon
+       li   r0,>0100
+       xor  r0,a
 ;RAM:C404 DD 77 00                    ld      0(ix), a
+       mov  a,*ix
 ;RAM:C407 CD 0D D3                    call    colour_sun_moon
+       bl   @colour_sun_moon
 ;RAM:C40A DD 36 1A B0                 ld      26(ix), #176                            ; pixel X
+       movb @bb0h,@26(ix)
 ;RAM:C40E 3E 01                       ld      a, #1
 ;RAM:C410 32 B1 5B                    ld      (transform_flag_graphic), a
+       movb one,@transform_flag_graphic
 ;RAM:C413 3A 4D C4                    ld      a, (sun_moon_scratchpad)
+       movb @sun_moon_scratchpad,a
 ;RAM:C416 E6 01                       and     #1
+       andi a,>0100
 ;RAM:C418 C0                          ret     NZ
-;RAM:C419
-;RAM:C419             inc_days:
+       jne  display_sun_moon_frame_return
+inc_days:
 ;RAM:C419 21 B9 5B                    ld      hl, #days
+       li   hl,days
 ;RAM:C41C 7E                          ld      a, (hl)
+       movb *hl,a
 ;RAM:C41D C6 01                       add     a, #1
+       ab   one,a
 ;RAM:C41F 27                          daa
+;      TODO
 ;RAM:C420 77                          ld      (hl), a
+       movb a,*hl
 ;RAM:C421 FE 40                       cp      #64
+       cb   a,@b40h
 ;RAM:C423 CA 22 BA                    jp      Z, game_over
+       jne  !
+       b    @game_over
 ;RAM:C426 CD 66 BC                    call    print_days
+!      bl   @print_days
 ;RAM:C429 01 78 00                    ld      bc, #0x78 ; 'x'                         ; (120,0)
+       li   bc,>0078
 ;RAM:C42C CD 32 C4                    call    blit_2x8
+       bl   @blit_2x8
 ;RAM:C42F C3 C3 C3                    jp      display_frame
-;       b    @display_frame
+       b    @display_frame
 *
 * End of function display_sun_moon_frame
 *
@@ -3317,9 +3336,11 @@ blit_2x8:
 ;RAM:C43A 01 02 08                    ld      bc, #0x802
        li   bc,>0802
 ;RAM:C43D C3 7C D6                    jp      blit_to_screen
+       bl    @blit_to_screen          ; cannot jump because blit_to_screen doesn't pop return address
+*      Return
        dect sp
        mov  *sp,r11
-       b    @blit_to_screen
+       rt
 *
 * End of function blit_2x8
 *
@@ -3327,10 +3348,10 @@ blit_2x8:
 *
 sun_moon_yoff:
        byte 5, 6, 7, 8, 9, 10, 10, 9, 8, 7, 6, 5, 5
+       byte 0 ; Added one extra byte for alignment
 sun_moon_scratchpad:
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-       even
+       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -7458,6 +7479,8 @@ loc_D679:
 * B=lines
 * C=bytes/line
 *
+* Note that B and C are swapped compared to fill_window
+*
 blit_to_screen:
 ;RAM:D67C C5                          push    bc
 ;RAM:D67D D5                          push    de
@@ -7489,8 +7512,8 @@ blit_to_screen:
        mov  bc,@wrksp2+4               ; Dimensions: bc -> r2
        lwpi wrksp2
        mov  r2,r3
+       andi r2,>ff00                   ; Lines
        swpb r2
-       andi r2,>00ff                   ; Lines
        andi r3,>00ff                   ; Bytes/line
        mov  r0,r4
        andi r4,7                       ; Number of lines into character row (n)
@@ -7500,6 +7523,7 @@ blit_to_screen:
        a    r4,7                       ; 7 - n extra lines
        a    r4,r2                      ; add extra lines
 blit1:
+       ai   r1,7*32                    ; start 7 lines down
        andi r0,>FFF8                   ; Move dest to top of character row
        mov  r3,r4                      ; Copy bytes/line
        li   r15,vdpwd
@@ -7535,6 +7559,7 @@ blit3:
        dec  r3
        jne  blit3
        ai   r0,-256
+       ai   r1,512                     ; Move 16 lines down
        ai   r2,-8
        jgt  blit2
        lwpi wrksp
@@ -7675,7 +7700,7 @@ flip_sprite:
 !      dect sp                                                                        ; do not return to print_sprite
                                                                                       ; but to the caller of print_sprite
 ;RAM:D703 C9                          ret
-!      dect sp
+       dect sp
        mov  *sp,r11
        rt
 *
@@ -8615,6 +8640,7 @@ b10h   byte >10
 b20h   byte >20
 b22h   byte >22
 b28h   byte >28
+b40h   byte >40
 b47h   byte >47
 b58h   byte >58
 b5ah   byte >5a
