@@ -3443,132 +3443,102 @@ upd_84:
 ;RAM:C4D0 C3 32 C2                    jp      audio_B467_wipe_and_draw
 ;RAM:C4D3             ; tree wall
 ;RAM:C4D3
-;RAM:C4D3             ; =============== S U B R O U T I N E =======================================
-;RAM:C4D3
-;RAM:C4D3
+* =============== S U B R O U T I N E =======================================
 upd_128_to_130:
-       b    @no_update
 ;RAM:C4D3 21 F8 FE                    ld      hl, #0xFEF8                             ; -2, -8
+       li   hl,>0000
 ;RAM:C4D6 18 08                       jr      jp_set_pixel_adj
-;RAM:C4D6             ; End of function upd_128_to_130
-;RAM:C4D6
-;RAM:C4D8
-;RAM:C4D8             ; =============== S U B R O U T I N E =======================================
-;RAM:C4D8
-;RAM:C4D8
+       jmp  jp_set_pixel_adj
+* End of function upd_128_to_130
+* =============== S U B R O U T I N E =======================================
 adj_m4_m12:
-;RAM:C4D8
-;RAM:C4D8             ; FUNCTION CHUNK AT RAM:C4E0 SIZE 00000003 BYTES
-;RAM:C4D8
 ;RAM:C4D8 21 F4 FC                    ld      hl, #0xFCF4                             ; -4, -12
+       li   hl,>0000
 ;RAM:C4DB 18 03                       jr      jp_set_pixel_adj
        jmp  jp_set_pixel_adj
-;RAM:C4DB             ; End of function adj_m4_m12
-;RAM:C4DB
-;RAM:C4DD
-;RAM:C4DD             ; =============== S U B R O U T I N E =======================================
-;RAM:C4DD
-;RAM:C4DD
-;RAM:C4DD             adj_m6_m12:
+* End of function adj_m4_m12
+* =============== S U B R O U T I N E =======================================
+adj_m6_m12:
 ;RAM:C4DD 21 F4 FA                    ld      hl, #0xFAF4                             ; -6, -12
-;RAM:C4DD             ; End of function adj_m6_m12
-;RAM:C4DD
-;RAM:C4E0             ; START OF FUNCTION CHUNK FOR adj_m4_m12
-;RAM:C4E0
-jp_set_pixel_adj:
+       li   hl,>faf4
 ;RAM:C4E0 C3 2B C7                    jp      set_pixel_adj
-       b    @set_pixel_adj
-;RAM:C4E0             ; END OF FUNCTION CHUNK FOR adj_m4_m12
-;RAM:C4E3             ; rock and block
-;RAM:C4E3
-;RAM:C4E3             ; =============== S U B R O U T I N E =======================================
-;RAM:C4E3
-;RAM:C4E3
+jp_set_pixel_adj:
+       b    @set_pixel_adj_1
+* End of function adj_m6_m12
+*
+* rock and block
+*
+* =============== S U B R O U T I N E =======================================
 upd_6_7:
-       b    @no_update
 ;RAM:C4E3 21 F0 F8                    ld      hl, #0xF8F0                             ; -8, -16
+       li   hl,>f8f0
 ;RAM:C4E6 18 F8                       jr      jp_set_pixel_adj
-;RAM:C4E6             ; End of function upd_6_7
-;RAM:C4E6
-;RAM:C4E8             ; ---------------------------------------------------------------------------
-;RAM:C4E8             ; bricks
-;RAM:C4E8
-upd_10:                                                         ; -1, -20
-       b    @no_update
-;RAM:C4E8 21 EC FF                    ld      hl, #0xFFEC
+       jmp  jp_set_pixel_adj
+* End of function upd_6_7
+* =============== S U B R O U T I N E =======================================
+* bricks
+upd_10:
+;RAM:C4E8 21 EC FF                    ld      hl, #0xFFEC                              ; -1, -20
+       li   hl,>ffec
 ;RAM:C4EB 18 F3                       jr      jp_set_pixel_adj
-;RAM:C4ED             ; bricks
-;RAM:C4ED
-;RAM:C4ED             ; =============== S U B R O U T I N E =======================================
-;RAM:C4ED
-;RAM:C4ED
+       jmp  jp_set_pixel_adj
+* bricks
+* =============== S U B R O U T I N E =======================================
 upd_11:
-       b    @no_update
 ;RAM:C4ED 21 F4 FE                    ld      hl, #0xFEF4                             ; -2, -12
+       li   hl,>fef4
 ;RAM:C4F0 18 EE                       jr      jp_set_pixel_adj
-;RAM:C4F0             ; End of function upd_11
-;RAM:C4F0
-;RAM:C4F2             ; bricks
-;RAM:C4F2
-;RAM:C4F2             ; =============== S U B R O U T I N E =======================================
-;RAM:C4F2
-;RAM:C4F2
+       jmp  jp_set_pixel_adj
+* End of function upd_11
+* bricks
+* =============== S U B R O U T I N E =======================================
 upd_12_to_15:
-       b    @no_update
 ;RAM:C4F2 21 F8 FC                    ld      hl, #0xFCF8                             ; -4, -8
+       li   hl,>fcf8
 ;RAM:C4F5 18 E9                       jr      jp_set_pixel_adj
-;RAM:C4F5             ; End of function upd_12_to_15
-;RAM:C4F5
-;RAM:C4F7
-;RAM:C4F7             ; =============== S U B R O U T I N E =======================================
-;RAM:C4F7
-;RAM:C4F7
-;RAM:C4F7             adj_m8_m12:
+       jmp  jp_set_pixel_adj
+* End of function upd_12_to_15
+* =============== S U B R O U T I N E =======================================
+adj_m8_m12:
 ;RAM:C4F7 21 F4 F8                    ld      hl, #0xF8F4                             ; -8, -12
+       li   hl,>f8f4
 ;RAM:C4FA 18 E4                       jr      jp_set_pixel_adj
-;RAM:C4FA             ; End of function adj_m8_m12
-;RAM:C4FA
-;RAM:C4FC
-;RAM:C4FC             ; =============== S U B R O U T I N E =======================================
-;RAM:C4FC
-;RAM:C4FC
-;RAM:C4FC             adj_m7_m12:
+       jmp  jp_set_pixel_adj
+* End of function adj_m8_m12
+* =============== S U B R O U T I N E =======================================
+adj_m7_m12:
 ;RAM:C4FC 21 F4 F9                    ld      hl, #0xF9F4                             ; -7, -12
+       li   hl,>f9f4
 ;RAM:C4FF 18 DF                       jr      jp_set_pixel_adj
-;RAM:C4FF             ; End of function adj_m7_m12
-;RAM:C4FF
-;RAM:C501
-;RAM:C501             ; =============== S U B R O U T I N E =======================================
-;RAM:C501
-;RAM:C501
-;RAM:C501             adj_m12_m12:
+       jmp  jp_set_pixel_adj
+* End of function adj_m7_m12
+* =============== S U B R O U T I N E =======================================
+adj_m12_m12:
 ;RAM:C501 21 F4 F4                    ld      hl, #0xF4F4                             ; -12, -12
+       li   hl,>f4f4
 ;RAM:C504 18 DA                       jr      jp_set_pixel_adj
-;RAM:C504             ; End of function adj_m12_m12
-;RAM:C504
-;RAM:C506             ; ---------------------------------------------------------------------------
-;RAM:C506
-upd_88_to_90:                                                   ; -12, -16
-       b    @no_update
-;RAM:C506 21 F0 F4                    ld      hl, #0xF4F0
+       jmp  jp_set_pixel_adj
+* End of function adj_m12_m12
+* =============== S U B R O U T I N E =======================================
+upd_88_to_90:
+;RAM:C506 21 F0 F4                    ld      hl, #0xF4F0                            ; -12, -16
+       li   hl,>f4f0
 ;RAM:C509 18 D5                       jr      jp_set_pixel_adj
-;RAM:C50B
-;RAM:C50B             ; =============== S U B R O U T I N E =======================================
-;RAM:C50B
-;RAM:C50B
-;RAM:C50B             adj_p7_m12:
+       jmp  jp_set_pixel_adj
+* =============== S U B R O U T I N E =======================================
+adj_p7_m12:
 ;RAM:C50B 21 F4 07                    ld      hl, #0x7F4                              ; +7, -12
+       li   hl,>07f4
 ;RAM:C50E 18 D0                       jr      jp_set_pixel_adj
-;RAM:C50E             ; End of function adj_p7_m12
-;RAM:C50E
-;RAM:C510
-;RAM:C510             ; =============== S U B R O U T I N E =======================================
-;RAM:C510
-;RAM:C510
-;RAM:C510             adj_p3_m12:
+       jmp  jp_set_pixel_adj
+* End of function adj_p7_m12
+* =============== S U B R O U T I N E =======================================
+adj_p3_m12:
 ;RAM:C510 21 F4 03                    ld      hl, #0x3F4                              ; +3, -12
+       li   hl,>03f4
 ;RAM:C513 18 CB                       jr      jp_set_pixel_adj
-;RAM:C513             ; End of function adj_p3_m12
+       jmp  jp_set_pixel_adj
+* End of function adj_p3_m12
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -3972,7 +3942,6 @@ upd_9:
 * ---------------------------------------------------------------------------
 * arch (far side)
 upd_3_5:
-;       b    @no_update
 ;RAM:C722 DD CB 07 76                 bit     6, 7(ix)                                ; hflip?
        movb @7(ix),r0
        andi r0,>4000
