@@ -3226,16 +3226,14 @@ display_frame:
        mov  bc,*sp+
 ;RAM:C3CA E5                          push    hl
        mov  hl,*sp+
-;RAM:C3CB 79                          ld      a, c
-       movb @c,a
+;RAM:C3CB 79                          ld      a, c                                    ; swap b and c
 ;RAM:C3CC 48                          ld      c, b
-       movb b,@c
 ;RAM:C3CD 47                          ld      b, a
-       movb a,@b
+       swpb bc
 ;RAM:C3CE AF                          xor     a
        clr  a
 ;RAM:C3CF CD 15 C5                    call    fill_window
-;      bl   @fill_window
+       bl   @fill_window
 ;RAM:C3D2 CD 18 D7                    call    print_sprite                            ; display sun/moon
        bl   @print_sprite
 ;RAM:C3D5 DD 21 DB BF                 ld      ix, #sprite_scratchpad
@@ -3265,7 +3263,7 @@ display_frame:
 ;RAM:C3F9 11 F7 57                    ld      de, # zx_vram+0x17F7                    ; (184,0)
        li   de,PTRNTB+>17f7
 ;RAM:C3FC C3 7C D6                    jp      blit_to_screen
-*       b    @blit_to_screen
+       bl   @blit_to_screen           ; cannot jump because blit_to_screen doesn't pop return address
 *      Return
 display_frame_return:
        dect sp
@@ -3559,7 +3557,7 @@ upd_88_to_90:                                                   ; -12, -16
 * Note that line length is fixed at 32.
 *
 fill_window:
-;RAM:C515 11 20 00                    ld      de, #32                                 ; Line lenght
+;RAM:C515 11 20 00                    ld      de, #32                                 ; Line length
        li   de,32
 loc_C518:
 ;RAM:C518 C5                          push    bc
