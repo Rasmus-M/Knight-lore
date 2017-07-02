@@ -3940,187 +3940,291 @@ upd_9:
 ;RAM:C71E DD 77 03                    ld      3(ix), a                                ; Z+=dZ
 ;RAM:C721 C9                          ret
 ;RAM:C721             ; End of function dec_dZ_and_update_XYZ
-;RAM:C721
-;RAM:C722             ; ---------------------------------------------------------------------------
-;RAM:C722             ; arch (far side)
-;RAM:C722
-upd_3_5:                                                        ; hflip?
-       b    @no_update
-;RAM:C722 DD CB 07 76                 bit     6, 7(ix)
+*
+* ---------------------------------------------------------------------------
+* arch (far side)
+upd_3_5:
+;RAM:C722 DD CB 07 76                 bit     6, 7(ix)                                ; hflip?
+       movb @7(ix),r0
+       andi r0,>4000
 ;RAM:C726 20 0A                       jr      NZ, adj_3_5_hflip                       ; yes, go
+       jne  adj_3_5_hflip
 ;RAM:C728 21 F7 FD                    ld      hl, #0xFDF7                             ; -3, -9
+       li   hl,>FDF7
+*      Jump past push of return address
+       jmp  set_pixel_adj_1
 *
 * =============== S U B R O U T I N E =======================================
 *
 set_pixel_adj:
+       mov  r11,*sp+
 ;RAM:C72B DD 75 12                    ld      18(ix), l                               ; pixel_x adjust
+set_pixel_adj_1:
+       movb @l,@18(ix)
 ;RAM:C72E DD 74 13                    ld      19(ix), h                               ; pixel_y adjust
+       movb h,@19(ix)
 ;RAM:C731 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function set_pixel_adj
 *
-;RAM:C732             ; ---------------------------------------------------------------------------
-;RAM:C732
-;RAM:C732             adj_3_5_hflip:                                                  ; -2, -7
-;RAM:C732 21 F9 FE                    ld      hl, #0xFEF9
+* ---------------------------------------------------------------------------
+adj_3_5_hflip:
+;RAM:C732 21 F9 FE                    ld      hl, #0xFEF9                             ; -2, -7
+       li   hl,>fef9
 ;RAM:C735 18 F4                       jr      set_pixel_adj
-;RAM:C737             ; ---------------------------------------------------------------------------
-;RAM:C737
-;RAM:C737             adj_m3_p1:                                                      ; -3, +1
-;RAM:C737 21 01 FD                    ld      hl, #0xFD01
+       jmp  set_pixel_adj_1
+* ---------------------------------------------------------------------------
+adj_m3_p1:
+;RAM:C737 21 01 FD                    ld      hl, #0xFD01                             ; -3, +1
+       li   hl,>fd01
 ;RAM:C73A 18 10                       jr      loc_C74C
-;RAM:C73C             ; ---------------------------------------------------------------------------
-;RAM:C73C             ; arch (near side)
-;RAM:C73C
-upd_2_4:                                                        ; hflip?
-       b    @no_update
-;RAM:C73C DD CB 07 76                 bit     6, 7(ix)
+       jmp  loc_C74C
+;* ---------------------------------------------------------------------------
+* arch (near side)
+upd_2_4:
+;RAM:C73C DD CB 07 76                 bit     6, 7(ix)                                 ; hflip?
+       mov  @7(ix),r0
+       andi r0,>4000
 ;RAM:C740 20 2A                       jr      NZ, adj_2_4_hflip                       ; yes, go
+       jne  adj_2_4_hflip
 ;RAM:C742 DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
+       movb *ix,a
 ;RAM:C745 FE 04                       cp      #4                                      ; tree arch?
+       cb   a,@b04h
 ;RAM:C747 28 EE                       jr      Z, adj_m3_p1                            ; yes, exit
+       jeq  adj_m3_p1
 ;RAM:C749 21 F9 FD                    ld      hl, #0xFDF9                             ; -3, -7
-;RAM:C74C
-;RAM:C74C             loc_C74C:
+       li   hl,>FDF9
+loc_C74C:
 ;RAM:C74C CD 2B C7                    call    set_pixel_adj
+       bl   @set_pixel_adj
 ;RAM:C74F DD 7E 02                    ld      a, 2(ix)                                ; Y
+       movb @2(ix),a
 ;RAM:C752 C6 0D                       add     a, #13                                  ; add 13
+       ab   @b0dh,a
 ;RAM:C754 DD 77 0A                    ld      10(ix), a                               ; dY?=Y+13
+       movb a,@10(ix)
 ;RAM:C757 DD 7E 01                    ld      a, 1(ix)                                ; X
 ;RAM:C75A DD 77 09                    ld      9(ix), a                                ; dX?=X
+       movb @1(ix),@9(ix)
 ;RAM:C75D 21 0F 06                    ld      hl, #0x60F                              ; +6, +15
-;RAM:C760
-;RAM:C760             loc_C760:                                                       ; Z
-;RAM:C760 DD 7E 03                    ld      a, 3(ix)
+       li   hl,>060F
+loc_C760:
+;RAM:C760 DD 7E 03                    ld      a, 3(ix)                                ; Z
 ;RAM:C763 DD 77 0B                    ld      11(ix), a                               ; dZ?=Z
+       movb @3(ix),@11(ix)
 ;RAM:C766 CD DB C7                    call    chk_plyr_spec_near_arch
+       bl   @chk_plyr_spec_near_arch
 ;RAM:C769 C3 85 C7                    jp      loc_C785
-;RAM:C76C             ; ---------------------------------------------------------------------------
-;RAM:C76C
-;RAM:C76C             adj_2_4_hflip:                                                  ; -2, -17
-;RAM:C76C 21 EF FE                    ld      hl, #0xFEEF
+       b    @loc_C785
+* ---------------------------------------------------------------------------
+adj_2_4_hflip:
+;RAM:C76C 21 EF FE                    ld      hl, #0xFEEF                            ; -2, -17
+       li   hl,>FEEF
 ;RAM:C76F CD 2B C7                    call    set_pixel_adj
+       bl   @set_pixel_adj
 ;RAM:C772 DD 7E 01                    ld      a, 1(ix)                                ; X
+       movb @1(ix),a
 ;RAM:C775 D6 0D                       sub     #13
+       sb   @b0dh,a
 ;RAM:C777 DD 77 09                    ld      9(ix), a                                ; dX
+       movb a,@9(ix)
 ;RAM:C77A DD 7E 02                    ld      a, 2(ix)                                ; Y
 ;RAM:C77D DD 77 0A                    ld      10(ix), a                               ; dY
+       movb @2(ix),@10(ix)
 ;RAM:C780 21 06 0F                    ld      hl, #0xF06                              ; +15, +6
+       li   hl,>0F06
 ;RAM:C783 18 DB                       jr      loc_C760
-;RAM:C785             ; ---------------------------------------------------------------------------
-;RAM:C785
-;RAM:C785             loc_C785:                                                       ; +15, +15
-;RAM:C785 21 0F 0F                    ld      hl, #0xF0F
+       jmp  loc_C760
+* ---------------------------------------------------------------------------
+loc_C785:
+;RAM:C785 21 0F 0F                    ld      hl, #0xF0F                              ; +15, +15
+       li   hl,>0F0F
 ;RAM:C788 FD 21 08 5C                 ld      iy, #graphic_objs_tbl
+       li   iy,graphic_objs_tbl
 ;RAM:C78C 11 20 00                    ld      de, #32                                 ; entry size
+       li   de,32
 ;RAM:C78F 06 04                       ld      b, #4                                   ; player, special objects only
-;RAM:C791
-;RAM:C791             loc_C791:                                                       ; graphic no.
-;RAM:C791 FD 7E 00                    ld      a, 0(iy)
+       movb @b04h,b
+loc_C791:
+;RAM:C791 FD 7E 00                    ld      a, 0(iy)                                ; graphic no.
+       movb *iy,a
 ;RAM:C794 A7                          and     a                                       ; null?
 ;RAM:C795 28 3F                       jr      Z, loc_C7D6                             ; yes, skip
+       jeq  loc_C7D6
 ;RAM:C797 FD CB 07 5E                 bit     3, 7(iy)
+       movb @7(iy),r0
+       andi r0,>0800
 ;RAM:C79B 28 39                       jr      Z, loc_C7D6
+       jeq  loc_C7D6
 ;RAM:C79D CD FE C7                    call    is_near_to
+       bl   @is_near_to
 ;RAM:C7A0 30 34                       jr      NC, loc_C7D6
+       jhe  loc_C7D6
 ;RAM:C7A2 C5                          push    bc
+       mov  bc,*sp+
 ;RAM:C7A3 01 A9 C7                    ld      bc, #adj_arch_tbl
+       li   bc,adj_arch_tbl
 ;RAM:C7A6 C3 17 CA                    jp      lookup_plyr_dXY                         ; index into table based on sprite dir
-;RAM:C7A6             ; ---------------------------------------------------------------------------
-;RAM:C7A9 B1 C7       adj_arch_tbl:   .dw adj_ew
-;RAM:C7AB B1 C7                       .dw adj_ew
-;RAM:C7AD C4 C7                       .dw adj_ns
-;RAM:C7AF C4 C7                       .dw adj_ns
-;RAM:C7B1             ; ---------------------------------------------------------------------------
-;RAM:C7B1
-;RAM:C7B1             adj_ew:                                                         ; dY
-;RAM:C7B1 DD 7E 0A                    ld      a, 10(ix)
+       b    @lookup_plyr_dXY
+* ---------------------------------------------------------------------------
+adj_arch_tbl:
+       data adj_ew
+       data adj_ew
+       data adj_ns
+       data adj_ns
+* ---------------------------------------------------------------------------
+adj_ew:
+;RAM:C7B1 DD 7E 0A                    ld      a, 10(ix)                               ; dY
+       movb @10(ix),a
 ;RAM:C7B4 FD BE 02                    cp      2(iy)                                   ; Y
+       cb   a,@2(iy)
 ;RAM:C7B7 28 1C                       jr      Z, loc_C7D5
+       jeq  loc_C7D5
+       jl   !
 ;RAM:C7B9 3E 01                       ld      a, #1
+       movb one,a
+       jmp  loc_C7BF
 ;RAM:C7BB 30 02                       jr      NC, loc_C7BF
 ;RAM:C7BD ED 44                       neg
-;RAM:C7BF
-;RAM:C7BF             loc_C7BF:
+!      movb @bffh,a
+loc_C7BF:
 ;RAM:C7BF FD 77 0F                    ld      15(iy), a
+       movb a,@15(iy)
 ;RAM:C7C2 18 11                       jr      loc_C7D5
-;RAM:C7C4             ; ---------------------------------------------------------------------------
-;RAM:C7C4
-;RAM:C7C4             adj_ns:                                                         ; dX
-;RAM:C7C4 DD 7E 09                    ld      a, 9(ix)
+       jmp  loc_C7D5
+* ---------------------------------------------------------------------------
+adj_ns:
+;RAM:C7C4 DD 7E 09                    ld      a, 9(ix)                                ; dX
+       movb @9(ix),a
 ;RAM:C7C7 FD BE 01                    cp      1(iy)                                   ; X
+       cb   a,@1(iy)
 ;RAM:C7CA 28 09                       jr      Z, loc_C7D5
+       jeq  loc_C7D5
+       jl   !
 ;RAM:C7CC 3E 01                       ld      a, #1
+       movb one,a
+       jmp  loc_C7D2
 ;RAM:C7CE 30 02                       jr      NC, loc_C7D2
 ;RAM:C7D0 ED 44                       neg
-;RAM:C7D2
-;RAM:C7D2             loc_C7D2:
+!      movb @bffh,a
+loc_C7D2:
 ;RAM:C7D2 FD 77 0E                    ld      14(iy), a
-;RAM:C7D5
-;RAM:C7D5             loc_C7D5:
-;RAM:C7D5 C1                          pop     bc
-;RAM:C7D6
-;RAM:C7D6             loc_C7D6:
+       movb a,@14(iy)
+loc_C7D5:
+;RAM:C7D5 C1                          pop     bc                                    ; pushed at RAM:C7A2
+       dect sp
+       mov  *sp,bc
+loc_C7D6:
 ;RAM:C7D6 FD 19                       add     iy, de
+       a    de,iy
 ;RAM:C7D8 10 B7                       djnz    loc_C791
+       sb   one,b
+       jne  loc_C791
 ;RAM:C7DA C9                          ret
-;RAM:C7DB
-;RAM:C7DB             ; =============== S U B R O U T I N E =======================================
-;RAM:C7DB
-;RAM:C7DB
-;RAM:C7DB             chk_plyr_spec_near_arch:
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* =============== S U B R O U T I N E =======================================
+*
+chk_plyr_spec_near_arch:
+       mov  r11,*sp+
 ;RAM:C7DB FD 21 08 5C                 ld      iy, #graphic_objs_tbl
+       li   iy,graphic_objs_tbl
 ;RAM:C7DF 11 20 00                    ld      de, #32                                 ; entry size
+       li   de,32
 ;RAM:C7E2 06 04                       ld      b, #4                                   ; player and special objects only
-;RAM:C7E4
-;RAM:C7E4             loc_C7E4:                                                       ; graphic no
-;RAM:C7E4 FD 7E 00                    ld      a, 0(iy)
+       movb @b04h,a
+loc_C7E4:
+;RAM:C7E4 FD 7E 00                    ld      a, 0(iy)                                ; graphic no
+       movb *iy,a
 ;RAM:C7E7 A7                          and     a                                       ; null?
 ;RAM:C7E8 28 0F                       jr      Z, loc_C7F9                             ; yes, skip
+       jeq  loc_C7F9
 ;RAM:C7EA FD CB 07 5E                 bit     3, 7(iy)                                ; auto-adjust?
+       movb @7(iy),r0
+       andi r0,>0800
 ;RAM:C7EE 28 09                       jr      Z, loc_C7F9                             ; no, skip
+       jeq  loc_C7F9
 ;RAM:C7F0 CD FE C7                    call    is_near_to
+       bl   @is_near_to
 ;RAM:C7F3 30 04                       jr      NC, loc_C7F9                            ; no, skip
+       jhe  loc_C7F9
 ;RAM:C7F5 FD CB 07 C6                 set     0, 7(iy)                                ; flag near arch
-;RAM:C7F9
-;RAM:C7F9             loc_C7F9:                                                       ; next entry
-;RAM:C7F9 FD 19                       add     iy, de
+loc_C7F9:
+;RAM:C7F9 FD 19                       add     iy, de                                  ; next entry
+       a    de,iy
 ;RAM:C7FB 10 E7                       djnz    loc_C7E4                                ; loop through table
+       sb   one,b
+       jne  loc_C7E4
 ;RAM:C7FD C9                          ret
-;RAM:C7FD             ; End of function chk_plyr_spec_near_arch
-;RAM:C7FD
-;RAM:C7FE
-;RAM:C7FE             ; =============== S U B R O U T I N E =======================================
-;RAM:C7FE
-;RAM:C7FE
-;RAM:C7FE             is_near_to:
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function chk_plyr_spec_near_arch
+*
+* =============== S U B R O U T I N E =======================================
+*
+* ix and iy hold the two objects
+* l is the x distance
+* h is the y distance
+* the z distance is fixed at 4
+*
+* On the Z80 this sets the carry flag if object x is near to object y
+* so jr C can be used to test the condition.
+* On the TMS9900 we can use JL instead, or JNE for the negative condition.
+*
+is_near_to:
 ;RAM:C7FE DD 7E 09                    ld      a, 9(ix)                                ; centre_x
+       movb @9(ix),a
 ;RAM:C801 FD 96 01                    sub     1(iy)                                   ; sub X
+       sb   @1(iy),a
 ;RAM:C804 30 02                       jr      NC, loc_C808
+       jgt  loc_C808
 ;RAM:C806 ED 44                       neg
-;RAM:C808
-;RAM:C808             loc_C808:
+       inv  a
+       ab   one,a
+loc_C808:
 ;RAM:C808 BD                          cp      l
+       cb   a,@l
 ;RAM:C809 D0                          ret     NC
+       jhe  !
 ;RAM:C80A DD 7E 0A                    ld      a, 10(ix)                               ; centre_y
+       movb @10(ix),a
 ;RAM:C80D FD 96 02                    sub     2(iy)                                   ; sub Y
+       sb   @2(iy),a
 ;RAM:C810 30 02                       jr      NC, loc_C814
+       jgt  loc_C814
 ;RAM:C812 ED 44                       neg
-;RAM:C814
-;RAM:C814             loc_C814:
+       inv  a
+       ab   one,a
+loc_C814:
 ;RAM:C814 BC                          cp      h
+       cb   a,h
 ;RAM:C815 D0                          ret     NC
+       jhe  !
 ;RAM:C816 DD 7E 0B                    ld      a, 11(ix)                               ; centre_z
+       movb @11(ix),a
 ;RAM:C819 FD 96 03                    sub     3(iy)                                   ; sub Z
+       sb   @3(iy),a
 ;RAM:C81C 30 02                       jr      NC, loc_C820
+       jgt  loc_C820
 ;RAM:C81E ED 44                       neg
-;RAM:C820
-;RAM:C820             loc_C820:
+       inv  a
+       ab   one,a
+loc_C820:
 ;RAM:C820 FE 04                       cp      #4
+       cb   a,@b04h
 ;RAM:C822 C9                          ret
-;RAM:C822             ; End of function is_near_to
-;RAM:C822
+!      b    *r11
+*
+* End of function is_near_to
+*
 ;RAM:C823             ; ---------------------------------------------------------------------------
 ;RAM:C823             ; sabreman legs
 ;RAM:C823
@@ -4476,32 +4580,44 @@ upd_48_to_53_56_to_61:
 ;RAM:CA11 DD 77 0F                    ld      15(ix), a                               ; zap adjustment
 ;RAM:CA14 01 32 CA                    ld      bc, #off_CA32
 ;RAM:CA17
-;RAM:CA17             lookup_plyr_dXY:
+lookup_plyr_dXY:
 ;RAM:CA17 CD 1E CA                    call    get_sprite_dir
+       bl   @get_sprite_dir
 ;RAM:CA1A 6F                          ld      l, a
+       movb a,@l
 ;RAM:CA1B C3 DB AF                    jp      jump_to_tbl_entry
-;RAM:CA1B             ; End of function calc_plyr_dXY
-;RAM:CA1B
-;RAM:CA1E
-;RAM:CA1E             ; =============== S U B R O U T I N E =======================================
-;RAM:CA1E
-;RAM:CA1E
-;RAM:CA1E             get_sprite_dir:
+       b    @jump_to_tbl_entry
+* End of function calc_plyr_dXY
+*
+* =============== S U B R O U T I N E =======================================
+*
+get_sprite_dir:
 ;RAM:CA1E DD 7E 07                    ld      a, 7(ix)                                ; flags
+       movb @7(ix),a
 ;RAM:CA21 0F                          rrca
 ;RAM:CA22 0F                          rrca
+       srl  a,2
 ;RAM:CA23 E6 10                       and     #0x10                                   ; hflip
+       andi a,>1000
 ;RAM:CA25 6F                          ld      l, a
+       movb a,@l
 ;RAM:CA26 DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
+       movb *ix,a
 ;RAM:CA29 E6 08                       and     #8
+       andi a,>0800
 ;RAM:CA2B B5                          or      l                                       ; bits 4,3
+       socb @l,a
 ;RAM:CA2C 0F                          rrca
 ;RAM:CA2D 0F                          rrca
 ;RAM:CA2E 0F                          rrca
+       srl  a,3
 ;RAM:CA2F E6 03                       and     #3                                      ; 1=hflip, 0=graphic no & 8
+       andi a,>0300
 ;RAM:CA31 C9                          ret
-;RAM:CA31             ; End of function get_sprite_dir
-;RAM:CA31
+       rt
+*
+* End of function get_sprite_dir
+*
 ;RAM:CA31             ; ---------------------------------------------------------------------------
 ;RAM:CA32 3A CA       off_CA32:       .dw move_plyr_W                                 ; dX -= 3
 ;RAM:CA34 43 CA                       .dw move_plyr_E                                 ; dX += 3
@@ -4537,9 +4653,9 @@ upd_48_to_53_56_to_61:
 ;RAM:CA53 DD 7E 0A                    ld      a, 10(ix)
 ;RAM:CA56 C6 FD                       add     a, #0xFD ; '�'                          ; -3
 ;RAM:CA58 18 F5                       jr      loc_CA4F
-;RAM:CA5A
-;RAM:CA5A             ; =============== S U B R O U T I N E =======================================
-;RAM:CA5A
+*
+* =============== S U B R O U T I N E =======================================
+*
 ;RAM:CA5A
 ;RAM:CA5A             adj_dZ_for_out_of_bounds:
 ;RAM:CA5A 3A AE 5B                    ld      a, (room_size_Z)
@@ -8479,6 +8595,7 @@ b00h   byte >00
 b01h   byte >01
 b02h   byte >02
 b03h   byte >03
+b04h   byte >04
 b05h   byte >05
 b07h   byte >07
 b08h   byte >08
