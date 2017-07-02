@@ -471,7 +471,9 @@ loc_B000:
 ;RAM:B000 2A A2 5B                    ld      hl, (seed_2)
        mov  @seed_2,hl
 ;RAM:B003 23                          inc     hl
+       swpb hl                        ; Little endian!
        inc  hl
+       swpb hl
 ;RAM:B004 22 A2 5B                    ld      (seed_2), hl
        mov  hl,@seed_2
 ;RAM:B007 3A A5 5B                    ld      a, (seed_3)
@@ -3170,7 +3172,7 @@ upd_92_to_95:
 * =============== S U B R O U T I N E =======================================
 *
 print_sun_moon:
-       rt                             ; TODO: game crashes if I remove this
+;       rt                             ; TODO: game crashes if I remove this
 ;RAM:C397 3A A2 5B                    ld      a, (seed_2)
        movb @seed_2,a
 ;RAM:C39A E6 07                       and     #7
@@ -6147,7 +6149,7 @@ build_screen_objects:
 ;RAM:D1EA 28 03                       jr      Z, loc_D1EF                             ; yes, skip updating special objects
        jeq  loc_D1EF
 ;RAM:D1EC CD 91 C5                    call    update_special_objs                     ; save state in special_objs_tbl
-       bl   @update_special_objs
+       bl   @update_special_objs      ; TODO
 ;RAM:D1EF
 loc_D1EF:
 ;RAM:D1EF CD 67 D5                    call    clear_scrn_buffer
@@ -6155,9 +6157,9 @@ loc_D1EF:
 ;RAM:D1F2 CD C6 D3                    call    retrieve_screen
        bl   @retrieve_screen
 ;RAM:D1F5 CD 25 C5                    call    find_special_objs_here                  ; find special objects in new room
-       bl   @find_special_objs_here
+       bl   @find_special_objs_here   ; TODO
 ;RAM:D1F8 CD 20 D3                    call    adjust_plyr_xyz_for_room_size
-       bl   @adjust_plyr_xyz_for_room_size
+       bl   @adjust_plyr_xyz_for_room_size ; TODO
 ;RAM:D1FB AF                          xor     a
        clr  a
 ;RAM:D1FC 32 AF 5B                    ld      (portcullis_moving), a                  ; flag not moving
@@ -7395,9 +7397,9 @@ loc_D653:
 ;RAM:D653 CD BB CE                    call    calc_display_order_and_render
        bl   @calc_display_order_and_render
 ;RAM:D656 CD 97 C3                    call    print_sun_moon
-       bl   @print_sun_moon
+       bl   @print_sun_moon           ; TODO: crashes
 ;RAM:D659 CD 45 BF                    call    display_objects_carried
-       bl   @display_objects_carried
+       bl   @display_objects_carried  ; TODO
 ;RAM:D65C 21 A8 5B                    ld      hl, #objs_wiped_cnt
        li   hl,objs_wiped_cnt
 ;RAM:D65F 3A BE 5B                    ld      a, (rendered_objs_cnt)
