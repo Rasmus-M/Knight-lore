@@ -8073,7 +8073,7 @@ calc_vidbuf_addr:
 *
 * =============== S U B R O U T I N E =======================================
 *
-* b: pixel Y
+* b: pixel Y (0 is bottom line)
 * c: pixel X
 *
 * Result in de
@@ -8108,6 +8108,11 @@ calc_vram_addr:
 ;RAM:D844 C6 38                       add     a, #0x38 ; '8'
 ;RAM:D846 57                          ld      d, a
 ;RAM:D847 C9                          ret
+*      Reverse y
+       li   r0,>bf00
+       sb   b,r0
+       movb r0,b
+*      Calculate address E/A manual way
        movb b,@e                       ; ????????yyyyyyyy
        sla  de,5                       ; ???yyyyyyyy00000
        socb b,@e                       ; ???yyyyy???yyyyy
