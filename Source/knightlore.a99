@@ -333,6 +333,7 @@ start:
        li   bc,>568
 ;RAM:AF72 3A 78 5C                    ld      a, (0x5C78)                             ; FRAMES system variable (LSB)
        movb @RNDSD,a
+       clr  a
 ;RAM:AF75 F5                          push    af
        mov  af,*sp+
 ;RAM:AF76 CD 3A D5                    call    clr_mem
@@ -356,7 +357,7 @@ start_menu:                                                                     
        bl   @clr_mem
 main:                                                                                 ; for bit reversal & shifting
 ;RAM:AF88 CD 9E D6                    call    build_lookup_tbls
-       bl   @build_lookup_tbls
+       bl   @build_lookup_tbls        ; Only bit reversal implemented
 ;RAM:AF8B AF                          xor     a
        clr  a
 ;RAM:AF8C 32 B2 5B                    ld      (not_1st_screen), a
@@ -378,7 +379,7 @@ main:                                                                           
 ;RAM:AF9F CD 5F D5                    call    clear_scrn                              ; colour is bright yellow on black
        bl   @clear_scrn
 ;RAM:AFA2 CD 0C BD                    call    do_menu_selection
-       bl   @do_menu_selection
+       bl   @do_menu_selection        ; TODO
 ;RAM:AFA5 11 0E B2                    ld      de, #start_game_tune
        li   de,start_game_tune
 ;RAM:AFA8 CD CF B2                    call    play_audio                              ; play tune
@@ -390,7 +391,7 @@ main:                                                                           
 ;RAM:AFB1 CD 6D C4                    call    init_sun
        bl   @init_sun
 ;RAM:AFB4 CD 7E C4                    call    init_special_objects                    ; randomise special object locations
-       bl   @init_special_objects
+       bl   @init_special_objects     ; TODO
 player_dies:
 ;RAM:AFB7 CD 2A D1                    call    lose_life
        bl   @lose_life
@@ -487,10 +488,10 @@ loc_B000:
        li   hl,not_1st_screen
 ;RAM:B013 CB C6                       set     0, (hl)                                 ; update special objects table next time
        socb one,*hl
-;RAM:B015 CD 0E D5                    call    handle_pause
-       bl   @handle_pause
+;RAM:B015 CD 0E D5                    call    handle_pause                            ; handle pause key
+       bl   @handle_pause             ; TODO
 ;RAM:B018 CD A9 B8                    call    init_cauldron_bubbles
-       bl   @init_cauldron_bubbles
+       bl   @init_cauldron_bubbles    ; TODO
 ;RAM:B01B CD 62 CE                    call    list_objects_to_draw                    ; builds a list of screen objects
        bl   @list_objects_to_draw
 ;RAM:B01E CD 9F D5                    call    render_dynamic_objects                  ; renders above list
@@ -543,7 +544,7 @@ no_delay:
 ;RAM:B04C CD 56 D5                    call    fill_attr                               ; set screen colour
        bl   @fill_attr
 ;RAM:B04F CD 4E BF                    call    display_objects                         ; inventory
-       bl   @display_objects
+       bl   @display_objects          ; TODO
 ;RAM:B052 CD EF D2                    call    colour_panel
        bl   @colour_panel
 ;RAM:B055 CD 0D D3                    call    colour_sun_moon
@@ -553,15 +554,15 @@ no_delay:
 ;RAM:B05B DD 21 4D C4                 ld      ix, #sun_moon_scratchpad
        li   ix,sun_moon_scratchpad
 ;RAM:B05F CD A4 C3                    call    display_sun_moon_frame
-       bl   @display_sun_moon_frame
+       bl   @display_sun_moon_frame   ; TODO: finish
 ;RAM:B062 CD CA BC                    call    display_day
-       bl   @display_day
+       bl   @display_day              ; TODO
 ;RAM:B065 CD 66 BC                    call    print_days
-       bl   @print_days
+       bl   @print_days               ; TODO
 ;RAM:B068 CD 7A BC                    call    print_lives_gfx
        bl   @print_lives_gfx
 ;RAM:B06B CD A3 BC                    call    print_lives
-       bl   @print_lives
+       bl   @print_lives              ; TODO
 ;RAM:B06E CD 6F D5                    call    update_screen                           ; copy to display
        bl   @update_screen
 ;RAM:B071 CD 88 B0                    call    reset_objs_wipe_flag
@@ -3169,12 +3170,18 @@ upd_92_to_95:
 * =============== S U B R O U T I N E =======================================
 *
 print_sun_moon:
-       rt
+       rt                             ; TODO: game crashes if I remove this
 ;RAM:C397 3A A2 5B                    ld      a, (seed_2)
+       movb @seed_2,a
 ;RAM:C39A E6 07                       and     #7
+       andi a,>0700
 ;RAM:C39C C0                          ret     NZ
+       jeq  !
+       rt
 ;RAM:C39D DD 21 4D C4                 ld      ix, #sun_moon_scratchpad
+!      li   ix,sun_moon_scratchpad
 ;RAM:C3A1 DD 34 1A                    inc     26(ix)                                  ; pixel X
+       ab   one,@26(ix)
 *
 * End of function print_sun_moon
 *
@@ -3230,7 +3237,7 @@ display_frame:
 ;RAM:C3CF CD 15 C5                    call    fill_window
 ;      bl   @fill_window
 ;RAM:C3D2 CD 18 D7                    call    print_sprite                            ; display sun/moon
-;      bl   @print_sprite
+       bl   @print_sprite
 ;RAM:C3D5 DD 21 DB BF                 ld      ix, #sprite_scratchpad
        li   ix,sprite_scratchpad
 ;RAM:C3D9 DD 36 07 00                 ld      7(ix), #0                               ; clear flags
@@ -3333,9 +3340,9 @@ init_sun:
 ;RAM:C471 DD 36 00 58                 ld      0(ix), #0x58 ; 'X'                      ; sprite index
        movb @b58h,*ix
 ;RAM:C475 DD 36 1A B0                 ld      26(ix), #176                            ; pixel X
-       movb @bb0h,*ix
+       movb @bb0h,@26(ix)
 ;RAM:C479 DD 36 1B 09                 ld      27(ix), #9                              ; pixel Y
-       movb @b09h,*ix
+       movb @b09h,@27(ix)
 ;RAM:C47D C9                          ret
        rt
 *
@@ -3944,6 +3951,7 @@ upd_9:
 * ---------------------------------------------------------------------------
 * arch (far side)
 upd_3_5:
+;       b    @no_update
 ;RAM:C722 DD CB 07 76                 bit     6, 7(ix)                                ; hflip?
        movb @7(ix),r0
        andi r0,>4000
@@ -3985,6 +3993,7 @@ adj_m3_p1:
 ;* ---------------------------------------------------------------------------
 * arch (near side)
 upd_2_4:
+;       b    @no_update
 ;RAM:C73C DD CB 07 76                 bit     6, 7(ix)                                 ; hflip?
        mov  @7(ix),r0
        andi r0,>4000
@@ -7710,7 +7719,7 @@ print_sprite:
        mov  r11,*sp+
 ;RAM:D718 CD EF D6                    call    flip_sprite
 print_sprite_1:
-       bl   @flip_sprite              ; de holds the sprite address
+       bl   @flip_sprite              ; now de holds the sprite address
 ;RAM:D71B DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
        movb @26(ix),a
 ;RAM:D71E E6 07                       and     #7                                      ; bit offset?
