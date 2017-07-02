@@ -7612,7 +7612,7 @@ loc_D6BB:
        movb @b08h,b
        movb @b00h,de_
 loc_D6BE:
-;RAM:D6BE CB 3A                     srl     d
+;RAM:D6BE CB 3A                       srl     d
 ;RAM:D6C0 CB 13                       rl      e                                       ; reverse bits
        srl  de_,1
        sla  d,1
@@ -7750,18 +7750,34 @@ print_sprite_1:
 ;RAM:D71E E6 07                       and     #7                                      ; bit offset?
        andi a,>0700
 ;RAM:D720 28 4D                       jr      Z, loc_D76F                             ; no, skip
-       jmp  loc_D76F                   ; TODO: remove
+;       jmp  loc_D76F                   ; TODO: remove
        jeq  loc_D76F
+*      Calculate bit shift lookup table address
+*      Not doing this on the TI, using shifts instead
 ;RAM:D722 07                          rlca                                            ; 0x02, 0x04, ..., 0x0e
-       sla  a,1
 ;RAM:D723 E6 0E                       and     #0xE                                    ; necessary?
-       andi a,>0e00
 ;RAM:D725 F6 F0                       or      #0xF0 ; '�'                            ; 0xf2, 0xf4, ..., 0xfe
-       ori  a,>f000
 ;RAM:D727 67                          ld      h, a                                    ; hl = bit shift lookup table address
-       movb a,h
 ;RAM:D728 1A                          ld      a, (de)                                 ; sprite width
 ;RAM:D729 13                          inc     de
+*
+*      Setup shifts
+       movb @b08h,b                   ; 8
+       sb a,b                         ; 8 - offset
+       sla  b,4                       ; Move bit offset shift into place for SLA instruction
+       andi b,>f000
+       sla  a,4
+       andi a,>f000
+       movb @bf0h,h
+       szcb h,@shift_pattern_1+1
+       socb b,@shift_pattern_1+1
+       szcb h,@shift_mask_1+1
+       socb b,@shift_mask_1+1
+       szcb h,@shift_pattern_2+1
+       socb a,@shift_pattern_2+1
+       szcb h,@shift_mask_2+1
+       socb a,@shift_mask_2+1
+*
        movb *de+,a
 ;RAM:D72A E6 07                       and     #7
        andi a,>0700
@@ -7774,17 +7790,17 @@ print_sprite_1:
 ;RAM:D731 3D                          dec     a                                       ; width  (1, 2, 3, 4, 5)
        sb   one,a
 ;RAM:D732 E6 07                       and     #7                                      ; mod 8
-       andi a,>0700
 ;RAM:D734 87                          add     a, a                                    ; multiply by 16
 ;RAM:D735 87                          add     a, a
 ;RAM:D736 87                          add     a, a
 ;RAM:D737 87                          add     a, a                                    ; 16, 32, 48, 64, 80
-       sla  a,4
 ;RAM:D738 ED 44                       neg                                             ; -16, -32, -48, -64, -80
-       inv  a
-       ab   one,a
 ;RAM:D73A C6 50                       add     a, #0x50 ; 'P'                          ; 64, 48, 32, 16, 0
-       ai   a,>5000
+*      On the TI we use a loop
+       clr  r1
+       movb a,@r1lb                   ; width
+       mov  r1,r2                     ; width
+       clr  a
 loc_D73C:                                                                             ; self-modifying code
 ;RAM:D73C 32 AD D7                    ld      (loc_D7AC+1), a                         ; set jump offset
        movb a,@loc_D7AC+1
@@ -7850,7 +7866,7 @@ loc_D76F:
        inv  a
        ab   one,a
 ;RAM:D77C D6 06                       sub     #6                                      ; -14, -20, -30, -38, -46
-       sb   @b0ah,a                    ; 10 on th TI
+       sb   @b0ah,a                    ; 10 on the TI
 * TMS9900 offsets are in words
        sra  a,1
 ;RAM:D77E 18 BC                       jr      loc_D73C                                ; to self modifying code
@@ -7931,7 +7947,32 @@ loc_D7AC:
 ;RAM:D7AC 18 E2                       jr      loc_D790                                ; patched jump (forwards/backwards)
        jmp  loc_D790
 * ---------------------------------------------------------------------------
-* For sprites with bit offset, 16 bytes per routine
+* For sprites with bit offset
+       mov  r1,r2
+       clr  de
+       clr  hl
+plot_shifted_line:
+       movb *sp+,@e                    ; get pattern
+       movb *sp+,@l                    ; get mask
+shift_pattern_1:
+       sla  de,0                       ; Shift (8 - bit offset) pattern bits into MSB
+shift_mask_1:
+       sla  hl,0                       ; Actual shift values inserted by self-modiyfying code
+       szcb d,*bc
+       socb h,*bc+
+       dec  r2
+       jeq  plot_shifted_line_1
+shift_pattern_2:
+       sla  de,0                       ; Shift (bit offset) bits into MSB
+shift_mask_2:
+       sla  hl,0                       ; Actual shift values inserted by self-modiyfying code
+       jmp  plot_shifted_line
+plot_shifted_line_1:
+       swpb de
+       swpb hl
+       szcb d,*bc
+       socb h,*bc
+* 16 bytes per routine
 * -- 1st byte --
 ;RAM:D7AE D1                          pop     de                                      ; get pattern d and mask e
 ;RAM:D7AF 6B                          ld      l, e
@@ -8660,6 +8701,7 @@ bbbh   byte >bb
 bc0h   byte >c0
 bd0h   byte >d0
 be1h   byte >e1
+bf0h   byte >f0
 bf1h   byte >f1
 bf4h   byte >f4
 bffh   byte >ff
