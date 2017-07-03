@@ -391,7 +391,7 @@ main:                                                                           
 ;RAM:AFB1 CD 6D C4                    call    init_sun
        bl   @init_sun
 ;RAM:AFB4 CD 7E C4                    call    init_special_objects                    ; randomise special object locations
-       bl   @init_special_objects     ; TODO
+       bl   @init_special_objects
 player_dies:
 ;RAM:AFB7 CD 2A D1                    call    lose_life
        bl   @lose_life
@@ -556,7 +556,7 @@ no_delay:
 ;RAM:B05B DD 21 4D C4                 ld      ix, #sun_moon_scratchpad
        li   ix,sun_moon_scratchpad
 ;RAM:B05F CD A4 C3                    call    display_sun_moon_frame
-       bl   @display_sun_moon_frame   ; TODO: finish
+       bl   @display_sun_moon_frame
 ;RAM:B062 CD CA BC                    call    display_day
        bl   @display_day              ; TODO
 ;RAM:B065 CD 66 BC                    call    print_days
@@ -1276,14 +1276,15 @@ upd_150_151:
 ;RAM:B7A1 18 F5                       jr      loc_B798
 ;RAM:B7A1             ; End of function set_guard_wizard_sprite
 ;RAM:B7A1
-;RAM:B7A3             ; ---------------------------------------------------------------------------
-;RAM:B7A3             ; gargoyle
-;RAM:B7A3
+* ---------------------------------------------------------------------------
+* gargoyle
+*
 upd_22:
-       b    @no_update
 ;RAM:B7A3 CD 5C B8                    call    set_both_deadly_flags
+;      TODO
 ;RAM:B7A6 C3 FC C4                    jp      adj_m7_m12                              ; adj(-7,-12)
-;RAM:B7A9             ; ---------------------------------------------------------------------------
+       b    @adj_m7_m12
+* ---------------------------------------------------------------------------
 ;RAM:B7A9             ; spiked ball
 ;RAM:B7A9
 upd_63:
@@ -3376,34 +3377,62 @@ init_sun:
 *
 init_special_objects:
 ;RAM:C47E 21 F2 6F                    ld      hl, #special_objs_tbl
+       li   hl,special_objs_tbl
 ;RAM:C481 3A A0 5B                    ld      a, (seed_1)
+       movb @seed_1,a
 ;RAM:C484 5F                          ld      e, a
+       movb a,@e
 ;RAM:C485 ED 5F                       ld      a, r
+;      TODO
 ;RAM:C487 83                          add     a, e
+       ab   @e,a
 ;RAM:C488 5F                          ld      e, a
-;RAM:C489
-;RAM:C489             init_obj_loop:
+       movb @e,a
+init_obj_loop:
 ;RAM:C489 7B                          ld      a, e
+       movb @e,a
 ;RAM:C48A E6 07                       and     #7
+       andi a,>0700
 ;RAM:C48C F6 60                       or      #0x60 ; '`'
+       ori  a,>6000
 ;RAM:C48E 77                          ld      (hl), a                                 ; object graphic no.
 ;RAM:C48F 23                          inc     hl                                      ; HL=ptr Start X position
+       movb a,*hl+
 ;RAM:C490 1C                          inc     e
+       ab   one,@e
 ;RAM:C491 D5                          push    de
+       mov  de,*sp+
 ;RAM:C492 EB                          ex      de, hl                                  ; DE=ptr Start X position
+       mov  hl,de
 ;RAM:C493 21 04 00                    ld      hl, #4
+       li   hl,4
 ;RAM:C496 19                          add     hl, de                                  ; HL=ptr Current X
+       a    de,hl
 ;RAM:C497 EB                          ex      de, hl                                  ; DE = ptr Current X
+       mov  de,r0
+       mov  hl,de
+       mov  r0,hl
 ;RAM:C498 01 04 00                    ld      bc, #4
+       li   bc,4
 ;RAM:C49B ED B0                       ldir                                            ; copy Start X,Y,Z,screen to Current
+!      movb *hl+,*de+
+       dec  bc
+       jne  -!
 ;RAM:C49D EB                          ex      de, hl
+       mov  de,r0
+       mov  hl,de
+       mov  r0,hl
 ;RAM:C49E E5                          push    hl                                      ; save ptr next Current
 ;RAM:C49F 01 12 71                    ld      bc, #sprite_tbl                         ; end of object table
 ;RAM:C4A2 A7                          and     a
 ;RAM:C4A3 ED 42                       sbc     hl, bc                                  ; done table?
 ;RAM:C4A5 E1                          pop     hl
 ;RAM:C4A6 D1                          pop     de
+       dect sp
+       mov  *sp,de
 ;RAM:C4A7 38 E0                       jr      C, init_obj_loop                        ; no, loop
+       ci   hl,sprite_tbl
+       jl   init_obj_loop
 ;RAM:C4A9 C9                          ret
        rt
 *
@@ -3465,10 +3494,10 @@ adj_m6_m12:
 jp_set_pixel_adj:
        b    @set_pixel_adj_1
 * End of function adj_m6_m12
+* =============== S U B R O U T I N E =======================================
 *
 * rock and block
 *
-* =============== S U B R O U T I N E =======================================
 upd_6_7:
 ;RAM:C4E3 21 F0 F8                    ld      hl, #0xF8F0                             ; -8, -16
        li   hl,>f8f0
@@ -3476,7 +3505,9 @@ upd_6_7:
        jmp  jp_set_pixel_adj
 * End of function upd_6_7
 * =============== S U B R O U T I N E =======================================
+*
 * bricks
+*
 upd_10:
 ;RAM:C4E8 21 EC FF                    ld      hl, #0xFFEC                              ; -1, -20
        li   hl,>ffec
@@ -5663,7 +5694,7 @@ loc_CFAD:
 ;RAM:CFAD 1A                          ld      a, (de)
        movb *de,a
 ;RAM:CFAE FE FF                       cp      #0xFF                                   ; empty entry?
-       cb   @bffh,a
+       cb   a,@bffh
 ;RAM:CFB0 28 06                       jr      Z, loc_CFB8                             ; yes, go
        jeq  loc_CFB8
 ;RAM:CFB2 B9                          cp      c                                       ; already listed?
@@ -6127,7 +6158,8 @@ init_start_location:
 *
 * ---------------------------------------------------------------------------
 start_locations:
-       byte >2F, >44, >B3, >8F
+;       byte >2F, >44, >B3, >8F
+       byte >00, >00, >00, >00
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -6571,7 +6603,7 @@ zero_end_of_graphic_objs_tbl:
        mov  *sp,r11
        rt
 ;RAM:D3E9 06 20                       ld      b, #32                                  ; 32 bytes to clear
-!      li   b,>2000
+!      movb @b20h,b
 ;RAM:D3EB CD 08 D5                    call    zero_DE
        bl   @zero_DE
 ;RAM:D3EE 18 F2                       jr      zero_end_of_graphic_objs_tbl
@@ -6618,18 +6650,15 @@ found_screen:
        bl   @add_HL_A
 ;RAM:D40C 7E                          ld      a, (hl)                                 ; room size X
 ;RAM:D40D 23                          inc     hl
-       movb *hl+,a
 ;RAM:D40E 32 AB 5B                    ld      (room_size_X), a
-       movb a,@room_size_X
+       movb *hl+,@room_size_X
 ;RAM:D411 7E                          ld      a, (hl)                                 ; room size Y
 ;RAM:D412 23                          inc     hl
-       movb *hl+,a
 ;RAM:D413 32 AC 5B                    ld      (room_size_Y), a
-       movb a,@room_size_Y
+       movb *hl+,@room_size_Y
 ;RAM:D416 7E                          ld      a, (hl)                                 ; room size Z
-       movb *hl,a
 ;RAM:D417 32 AE 5B                    ld      (room_size_Z), a
-       movb a,@room_size_Z
+       movb *hl,@room_size_Z
 ;RAM:D41A 05                          dec     b
 ;RAM:D41B 05                          dec     b                                       ; adjust entry size
        sb   @b02h,b
@@ -6764,7 +6793,7 @@ next_fg_obj_sprite:                                                             
 ;RAM:D480 7E                          ld      a, (hl)                                 ; flags
 ;RAM:D481 23                          inc     hl
 ;RAM:D482 FD 77 07                    ld      7(iy), a
-       movb *hl+,@7(ix)
+       movb *hl+,@7(iy)
 ;RAM:D485 DD 7E 08                    ld      a, 8(ix)
 ;RAM:D488 FD 77 08                    ld      8(iy), a
        movb @8(ix),@8(iy)
@@ -6849,9 +6878,9 @@ next_fg_obj_sprite:                                                             
 ;RAM:D4C9 FD 09                       add     iy, bc
        a    bc,iy
 ;RAM:D4CB 06 17                       ld      b, #23                                  ; 9+23=32 bytes/entry
-       li   b,>1700
-loc_D4CD:                                                                             ; zero byte
-;RAM:D4CD FD 36 00 00                 ld      0(iy), #0
+       movb @b17h,b
+loc_D4CD:
+;RAM:D4CD FD 36 00 00                 ld      0(iy), #0                               ; zero byte
 ;RAM:D4D1 FD 23                       inc     iy
        movb @b00h,*iy+
 ;RAM:D4D3 10 F8                       djnz    loc_D4CD
@@ -6874,11 +6903,11 @@ loc_D4CD:                                                                       
 ;RAM:D4DC 05                          dec     b
        sb   one,b
 ;RAM:D4DD 28 0B                       jr      Z, loc_D4EA
-       jne  loc_D4EA
+       jeq  loc_D4EA
 ;RAM:D4DF 0D                          dec     c                                       ; done count blocks?
        sb   one,@c
 ;RAM:D4E0 CA 52 D4                    jp      Z, next_fg_obj                          ; yes, exit loop
-       jne  next_fg_obj
+       jeq  next_fg_obj
 ;RAM:D4E3 7E                          ld      a, (hl)
 ;RAM:D4E4 23                          inc     hl
        movb *hl+,a
@@ -7219,7 +7248,7 @@ wipe_next_object:
 ;RAM:D5B7 22 CB 5B                    ld      (tmp_objects_to_draw), hl               ; store
        mov  hl,@tmp_objects_to_draw
 ;RAM:D5BA FE FF                       cp      #0xFF                                   ; end of list?
-       cb   @bffh,a
+       cb   a,@bffh
 ;RAM:D5BC CA 53 D6                    jp      Z, loc_D653                             ; yes, skip
        jeq  loc_D653
 ;RAM:D5BF CD B5 D3                    call    get_ptr_object
@@ -7229,17 +7258,17 @@ wipe_next_object:
        mov  hl,ix
 ;RAM:D5C5 DD CB 07 6E                 bit     5, 7(ix)                                ; wipe flag?
        movb @7(ix),r0
-       andi r0,>1000
+       andi r0,>2000
 ;RAM:D5C9 28 E7                       jr      Z, wipe_next_object                     ; no, go
        jeq  wipe_next_object
 ;RAM:D5CB DD CB 07 AE                 res     5, 7(ix)                                ; clear wipe flag
-       szcb @b10h,@7(ix)
+       szcb @b20h,@7(ix)
 ;RAM:D5CF DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
        movb @26(ix),a
 ;RAM:D5D2 DD 96 1E                    sub     30(ix)                                  ; old pixel X
-       cb   @30(ix),a
+       cb   a,@30(ix)
 ;RAM:D5D5 DA 49 D6                    jp      C, loc_D649
-       jh  loc_D649                   ; TODO: check if this works
+       jhe loc_D649                   ; TODO: check if this works
 ;RAM:D5D8 DD 4E 1E                    ld      c, 30(ix)                               ; old pixel X
        movb @30(ix),@c
 loc_D5DB:
@@ -7293,7 +7322,7 @@ loc_D5F6:
 ;RAM:D603 DD 96 1F                    sub     31(ix)                                  ; pixel Y < old pixel Y?
        sb   @31(ix),a
 ;RAM:D606 38 46                       jr      C, loc_D64E                             ; yes, go
-       jlt  loc_D64E
+       jl   loc_D64E                  ; TODO: test if this works
 ;RAM:D608 DD 46 1F                    ld      b, 31(ix)                               ; old pixel Y
        movb @31(ix),b
 loc_D60B:
@@ -7315,7 +7344,7 @@ loc_D60B:
        movb @e,a
 loc_D61C:
 ;RAM:D61C 90                          sub     b
-       ab   b,a
+       sb   b,a
 ;RAM:D61D 6F                          ld      l, a
        movb a,@l
 ;RAM:D61E 78                          ld      a, b
@@ -7323,7 +7352,7 @@ loc_D61C:
 ;RAM:D61F FE C0                       cp      #192                                    ; off bottom of screen?
        cb   a,@bc0h
 ;RAM:D621 30 8F                       jr      NC, wipe_next_object                    ; yes, go
-       jh   wipe_next_object
+       jhe  wipe_next_object          ; TODO: test if this works
 ;RAM:D623 85                          add     a, l
        ab   @l,a
 ;RAM:D624 D6 C0                       sub     #192
@@ -7387,7 +7416,7 @@ loc_D653:
 ;RAM:D653 CD BB CE                    call    calc_display_order_and_render
        bl   @calc_display_order_and_render
 ;RAM:D656 CD 97 C3                    call    print_sun_moon
-       bl   @print_sun_moon           ; TODO: crashes
+       bl   @print_sun_moon
 ;RAM:D659 CD 45 BF                    call    display_objects_carried
        bl   @display_objects_carried  ; TODO
 ;RAM:D65C 21 A8 5B                    ld      hl, #objs_wiped_cnt
@@ -8652,6 +8681,7 @@ b09h   byte >09
 b0ah   byte >0a
 b0dh   byte >0d
 b10h   byte >10
+b17h   byte >17
 b20h   byte >20
 b22h   byte >22
 b28h   byte >28
