@@ -365,9 +365,8 @@ main:                                                                           
 ;RAM:AF8F 32 6D D1                    ld      (flags12_1), a                          ; plyr_spr_1_scratchpad
        movb a,@flags12_1
 ;RAM:AF92 3E 05                       ld      a, #5                                   ; 5 lives to start
-       li   a,>0500
 ;RAM:AF94 32 BA 5B                    ld      (lives), a
-       movb b,@lives
+       movb @b05h,@lives
 ;RAM:AF97 21 A0 5B                    ld      hl, #seed_1
        li   hl,seed_1
 ;RAM:AF9A 3A A2 5B                    ld      a, (seed_2)
@@ -558,13 +557,13 @@ no_delay:
 ;RAM:B05F CD A4 C3                    call    display_sun_moon_frame
        bl   @display_sun_moon_frame
 ;RAM:B062 CD CA BC                    call    display_day
-       bl   @display_day              ; TODO
+       bl   @display_day
 ;RAM:B065 CD 66 BC                    call    print_days
-       bl   @print_days               ; TODO
+       bl   @print_days
 ;RAM:B068 CD 7A BC                    call    print_lives_gfx
        bl   @print_lives_gfx
 ;RAM:B06B CD A3 BC                    call    print_lives
-       bl   @print_lives              ; TODO
+       bl   @print_lives
 ;RAM:B06E CD 6F D5                    call    update_screen                           ; copy to display
        bl   @update_screen
 ;RAM:B071 CD 88 B0                    call    reset_objs_wipe_flag
@@ -1944,15 +1943,26 @@ game_over:
 * =============== S U B R O U T I N E =======================================
 *
 print_days:
+       mov  r11,*sp+
 ;RAM:BC66 21 E2 D9                    ld      hl, # vidbuf+0xEF                       ; (120,7)
+       li   hl,vidbuf+>00EF
 ;RAM:BC69 11 B9 5B                    ld      de, #days
+       li   de,days
 ;RAM:BC6C 06 01                       ld      b, #1
+       movb one,b
 ;RAM:BC6E CD AE BC                    call    print_BCD_number
+       bl   @print_BCD_number
 ;RAM:BC71 21 EF 5A                    ld      hl, # zx_aram+0x2EF                     ; attribute memory
+       li   hl,zx_aram+>02EF
 ;RAM:BC74 36 47                       ld      (hl), #0x47 ; 'G'
 ;RAM:BC76 2C                          inc     l
 ;RAM:BC77 36 47                       ld      (hl), #0x47 ; 'G'
+       li   a,>4700
+       li   bc,>0201
+       bl   @fill_color_window
 ;RAM:BC79 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function print_days
@@ -1998,45 +2008,64 @@ print_lives_gfx:
 *
 print_lives:
 ;RAM:BCA3 11 BA 5B                    ld      de, #lives                              ; ptr number
+       li   de,lives
 ;RAM:BCA6 06 01                       ld      b, #1                                   ; 1 byte (2 BCD digits)
+       movb one,b
 ;RAM:BCA8 21 D7 DD                    ld      hl, # vidbuf+0x4E4                      ; screen buffer location
+       li   hl,vidbuf+>04E4
 ;RAM:BCAB C3 AE BC                    jp      print_BCD_number
        b    @print_BCD_number
 *
 * End of function print_lives
 *
+* =============== S U B R O U T I N E =======================================
+*
 * HL = screen buffer address
 * DE = ptr number to print (BCD)
 * B  = number of bytes (BCD digit pairs)
 *
-* =============== S U B R O U T I N E =======================================
-*
 print_BCD_number:
+       mov  r11,*sp+
 ;RAM:BCAE E5                          push    hl
+print_BCD_number_1:
+       mov  hl,*sp+
 ;RAM:BCAF 21 08 61                    ld      hl, #font
+       li   hl,font
 ;RAM:BCB2 22 C7 5B                    ld      (gfxbase_8x8), hl
+       mov  hl,@gfxbase_8x8
 ;RAM:BCB5 E1                          pop     hl
-;RAM:BCB6
-;RAM:BCB6             loc_BCB6:                                                       ; get number
-;RAM:BCB6 1A                          ld      a, (de)
+       dect sp
+       mov  *sp,hl
+loc_BCB6:
+;RAM:BCB6 1A                          ld      a, (de)                                 ; get number
+       movb *de,a
 ;RAM:BCB7 0F                          rrca
 ;RAM:BCB8 0F                          rrca
 ;RAM:BCB9 0F                          rrca
 ;RAM:BCBA 0F                          rrca
+       srl  a,4
 ;RAM:BCBB E6 0F                       and     #0xF                                    ; high digit
+       andi a,>0f00
 ;RAM:BCBD CD 7F BE                    call    print_8x8
-;RAM:BCC0
-;RAM:BCC0             print_BCD_lsd:                                                  ; get number
-;RAM:BCC0 1A                          ld      a, (de)
+       bl   @print_8x8
+print_BCD_lsd:
+;RAM:BCC0 1A                          ld      a, (de)                                 ; get number
+       movb *de,a
 ;RAM:BCC1 E6 0F                       and     #0xF                                    ; low digit
+       andi a,>0f00
 ;RAM:BCC3 CD 7F BE                    call    print_8x8
+       bl   @print_8x8
 ;RAM:BCC6 13                          inc     de                                      ; next byte address
+       inc  de
 ;RAM:BCC7 10 ED                       djnz    loc_BCB6                                ; loop through all bytes
+       sb   one,b
+       jne  loc_BCB6
 ;RAM:BCC9 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function print_BCD_number
-*
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -3385,7 +3414,7 @@ inc_days:
 ;RAM:C41D C6 01                       add     a, #1
        ab   one,a
 ;RAM:C41F 27                          daa
-;      TODO
+       bl   @daa
 ;RAM:C420 77                          ld      (hl), a
        movb a,*hl
 ;RAM:C421 FE 40                       cp      #64
@@ -3457,6 +3486,7 @@ init_sun:
 * copying start X,Y,Z,screen to current
 *
 init_special_objects:
+       mov  r11,*sp+
 ;RAM:C47E 21 F2 6F                    ld      hl, #special_objs_tbl
        li   hl,special_objs_tbl
 ;RAM:C481 3A A0 5B                    ld      a, (seed_1)
@@ -3496,9 +3526,7 @@ init_obj_loop:
 ;RAM:C498 01 04 00                    ld      bc, #4
        li   bc,4
 ;RAM:C49B ED B0                       ldir                                            ; copy Start X,Y,Z,screen to Current
-!      movb *hl+,*de+
-       dec  bc
-       jne  -!
+       bl   @ldir
 ;RAM:C49D EB                          ex      de, hl
        mov  de,r0
        mov  hl,de
@@ -3515,6 +3543,8 @@ init_obj_loop:
        ci   hl,sprite_tbl
        jl   init_obj_loop
 ;RAM:C4A9 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function init_special_objects
@@ -6107,6 +6137,7 @@ render_list:
 * =============== S U B R O U T I N E =======================================
 *
 lose_life:
+       mov  r11,*sp+
 ;RAM:D12A 21 61 D1                    ld      hl, #plyr_spr_1_scratchpad
        li   hl,plyr_spr_1_scratchpad
 ;RAM:D12D 11 08 5C                    ld      de, #graphic_objs_tbl
@@ -6117,9 +6148,7 @@ lose_life:
 ;RAM:D133 01 40 00                    ld      bc, #64                                 ; 1st 2 entries
        li   bc,64
 ;RAM:D136 ED B0                       ldir                                            ; copy scratchpad back to object table
-!      movb *hl+,*de+
-       dec  bc
-       jne  -!
+       bl   @ldir
 ;RAM:D138 AF                          xor     a
        clr  a
 ;RAM:D139 32 B1 5B                    ld      (transform_flag_graphic), a
@@ -6160,6 +6189,8 @@ lose_life:
 ;RAM:D15D DD 77 30                    ld      0x30(ix), a
        movb a,@30(ix)
 ;RAM:D160 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function lose_life
@@ -6188,6 +6219,7 @@ plyr_spr_init_data:
 * =============== S U B R O U T I N E =======================================
 *
 init_start_location:
+       mov  r11,*sp+
 ;RAM:D1B1 21 A1 D1                    ld      hl, #plyr_spr_init_data
        li   hl,plyr_spr_init_data
 ;RAM:D1B4 11 61 D1                    ld      de, #plyr_spr_1_scratchpad
@@ -6195,17 +6227,13 @@ init_start_location:
 ;RAM:D1B7 01 08 00                    ld      bc, #8
        li   bc,8
 ;RAM:D1BA ED B0                       ldir
-!      movb *hl+,*de+
-       dec  bc
-       jne  -!
+       bl   @ldir
 ;RAM:D1BC 11 81 D1                    ld      de, #plyr_spr_2_scratchpad
        li   de,plyr_spr_2_scratchpad
 ;RAM:D1BF 01 08 00                    ld      bc, #8
        li   bc,8
 ;RAM:D1C2 ED B0                       ldir
-!      movb *hl+,*de+
-       dec  bc
-       jne  -!
+       bl   @ldir
 ;RAM:D1C4 3E 12                       ld      a, #18                                  ; graphic_no (player top half)
        li   a,>1200
 ;RAM:D1C6 32 71 D1                    ld      (byte_D171), a                          ; plyr_spr_1_scratchpad (byte 16)
@@ -6233,6 +6261,8 @@ init_start_location:
 ;RAM:D1DE 32 89 D1                    ld      (start_loc_2), a
        movb a,@start_loc_2
 ;RAM:D1E1 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function init_start_location
@@ -6779,9 +6809,7 @@ next_bg_obj_sprite:                                                             
 ;RAM:D432 01 08 00                    ld      bc, #8
        li   bc,8
 ;RAM:D435 ED B0                       ldir                                            ; copy to graphic_object_tbl
-!      movb *hl+,*de+
-       dec  bc
-       jne  -!
+       bl   @ldir
 ;RAM:D437 DD 7E 08                    ld      a, 8(ix)                                ; player (current) screen
        movb @8(ix),a
 ;RAM:D43A 12                          ld      (de), a                                 ; store
@@ -8767,7 +8795,8 @@ vsbw:
        b    *r11
 *// vsbw
 
-exx:   mov  bc,r0
+exx:
+       mov  bc,r0
        mov  bc_,bc
        mov  r0,bc_
        mov  hl,r0
@@ -8776,6 +8805,31 @@ exx:   mov  bc,r0
        mov  de,r0
        mov  de_,de
        mov  r0,de_
+       rt
+
+ldir:
+       movb *hl+,*de+
+       dec  bc
+       jne  ldir
+       b    *r11
+
+* If the least significant four bits of A contain a non-BCD digit (i. e. it is greater than 9)
+* or the H flag is set, then $06 is added to the register. Then the four most significant bits are checked.
+* If this more significant digit also happens to be greater than 9 or the C flag is set, then $60 is added.
+daa:
+       mov  a,r0
+       andi r0,>0f00
+       cb   r0,@b09h
+       jl   daa1
+       ab   @b06h,a
+daa1:
+       mov  a,r0
+       andi r0,>f000
+       srl  r0,4
+       cb   r0,@b09h
+       jl   daa1
+       ab   @b60h,a
+daa2:
        rt
 
 *********************************************************************
@@ -8788,6 +8842,7 @@ b02h   byte >02
 b03h   byte >03
 b04h   byte >04
 b05h   byte >05
+b06h   byte >06
 b07h   byte >07
 b08h   byte >08
 b09h   byte >09
