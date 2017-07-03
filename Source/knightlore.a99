@@ -596,7 +596,7 @@ reset_objs_wipe_flag:
 ;RAM:B08D 21 0F 5C                    ld      hl, # graphic_objs_tbl+7                ; offset to flags
        li   hl,graphic_objs_tbl+7
 loc_B090:
-;RAM:B090 CB AE                       res     5, (hl)                                 ; reset flag=???
+;RAM:B090 CB AE                       res     5, (hl)                                 ; reset wipe flag
        szcb @b20h,*hl
 ;RAM:B092 19                          add     hl, de                                  ; next entry
        a    de,hl
@@ -4016,7 +4016,7 @@ adj_m3_p1:
 upd_2_4:
 ;       b    @no_update
 ;RAM:C73C DD CB 07 76                 bit     6, 7(ix)                                 ; hflip?
-       mov  @7(ix),r0
+       movb @7(ix),r0
        andi r0,>4000
 ;RAM:C740 20 2A                       jr      NZ, adj_2_4_hflip                       ; yes, go
        jne  adj_2_4_hflip
@@ -6159,7 +6159,7 @@ init_start_location:
 * ---------------------------------------------------------------------------
 start_locations:
 ;       byte >2F, >44, >B3, >8F
-       byte >00, >00, >00, >00
+       byte 0,0,0,0
 *
 * =============== S U B R O U T I N E =======================================
 *
