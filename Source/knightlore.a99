@@ -5512,9 +5512,10 @@ loc_CEC6:
        jne  !
        b    @render_done
 ;RAM:CECD CB 7F                       bit     7, a                                    ; already rendered?
-!      movb a,a
+!      movb  a,r0
+       andi r0,>8000
 ;RAM:CECF 20 F5                       jr      NZ, loc_CEC6                            ; yes, skip
-       jlt  loc_CEC6
+       jne  loc_CEC6
 ;RAM:CED1 CD B5 D3                    call    get_ptr_object                          ; ret=HL
        bl   @get_ptr_object
 ;RAM:CED4 ED 53 CD 5B                 ld      (render_obj_1), de
@@ -5527,14 +5528,15 @@ loc_CEDB:
 ;RAM:CEDC 13                          inc     de
        movb *de+,a
 ;RAM:CEDD FE FF                       cp      #0xFF                                   ; end of list?
-       cb   @bffh,a
+       cb   a,@bffh
 ;RAM:CEDF CA 00 D0                    jp      Z, render_obj_no1
        jne  !
        b    @render_obj_no1
 ;RAM:CEE2 CB 7F                       bit     7, a
-!      movb a,a
+!      movb a,r0
+       andi r0,>8000
 ;RAM:CEE4 20 F5                       jr      NZ, loc_CEDB
-       jlt  loc_CEDB
+       jne  loc_CEDB
 ;RAM:CEE6 CD B5 D3                    call    get_ptr_object
        bl   @get_ptr_object
 ;RAM:CEE9 ED 53 CF 5B                 ld      (render_obj_2), de
@@ -5607,10 +5609,10 @@ loc_CF16:
 ;RAM:CF30 FD 96 05                    sub     5(iy)                                   ; sub D2
        sb   @5(iy),a
 ;RAM:CF33 95                          sub     l                                       ; Y2-D2-(Y1+D1)
-       mov  af,af_                    ; TODO: is this correct?
+       movb a,r0                      ; TODO: is this correct?
 ;RAM:CF34 79                          ld      a, c
        movb @c,a
-       cb   af_,@l
+       cb   r0,@l
 ;RAM:CF35 38 02                       jr      C, loc_CF39                             ; overlap (C+=3)
        jl   loc_CF39
 ;RAM:CF37 C6 03                       add     a, #3                                   ; no overlap (C+=6)
@@ -5646,10 +5648,10 @@ loc_CF3C:
 ;RAM:CF56 FD 96 04                    sub     4(iy)                                   ; sub W2
        sb   @4(iy),a
 ;RAM:CF59 95                          sub     l                                       ; X2-W2-(X1+W1)
-       movb af,af_
+       movb a,r0
 ;RAM:CF5A 79                          ld      a, c
        movb @c,a
-       cb   af_,@l
+       cb   r0,@l
 ;RAM:CF5B 38 02                       jr      C, loc_CF5F                             ; overlap (C+=9)
        jl   loc_Cf5F
 ;RAM:CF5D C6 09                       add     a, #9                                   ; no overlap (c+=18)
@@ -5798,7 +5800,6 @@ loc_CFF0:
        jhe  loc_CFFD
 ;RAM:CFF9 FD 36 00 BB                 ld      0(iy), #187                             ; set to twinkle sprite
        movb @bbbh,*iy
-;RAM:CFFD
 loc_CFFD:
 ;RAM:CFFD C3 DB CE                    jp      loc_CEDB                                ; continue
        b    @loc_CEDB
@@ -7755,7 +7756,8 @@ loc_D710:
 ;RAM:D714 CD C9 D6                    call    calc_pixel_XY
        bl   @calc_pixel_XY
 ;RAM:D717 D0                          ret     NC                                      ; off bottom of screen, skip
-       jl   print_sprite_1
+       jl   print_sprite_1            ; if y position lower than 192
+*      Else return
        dect sp
        mov  *sp,r11
        rt
