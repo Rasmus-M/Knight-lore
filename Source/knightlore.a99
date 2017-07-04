@@ -2135,6 +2135,7 @@ multiple_print_sprite_loop:
 * player appear sparkles
 upd_120_to_126:
 ;RAM:BEFE CD D8 C4                    call    adj_m4_m12
+;      b    @adj_m4_m12_1
        bl   @adj_m4_m12
 ;RAM:BF01 3A A2 5B                    ld      a, (seed_2)
        movb @seed_2,a
@@ -3286,6 +3287,7 @@ adj_m4_m12_1:
 adj_m6_m12:
        mov  r11,*sp+
 ;RAM:C4DD 21 F4 FA                    ld      hl, #0xFAF4                             ; -6, -12
+adj_m6_m12_1:
        li   hl,>faf4
 ;RAM:C4E0 C3 2B C7                    jp      set_pixel_adj
 jp_set_pixel_adj:
@@ -3328,7 +3330,9 @@ upd_12_to_15:
 * End of function upd_12_to_15
 * =============== S U B R O U T I N E =======================================
 adj_m8_m12:
+       mov  r11,*sp+
 ;RAM:C4F7 21 F4 F8                    ld      hl, #0xF8F4                             ; -8, -12
+adj_m8_m12_1:
        li   hl,>f8f4
 ;RAM:C4FA 18 E4                       jr      jp_set_pixel_adj
        jmp  jp_set_pixel_adj
@@ -4125,6 +4129,7 @@ loc_C820:
 * sabreman legs
 upd_16_to_21_24_to_29:
 ;RAM:C823 CD DD C4                    call    adj_m6_m12
+;      b    @adj_m6_m12_1
        bl   @adj_m6_m12
 ;RAM:C826 18 03                       jr      upd_player_bottom
        jmp  upd_player_bottom
@@ -4148,7 +4153,7 @@ upd_player_bottom:
 ;RAM:C837 DD CB 2D F6                 set     6, 0x2D(ix)                             ; set dead top half
        socb @b40h,@>2d(ix)
 ;RAM:C83B C3 21 BF                    jp      init_death_sparkles
-       b    @init_death_sparkles      ; TODO
+;      b    @init_death_sparkles      ; TODO
 * ---------------------------------------------------------------------------
 loc_C83E:
 ;RAM:C83E CD 06 C3                    call    chk_and_init_transform                  ; returns to caller if transforming
@@ -5287,6 +5292,7 @@ loc_CDD3:
 * player (human top half)
 upd_32_to_47:
 ;RAM:CDDA CD F7 C4                    call    adj_m8_m12
+;      b    @adj_m8_m12_1
        bl   @adj_m8_m12
 ;RAM:CDDD 18 03                       jr      upd_player_top
        jmp  upd_player_top
@@ -5311,7 +5317,7 @@ upd_player_top:
        andi r0,>4000
 ;RAM:CDEC C2 21 BF                    jp      NZ, init_death_sparkles
        jeq  loc_CDEF
-       b    @init_death_sparkles      ; TODO
+;      b    @init_death_sparkles      ; TODO
 loc_CDEF:
 ;RAM:CDEF DD E5                       push    ix
 ;RAM:CDF1 D1                          pop     de                                      ; DE=top
@@ -5378,17 +5384,26 @@ loc_CE27:
 * ---------------------------------------------------------------------------
 loc_CE33:                                                       ; graphic_no (bottom half)
 ;RAM:CE33 FD 7E 00                    ld      a, 0(iy)
+       movb *iy,a
 ;RAM:CE36 E6 F8                       and     #0xF8 ; '�'
+       andi a,>f800
 ;RAM:CE38 F6 06                       or      #6                                      ; look one way
-loc_CE3A:                                                       ; look for 8 iterations
-;RAM:CE3A DD 36 0D 08                 ld      13(ix), #8
+       ori  a,>0600
+loc_CE3A:
+;RAM:CE3A DD 36 0D 08                 ld      13(ix), #8                              ; look for 8 iterations
+       movb @b08h,@13(ix)
 ;RAM:CE3E 18 E2                       jr      set_top_sprite
+       jmp  set_top_sprite
 * ---------------------------------------------------------------------------
 loc_CE40:
 ;RAM:CE40 FD 7E 00                    ld      a, 0(iy)
+       movb *iy,a
 ;RAM:CE43 E6 F8                       and     #0xF8 ; '�'
+       andi a,>f800
 ;RAM:CE45 F6 07                       or      #7                                      ; look the other way
+       ori  a,>0700
 ;RAM:CE47 18 F1                       jr      loc_CE3A
+       jmp  loc_CE3A
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -6113,6 +6128,9 @@ plyr_spr_init_data:
 * +7 flags
        byte >78, >80, >80, >80, >05, >05, >17, >1C
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
+* Start with Sabre Man
+;       byte >10, >80, >80, >80, >05, >05, >17, >1C
+;       byte >20, >80, >80, >8C, >05, >05, >00, >1E
 *
 * =============== S U B R O U T I N E =======================================
 *
