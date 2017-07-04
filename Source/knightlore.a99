@@ -545,7 +545,7 @@ no_delay:
 ;RAM:B04C CD 56 D5                    call    fill_attr                               ; set screen colour
        bl   @fill_attr
 ;RAM:B04F CD 4E BF                    call    display_objects                         ; inventory
-       bl   @display_objects          ; TODO
+       bl   @display_objects
 ;RAM:B052 CD EF D2                    call    colour_panel
        bl   @colour_panel
 ;RAM:B055 CD 0D D3                    call    colour_sun_moon
@@ -2607,92 +2607,167 @@ upd_119:
 * =============== S U B R O U T I N E =======================================
 *
 display_objects_carried:
-       rt
 ;RAM:BF45 3A B4 5B                    ld      a, (objects_carried_changed)
+       movb @objects_carried_changed,a
 ;RAM:BF48 A7                          and     a                                       ; anything changed?
 ;RAM:BF49 C8                          ret     Z                                       ; no, return
+       jne  !
+       rt
 ;RAM:BF4A AF                          xor     a                                       ; clear changed flag
+!      clr  a
 ;RAM:BF4B 32 B4 5B                    ld      (objects_carried_changed), a
+       movb a,@objects_carried_changed
 *
 * End of function display_objects_carried
 *
 * =============== S U B R O U T I N E =======================================
 *
 display_objects:
+       mov r11,*sp+
 ;RAM:BF4E DD E5                       push    ix
+       mov  ix,*sp+
 ;RAM:BF50 DD 21 DB BF                 ld      ix, #sprite_scratchpad
+       li   ix,sprite_scratchpad
 ;RAM:BF54 06 03                       ld      b, #3                                   ; 3 objects max
+       movb @b03h,b
 ;RAM:BF56 21 DC 5B                    ld      hl, #objects_carried
-;RAM:BF59
-;RAM:BF59             display_object:
+       li   hl,objects_carried
+display_object:
 ;RAM:BF59 C5                          push    bc
+       mov  bc,*sp+
 ;RAM:BF5A E5                          push    hl
+       mov  hl,*sp+
 ;RAM:BF5B 78                          ld      a, b
+       movb b,a
 ;RAM:BF5C ED 44                       neg
+       inv  a
+       ab   one,a
 ;RAM:BF5E C6 03                       add     a, #3                                   ; (~b+3)
+       ab   @b03h,a
 ;RAM:BF60 CB 27                       sla     a
 ;RAM:BF62 CB 27                       sla     a
 ;RAM:BF64 CB 27                       sla     a                                       ; =(~b+3)*8
+       andi a,>ff00
+       sla a,3
 ;RAM:BF66 4F                          ld      c, a
+       movb a,@c
 ;RAM:BF67 CB 27                       sla     a                                       ; (~b+3)*16
+       sla  a,1
 ;RAM:BF69 81                          add     a, c                                    ; =(~b+3)*24
+       ab   @c,a
 ;RAM:BF6A C6 10                       add     a, #16                                  ; =(~b+3)*24+16
+       ab   @b10h,a
 ;RAM:BF6C DD 77 1A                    ld      26(ix), a                               ; pixel X
+       movb a,@26(ix)
 ;RAM:BF6F DD 36 1B 00                 ld      27(ix), #0                              ; pixel Y
+       movb @b00h,@27(ix)
 ;RAM:BF73 DD 4E 1A                    ld      c, 26(ix)                               ; pixel X
+       movb @26(ix),@c
 ;RAM:BF76 DD 46 1B                    ld      b, 27(ix)                               ; pixel Y
+       movb @27(ix),b
 ;RAM:BF79 E5                          push    hl                                      ; ptr object
+       mov  hl,*sp+
 ;RAM:BF7A CD 11 D8                    call    calc_vidbuf_addr
+       bl   @calc_vidbuf_addr
 ;RAM:BF7D 69                          ld      l, c
 ;RAM:BF7E 60                          ld      h, b
+       mov  bc,hl
 ;RAM:BF7F 01 18 03                    ld      bc, #0x318                              ; width=3, height=24
+       li   bc,>0318
 ;RAM:BF82 AF                          xor     a                                       ; fill byte = 0
+       clr  a
 ;RAM:BF83 CD 15 C5                    call    fill_window                             ; wipe 24x24 pixel area
+       bl   @fill_window
 ;RAM:BF86 E1                          pop     hl                                      ; ptr object
+       dect sp
+       mov  *sp,hl
 ;RAM:BF87 7E                          ld      a, (hl)                                 ; object (sprite index)
+       movb *hl,a
 ;RAM:BF88 A7                          and     a                                       ; null?
 ;RAM:BF89 28 06                       jr      Z, loc_BF91                             ; yes, skip
+       jeq  loc_BF91
 ;RAM:BF8B DD 77 00                    ld      0(ix), a                                ; sprite index
+       movb a,*ix
 ;RAM:BF8E CD 18 D7                    call    print_sprite
-;RAM:BF91
-;RAM:BF91             loc_BF91:                                                       ; pixel X
-;RAM:BF91 DD 4E 1A                    ld      c, 26(ix)
+       bl   @print_sprite
+loc_BF91:
+;RAM:BF91 DD 4E 1A                    ld      c, 26(ix)                               ; pixel X
+       movb @26(ix),@c
 ;RAM:BF94 DD 46 1B                    ld      b, 27(ix)                               ; pixel Y
+       movb @27(ix),b
 ;RAM:BF97 CD 26 D8                    call    calc_vram_addr
+       bl   @calc_vram_addr
 ;RAM:BF9A CD 11 D8                    call    calc_vidbuf_addr
+       bl   @calc_vidbuf_addr
 ;RAM:BF9D 69                          ld      l, c
 ;RAM:BF9E 60                          ld      h, b
+       mov  bc,hl
 ;RAM:BF9F 01 03 18                    ld      bc, #0x1803                             ; lines=24, bytes=3
+       li   bc,>1803
 ;RAM:BFA2 CD 7C D6                    call    blit_to_screen
+       bl   @blit_to_screen
 ;RAM:BFA5 E1                          pop     hl                                      ; ptr object
+       dect sp
+       mov  *sp,hl
 ;RAM:BFA6 C1                          pop     bc
+       dect sp
+       mov  *sp,bc
 ;RAM:BFA7 C5                          push    bc
+       mov  bc,*sp+
 ;RAM:BFA8 E5                          push    hl                                      ; ptr object
+       mov  hl,*sp+
 ;RAM:BFA9 7E                          ld      a, (hl)                                 ; object (sprite index)
+       movb *hl,a
 ;RAM:BFAA E6 0F                       and     #0xF
+       andi a,>0f00
 ;RAM:BFAC 5F                          ld      e, a
 ;RAM:BFAD 16 00                       ld      d, #0
+       clr  de
+       movb a,@e
 ;RAM:BFAF 21 D3 BF                    ld      hl, #object_attributes
+       li   hl,object_attributes
 ;RAM:BFB2 19                          add     hl, de
+       a    de,hl
 ;RAM:BFB3 4E                          ld      c, (hl)                                 ; get fill byte entry
+       movb *hl,@c
 ;RAM:BFB4 DD 6E 1A                    ld      l, 26(ix)                               ; pixel X
+       movb @26(ix),@l
 ;RAM:BFB7 DD 7E 1B                    ld      a, 27(ix)                               ; pixel Y
+       movb @27(ix),a
 ;RAM:BFBA C6 17                       add     a, #23
+       ab   @b17h,a
 ;RAM:BFBC 67                          ld      h, a
+       movb a,h
 ;RAM:BFBD CD 48 D8                    call    calc_attrib_addr
+       bl   @calc_attrib_addr
 ;RAM:BFC0 EB                          ex      de, hl
+       bl   @ex_de_hl
 ;RAM:BFC1 79                          ld      a, c                                    ; fill byte
+       movb @c,a
 ;RAM:BFC2 01 03 03                    ld      bc, #0x303                              ; width=3, height=3
+       li   bc,>0303
 ;RAM:BFC5 CD 15 C5                    call    fill_window
+       bl   @fill_color_window
 ;RAM:BFC8 E1                          pop     hl                                      ; ptr object
+       dect sp
+       mov  *sp,hl
 ;RAM:BFC9 C1                          pop     bc                                      ; object count
+       dect sp
+       mov  *sp,bc
 ;RAM:BFCA 23                          inc     hl
 ;RAM:BFCB 23                          inc     hl
 ;RAM:BFCC 23                          inc     hl
 ;RAM:BFCD 23                          inc     hl                                      ; next entry (4 bytes)
+       ai   hl,4
 ;RAM:BFCE 10 89                       djnz    display_object                          ; loop through all objects
+       sb   one,b
+       jne  display_object
 ;RAM:BFD0 DD E1                       pop     ix
+       dect sp
+       mov *sp,ix
 ;RAM:BFD2 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function display_objects
@@ -3733,79 +3808,127 @@ loc_C51A:
 *    00=player sprite
 *
 find_special_objs_here:
+       mov  r11,*sp+
 ;RAM:C525 11 48 5C                    ld      de, #special_objs_here
+       li   de,special_objs_here
 ;RAM:C528 D9                          exx
+       bl   @exx
 ;RAM:C529 FD 21 F2 6F                 ld      iy, #special_objs_tbl
+       li   iy,special_objs_tbl
 ;RAM:C52D DD 46 08                    ld      b, 8(ix)                                ; current screen
-;RAM:C530
-;RAM:C530             loc_C530:                                                       ; get graphic no.
-;RAM:C530 FD 7E 00                    ld      a, 0(iy)
+       movb @8(ix),b
+loc_C530:
+;RAM:C530 FD 7E 00                    ld      a, 0(iy)                                ; get graphic no.
+       movb *iy,a
 ;RAM:C533 A7                          and     a                                       ; null?
 ;RAM:C534 28 3C                       jr      Z, loc_C572                             ; yes, skip
+       jeq  loc_C572
 ;RAM:C536 FD 7E 08                    ld      a, 8(iy)                                ; object current screen
+       movb @8(iy),a
 ;RAM:C539 B8                          cp      b                                       ; same as (player) current screen?
+       cb   a,b
 ;RAM:C53A 20 36                       jr      NZ, loc_C572                            ; no, skip
+       jne  loc_C572
 ;RAM:C53C FD E5                       push    iy
+       mov  iy,*sp+
 ;RAM:C53E D9                          exx
+       bl   @exx
 ;RAM:C53F E1                          pop     hl
+       dect sp
+       mov  *sp,hl
 ;RAM:C540 E5                          push    hl                                      ; ptr special_object_tbl entry
+       mov  hl,*sp+
 ;RAM:C541 7E                          ld      a, (hl)                                 ; get graphic no.
 ;RAM:C542 23                          inc     hl
 ;RAM:C543 12                          ld      (de), a                                 ; store in objs_here
 ;RAM:C544 13                          inc     de
+       movb *hl+,*de+
 ;RAM:C545 23                          inc     hl
 ;RAM:C546 23                          inc     hl
 ;RAM:C547 23                          inc     hl
 ;RAM:C548 23                          inc     hl                                      ; ptr current X, Y, Z
+       ai   hl,4
 ;RAM:C549 01 03 00                    ld      bc, #3                                  ; 3 entries (bytes) to copy
+       li   bc,3
 ;RAM:C54C ED B0                       ldir                                            ; copy to objs_here
+       bl   @ldir
 ;RAM:C54E EB                          ex      de, hl
+       bl   @ex_de_hl
 ;RAM:C54F 36 05                       ld      (hl), #5                                ; width = 5
 ;RAM:C551 23                          inc     hl
+       movb @b05h,*hl+
 ;RAM:C552 36 05                       ld      (hl), #5                                ; depth = 5
 ;RAM:C554 23                          inc     hl
+       movb @b05h,*hl+
 ;RAM:C555 36 0C                       ld      (hl), #12                               ; height = 12
 ;RAM:C557 23                          inc     hl
+       movb @b0ch,*hl+
 ;RAM:C558 36 14                       ld      (hl), #0x14                             ; flag DRAW & MOVEABLE
 ;RAM:C55A 23                          inc     hl
+       movb @b0eh,*hl+
 ;RAM:C55B EB                          ex      de, hl
+       bl   @ex_de_hl
 ;RAM:C55C 7E                          ld      a, (hl)                                 ; get current screen
 ;RAM:C55D 23                          inc     hl
+       movb *hl+,a
 ;RAM:C55E 12                          ld      (de), a                                 ; store in objs_here
 ;RAM:C55F 13                          inc     de
+       movb *de+,a
 ;RAM:C560 06 07                       ld      b, #7
+       movb @b07h,b
 ;RAM:C562 CD 08 D5                    call    zero_DE
+       bl   @zero_DE
 ;RAM:C565 C1                          pop     bc                                      ; ptr special_object_tbl entry
+       dect sp
+       mov  *sp,bc
 ;RAM:C566 79                          ld      a, c
 ;RAM:C567 12                          ld      (de), a
 ;RAM:C568 13                          inc     de
 ;RAM:C569 78                          ld      a, b
 ;RAM:C56A 12                          ld      (de), a                                 ; store
 ;RAM:C56B 13                          inc     de
+       mov  bc,*de+                   ; TODO: Little endian
 ;RAM:C56C 06 0E                       ld      b, #14
+       movb @b0eh,b
 ;RAM:C56E CD 08 D5                    call    zero_DE
+       bl   @zero_DE
 ;RAM:C571 D9                          exx
-;RAM:C572
-;RAM:C572             loc_C572:
+       bl   @exx
+loc_C572:
 ;RAM:C572 11 09 00                    ld      de, #9
+       li   de,9
 ;RAM:C575 FD 19                       add     iy, de                                  ; ptr next special_object_tbl entry
+       a    de,iy
 ;RAM:C577 FD E5                       push    iy
 ;RAM:C579 E1                          pop     hl
+       mov  iy,hl
 ;RAM:C57A 11 12 71                    ld      de, #sprite_tbl                         ; end of object table
+       li   de,sprite_tbl
 ;RAM:C57D A7                          and     a
 ;RAM:C57E ED 52                       sbc     hl, de                                  ; past end of table?
+       c    hl,de
 ;RAM:C580 38 AE                       jr      C, loc_C530                             ; no, loop
+       jl   loc_C530
 ;RAM:C582 D9                          exx                                             ; DE=objs_here entry
-;RAM:C583
-;RAM:C583             loc_C583:                                                       ; end of objects here table
-;RAM:C583 21 88 5C                    ld      hl, #other_objs_here
+       bl   @exx
+loc_C583:
+;RAM:C583 21 88 5C                    ld      hl, #other_objs_here                    ; end of objects here table
+       li   hl,other_objs_here
 ;RAM:C586 A7                          and     a
 ;RAM:C587 ED 52                       sbc     hl, de                                  ; past end of table (max=2)
+       c    hl,de
 ;RAM:C589 C8                          ret     Z                                       ; yes, exit
-       rt
+       jhe  !
 ;RAM:C58A 06 20                       ld      b, #32
+       movb @b20h,@b
 ;RAM:C58C CD 08 D5                    call    zero_DE                                 ; zero next entry
+       bl   @zero_DE
 ;RAM:C58F 18 F2                       jr      loc_C583                                ; next entry
+       jmp  loc_C583
+*      Return
+!      dect sp
+       mov  *sp,r11
+       rt
 *
 * End of function find_special_objs_here
 *
@@ -3823,39 +3946,57 @@ find_special_objs_here:
 * * VERIFIED on the ZX Spectrum emulator!        ;
 *
 update_special_objs:
+       mov  r11,*sp+
 ;RAM:C591 FD 21 48 5C                 ld      iy, #special_objs_here
-;RAM:C595
-;RAM:C595             loc_C595:                                                       ; get graphic no.
-;RAM:C595 FD 7E 00                    ld      a, 0(iy)
+       li   iy,special_objs_here
+loc_C595:
+;RAM:C595 FD 7E 00                    ld      a, 0(iy)                                ; get graphic no.
+       movb iy,a
 ;RAM:C598 A7                          and     a                                       ; null?
 ;RAM:C599 28 1C                       jr      Z, loc_C5B7                             ; yes, skip
+       jeq  loc_C5B7
 ;RAM:C59B FD 5E 10                    ld      e, 16(iy)
 ;RAM:C59E FD 56 11                    ld      d, 17(iy)                               ; DE=ptr object table entry
+       mov  @16(iy),de                ; TODO: Little endian!
+       jeq  loc_C5B7                  ; Bug fix?
 ;RAM:C5A1 FD 7E 00                    ld      a, 0(iy)                                ; get graphic no.
 ;RAM:C5A4 12                          ld      (de), a                                 ; store
+       movb *iy,*de
 ;RAM:C5A5 13                          inc     de
 ;RAM:C5A6 13                          inc     de
 ;RAM:C5A7 13                          inc     de
 ;RAM:C5A8 13                          inc     de
 ;RAM:C5A9 13                          inc     de
+       ai   de,5
 ;RAM:C5AA FD E5                       push    iy
 ;RAM:C5AC E1                          pop     hl                                      ; HL=object in 'here' table
+       mov  iy,hl
 ;RAM:C5AD 23                          inc     hl                                      ; ptr x
+       inc  hl
 ;RAM:C5AE 01 03 00                    ld      bc, #3                                  ; 3 bytes
+       li   bc,3
 ;RAM:C5B1 ED B0                       ldir                                            ; copy x, y, z
+       bl   @ldir
 ;RAM:C5B3 FD 7E 08                    ld      a, 8(iy)                                ; screen
 ;RAM:C5B6 12                          ld      (de), a                                 ; store as current
-;RAM:C5B7
-;RAM:C5B7             loc_C5B7:
+       movb @8(iy),*de
+loc_C5B7:
 ;RAM:C5B7 01 20 00                    ld      bc, #32
+       li   bc,32
 ;RAM:C5BA FD 09                       add     iy, bc                                  ; next entry in 'here' table
+       a    bc,iy
 ;RAM:C5BC FD E5                       push    iy
 ;RAM:C5BE E1                          pop     hl
+       mov  iy,hl
 ;RAM:C5BF 01 88 5C                    ld      bc, #other_objs_here                    ; end of table
 ;RAM:C5C2 A7                          and     a
 ;RAM:C5C3 ED 42                       sbc     hl, bc                                  ; past end of table?
+       ci   hl,other_objs_here
 ;RAM:C5C5 38 CE                       jr      C, loc_C595                             ; no, loop
+       jl   loc_C595
 ;RAM:C5C7 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function update_special_objs
@@ -6282,15 +6423,14 @@ build_screen_objects:
 ;RAM:D1EA 28 03                       jr      Z, loc_D1EF                             ; yes, skip updating special objects
        jeq  loc_D1EF
 ;RAM:D1EC CD 91 C5                    call    update_special_objs                     ; save state in special_objs_tbl
-       bl   @update_special_objs      ; TODO
-;RAM:D1EF
+       bl   @update_special_objs
 loc_D1EF:
 ;RAM:D1EF CD 67 D5                    call    clear_scrn_buffer
        bl   @clear_scrn_buffer
 ;RAM:D1F2 CD C6 D3                    call    retrieve_screen
        bl   @retrieve_screen
 ;RAM:D1F5 CD 25 C5                    call    find_special_objs_here                  ; find special objects in new room
-       bl   @find_special_objs_here   ; TODO
+       bl   @find_special_objs_here
 ;RAM:D1F8 CD 20 D3                    call    adjust_plyr_xyz_for_room_size
        bl   @adjust_plyr_xyz_for_room_size ; TODO
 ;RAM:D1FB AF                          xor     a
@@ -6737,9 +6877,7 @@ found_screen:
 ;RAM:D3FA D5                          push    de
        mov  de,*sp+
 ;RAM:D3FB EB                          ex      de, hl                                  ; DE=attributes
-       mov  de,r0
-       mov  hl,de
-       mov  r0,hl
+       bl   @ex_de_hl
 ;RAM:D3FC 1A                          ld      a, (de)                                 ; get attributes
 ;RAM:D3FD 13                          inc     de                                      ; ptr background type
        movb *de+,a
@@ -7023,9 +7161,7 @@ loc_D4CD:
 ;RAM:D4E5 E5                          push    hl
        mov  hl,*sp+
 ;RAM:D4E6 EB                          ex      de, hl
-       mov  de,r0
-       mov  hl,de
-       mov  r0,hl
+       bl   @ex_de_hl
 ;RAM:D4E7 57                          ld      d, a
        movb a,d
 ;RAM:D4E8 18 81                       jr      next_fg_obj_in_count
@@ -7527,7 +7663,7 @@ loc_D653:
 ;RAM:D656 CD 97 C3                    call    print_sun_moon
        bl   @print_sun_moon
 ;RAM:D659 CD 45 BF                    call    display_objects_carried
-       bl   @display_objects_carried  ; TODO
+       bl   @display_objects_carried
 ;RAM:D65C 21 A8 5B                    ld      hl, #objs_wiped_cnt
        li   hl,objs_wiped_cnt
 ;RAM:D65F 3A BE 5B                    ld      a, (rendered_objs_cnt)
@@ -8364,9 +8500,7 @@ vflip_sprite_data:                                                              
 ;RAM:D882 19                          add     hl, de                                  ; skip sprite data (including mask bytes)
        a    de,hl
 ;RAM:D883 EB                          ex      de, hl                                  ; DE=end of sprite data, HL=sprite data
-       mov  de,r0
-       mov  hl,de
-       mov  r0,hl
+       bl   @ex_de_hl
 ;RAM:D884 78                          ld      a, b                                    ; width x 2
        movb b,a
 ;RAM:D885 CD F2 D4                    call    add_HL_A                                ; HL=sprite data + width x 2
@@ -8454,9 +8588,7 @@ loc_D8A2:
 ;RAM:D8B7 13                          inc     de                                      ; sprite data
        inc  de
 ;RAM:D8B8 EB                          ex      de, hl                                  ; HL=sprite data
-       mov  de,r0
-       mov  hl,de
-       mov  r0,hl
+       bl   @ex_de_hl
 ;RAM:D8B9 E5                          push    hl
        mov  hl,*sp+
 ;RAM:D8BA D9                          exx
@@ -8807,6 +8939,12 @@ exx:
        mov  r0,de_
        rt
 
+ex_de_hl:
+       mov  de,r0
+       mov  hl,de
+       mov  r0,hl
+       rt
+
 ldir:
        movb *hl+,*de+
        dec  bc
@@ -8847,7 +8985,9 @@ b07h   byte >07
 b08h   byte >08
 b09h   byte >09
 b0ah   byte >0a
+b0ch   byte >0c
 b0dh   byte >0d
+b0eh   byte >0e
 b10h   byte >10
 b17h   byte >17
 b20h   byte >20
