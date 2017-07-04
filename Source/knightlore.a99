@@ -93,232 +93,24 @@ hl_    equ  15
 
 * ===========================================================================
 *
-* Segment type: Regular
-* .org 0x4000
-* zx_vram:        .ds 0x1800
+* ZX Spectrum video memory
+*
 zx_vram:
      equ    >4000
-* end of 'ZX_VRAM'
 *
 * ===========================================================================
 *
-* Segment type: Regular
-* .org 0x5800
-* zx_aram:        .ds 0x300
+* ZX Spectrum attribute memory
+*
 zx_aram:
        equ  >5800
-* end of 'ZX_ARAM'
-*
-* Stack grows down from here
-* Variables from here are zeroed at start of game
 *
 * ===========================================================================
 *
-* Segment type: Regular
-* .org 0x5BA0
-       aorg >A000
-*
-seed_1:
-       data 0
-seed_2:
-       data 0
-* bit   3 : directional
-* bit 2-1 : 00=keybd, 01=kempston, 10=cursor, 11=i/f-ii
-user_input_method:
-       byte 0
-seed_3:
-       byte 0
-old_input_method:
-       data 0
-*
-* Variables from here are zeroed each game
-*
-tmp_SP:                                ; Swapped tmp_SP and objs_wiped_cnt
-       data 0
-objs_wiped_cnt:
-       byte 0
-room_size_X:
-       byte 0
-room_size_Y:
-       byte 0
-curr_room_attrib:
-       byte 0
-room_size_Z:
-       byte 0
-portcullis_moving:
-       byte 0
-portcullis_move_cnt:
-       byte 0
-transform_flag_graphic:
-       byte 0
-not_1st_screen:
-       byte 0
-pickup_drop_pressed:
-       byte 0
-objects_carried_changed:
-       byte 0
-* b5=???
-* b4=pickup/drop
-* b3=jump
-* b2=forward
-* b1=right
-* b0=left
-user_input:
-       byte 0
-tmp_attrib:
-       byte 0
-render_status_info:
-       byte 0
-suppress_border:
-       byte 0
-days:
-       byte 0
-lives:
-       byte 0
-objects_put_in_cauldron:
-       byte 0
-fire_seed:
-       byte 0
-ball_bounce_height:
-       byte 0
-rendered_objs_cnt:
-       byte 0
-is_spike_ball_dropping:
-       byte 0
-disable_spike_ball_drop:
-       byte 0
-tmp_dZ:
-       byte 0
-tmp_bouncing_ball_dZ:
-       byte 0
-all_objs_in_cauldron:
-       byte 0
-obj_dropping_into_cauldron:
-       byte 0
-rising_blocks_z:
-       byte 0
-num_scrns_visited:
-       byte 0
-audio_played:                          ; Moved from after render_obj_2
-       byte 0
-gfxbase_8x8:
-       data 0
-percent_msw:
-       byte 0
-percent_lsw:
-       byte 0
-tmp_objects_to_draw:
-       data 0
-render_obj_1:
-       data 0
-render_obj_2:
-       data 0
-debounce_5:
-       byte 0
-cant_drop:
-       bss 5
-inventory:
-       bss 4
-objects_carried:
-       bss 7
-unk_5BE3:
-       bss 1
-object_carried_2:
-       bss 3
-end_of_objects_carried:
-       bss 1
-*
-* table of bits (flags) denoting room has been visited
-* - used only in ratings calculations
-*
-scrn_visited:
-       bss 32
-**
-* Table of objects (40 max)
-*
-* - 00,01 player sprites (00=bottom, 01=top)
-* - 02,03 special object sprites
-* - 04-39 background, then foreground
-*
-* +0 graphic_no.
-* +1 x (center)
-* +2 y (center)
-* +3 z (bottom)
-* +4 width (X radius)
-* +5 depth (Y radius)
-* +6 height
-* +7 flags
-*    - 7=vflip sprite
-*    - 6=hflip sprite
-*    - 5=wipe
-*    - 4=draw
-*    - 3=auto-adjust near arches (player only)
-*    - 2=moveable
-*    - 1=ignore in 3D calculations
-*    - 0=is near arch (player only)
-* +8 screen
-* +9 dX
-* +10 dY
-* +11 dZ
-* +12 counter and flags
-*     - 7-4=counter when entering screen
-*     - 3=jumping
-*     - 2=Z out-of-bounds
-*     - 1=Y out-of-bounds
-*     - 0=X out-of-bounds
-* +13 per-object info/flags
-*     - direction and counters for looking, turning
-*     - 7=deadly if object hits player
-*     - 6=dead
-*     - 5=deadly if player hits object
-*     - 4=(not used)
-*     - 3=triggered (dropping, collapsing blocks)
-*     - 2=up (bouncing ball), dropping (spiked ball)
-*     - 1=north (NS fire)
-*     - 0=east (WE fire, EW guard), just dropped (spec objs)
-* +14 d_x_adj
-* +15 d_y_adj
-* +16-17 ptr object table entry or tmp player graphic_no
-* +18 pixel X adjustment
-* +19 pixel Y adjustment
-* +20-23 unused
-* +24 sprite data width (bytes)
-* +25 sprite data height (lines)
-* +26 pixel X
-* +27 pixel Y
-* +28 old sprite data width (bytes)
-* +29 old sprite data height (lines)
-* +30 old pixel X
-* +31 old pixel Y
-*
-graphic_objs_tbl:
-       bss 32                          ; 00,01 player sprites (00=bottom, 01=top)
-       bss 32
-special_objs_here:
-       bss 32                          ; 02,03 special object sprites
-special_objs_here_1:
-       bss 32
-other_objs_here:
-       bss 32                          ; 04-39 background, then foreground
-       bss 1120
-
-* End of 'SCRATCH'
-* ===========================================================================
-*
-* Segment type: Regular
-* .org 0x6108
-*
-       copy "font.a99"                 ; Must follow object table
-       copy "locations.a99"
-       copy "block-types.a99"
-       copy "background-types.a99"
-       copy "special-objects.a99"
-       copy "sprites.a99"
-
-* ---------------------------------------------------------------------------
+* Lower memory - primarily program code
 *
        aorg >2000
-
+*
 start:
 *      Init TI-99/4A
        limi 0
@@ -607,208 +399,17 @@ loc_B090:
 *
 * End of function reset_objs_wipe_flag
 *
+
 * ---------------------------------------------------------------------------
-
-upd_sprite_jmp_tbl:
-       data no_update
-       data no_update                                   ; (unused)
-       data upd_2_4                                     ; stone arch (near side)
-       data upd_3_5                                     ; stone arch (far side)
-       data upd_2_4                                     ; tree arch (near side)
-       data upd_3_5                                     ; tree arch (far side)
-       data upd_6_7                                     ; rock
-       data upd_6_7                                     ; block
-       data upd_8                                       ; portcullis (stationary)
-       data upd_9                                       ; portcullis (moving)
-       data upd_10                                      ; bricks
-       data upd_11                                      ; more bricks
-       data upd_12_to_15                                ; even more bricks
-       data upd_12_to_15                                ;   "
-       data upd_12_to_15                                ;   "
-       data upd_12_to_15                                ;   "
-       data upd_16_to_21_24_to_29                       ; human legs
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_22                                      ; gargoyle
-       data upd_23                                      ; spikes
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_30_31_158_159                           ; guard (moving NSEW) (top half)
-       data upd_30_31_158_159                           ;   "
-       data upd_32_to_47                                ; player (top half)
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_48_to_53_56_to_61                       ;   wulf legs
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_54                                      ; block (moving EW)
-       data upd_55                                      ; block (moving NS)
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_62                                      ; another block
-       data upd_63                                      ; spiked ball
-       data upd_64_to_79                                ; player (wulf top half)
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_80_to_83                                ; ghost
-       data upd_80_to_83                                ;   "
-       data upd_80_to_83                                ;   "
-       data upd_80_to_83                                ;   "
-       data upd_84                                      ; table
-       data upd_85                                      ; chest
-       data upd_86_87                                   ; fire (EW)
-       data upd_86_87                                   ; fire (EW)
-       data upd_88_to_90                                ; sun
-       data upd_88_to_90                                ; moon
-       data upd_88_to_90                                ; frame (left)
-       data upd_91                                      ; block (dropping)
-       data upd_92_to_95                                ; human/wulf transform
-       data upd_92_to_95
-       data upd_92_to_95
-       data upd_92_to_95
-       data upd_96_to_102                               ; diamond
-       data upd_96_to_102                               ; poison
-       data upd_96_to_102                               ; boot
-       data upd_96_to_102                               ; chalice
-       data upd_96_to_102                               ; cup
-       data upd_96_to_102                               ; bottle
-       data upd_96_to_102                               ; crystal ball
-       data upd_103                                     ; extra life
-       data upd_104_to_110                              ; special object (diamond)
-       data upd_104_to_110                              ;   " (poison)
-       data upd_104_to_110                              ;   " (boot)
-       data upd_104_to_110                              ;   " (chalice)
-       data upd_104_to_110                              ;   " (cup)
-       data upd_104_to_110                              ;   " (bottle)
-       data upd_104_to_110                              ;   " (crytsal ball)
-       data upd_111                                     ; final sparkles in cauldron
-       data upd_112_to_118_184                          ; death sparkles
-       data upd_112_to_118_184                          ;   "
-       data upd_112_to_118_184                          ;   "
-       data upd_112_to_118_184                          ;   "
-       data upd_112_to_118_184                          ;   "
-       data upd_112_to_118_184                          ;   "
-       data upd_112_to_118_184                          ;   "
-       data upd_119                                     ; last death sparkle
-       data upd_120_to_126                              ; player appears sparkles
-       data upd_120_to_126                              ;   "
-       data upd_120_to_126                              ;   "
-       data upd_120_to_126                              ;   "
-       data upd_120_to_126                              ;   "
-       data upd_120_to_126                              ;   "
-       data upd_120_to_126                              ;   "
-       data upd_127                                     ; last player appears sparkle
-       data upd_128_to_130                              ; tree wall
-       data upd_128_to_130                              ;   "
-       data upd_128_to_130                              ;   "
-       data upd_131_to_133                              ; sparkles in the cauldron room at end of game
-       data upd_131_to_133                              ;   "
-       data upd_131_to_133                              ;   "
-       data no_update
-       data no_update
-       data no_update
-       data no_update
-       data no_update
-       data no_update
-       data no_update
-       data upd_141                                     ; cauldron (bottom)
-       data upd_142                                     ; cauldron (top)
-       data upd_143                                     ; block (collapsing)
-       data upd_144_to_149_152_to_157                   ; guard & wizard (bottom half)
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_150_151                                 ; guard (EW) (top half)
-       data upd_150_151                                 ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_30_31_158_159                           ; wizard (top half)
-       data upd_30_31_158_159                           ;   "
-       data upd_160_to_163                              ; cauldron bubbles
-       data upd_160_to_163                              ;   "
-       data upd_160_to_163                              ;   "
-       data upd_160_to_163                              ;   "
-       data upd_164_to_167                              ; repel spell
-       data upd_164_to_167                              ;   "
-       data upd_164_to_167                              ;   "
-       data upd_164_to_167                              ;   "
-       data upd_168_to_175                              ; diamond
-       data upd_168_to_175                              ; poison
-       data upd_168_to_175                              ; boot
-       data upd_168_to_175                              ; chalice
-       data upd_168_to_175                              ; cup
-       data upd_168_to_175                              ; bottle
-       data upd_168_to_175                              ; crystal ball
-       data upd_168_to_175                              ; extra life
-       data upd_176_177                                 ; fire (stationary) (not used)
-       data upd_176_177                                 ; fire (stationary) (not used)
-       data upd_178_179                                 ; ball up/down
-       data upd_178_179                                 ; ball up/down
-       data upd_180_181                                 ; fire (NS)
-       data upd_180_181                                 ; fire (NS)
-       data upd_182_183                                 ; ball (bouncing around)
-       data upd_182_183                                 ;   "
-       data upd_112_to_118_184                          ; death sparkles
-       data upd_185_187                                 ; last obj in cauldron sparkle
-       data no_update
-       data upd_185_187                                 ; last obj in cauldron sparkle
-
 *      Sound routines copied to separate file
        copy "zx-sound.a99"
+* ---------------------------------------------------------------------------
 
-;RAM:B4FC
-;RAM:B4FD             ; returns C flag set if any other object
-;RAM:B4FD             ; intersects with this one
-;RAM:B4FD
-;RAM:B4FD             ; =============== S U B R O U T I N E =======================================
-;RAM:B4FD
-;RAM:B4FD
+* =============== S U B R O U T I N E =======================================
+*
+* returns C flag set if any other object
+* intersects with this one
+*
 ;RAM:B4FD             do_any_objs_intersect:
 ;RAM:B4FD C5                          push    bc
 ;RAM:B4FE D5                          push    de
@@ -838,7 +439,7 @@ upd_sprite_jmp_tbl:
 ;RAM:B528 C1                          pop     bc
 ;RAM:B529 DD CB 07 8E                 res     1, 7(ix)                                ; reset ignore flag
 ;RAM:B52D C9                          ret                                             ; C flag set indicates intersection
-;RAM:B52E             ; ---------------------------------------------------------------------------
+* ---------------------------------------------------------------------------
 ;RAM:B52E
 ;RAM:B52E             loc_B52E:                                                       ; entry size
 ;RAM:B52E 11 20 00                    ld      de, #32
@@ -846,12 +447,11 @@ upd_sprite_jmp_tbl:
 ;RAM:B533 10 DB                       djnz    loc_B510                                ; loop through object table
 ;RAM:B535 A7                          and     a
 ;RAM:B536 18 EC                       jr      loc_B524
-;RAM:B536             ; End of function do_any_objs_intersect
-;RAM:B536
-;RAM:B538
-;RAM:B538             ; =============== S U B R O U T I N E =======================================
-;RAM:B538
-;RAM:B538
+*
+* End of function do_any_objs_intersect
+*
+* =============== S U B R O U T I N E =======================================
+*
 ;RAM:B538             is_object_not_ignored:
 ;RAM:B538 FD 7E 00                    ld      a, 0(iy)                                ; graphic no.
 ;RAM:B53B A7                          and     a                                       ; null?
@@ -860,8 +460,7 @@ upd_sprite_jmp_tbl:
 ;RAM:B540 2F                          cpl
 ;RAM:B541 E6 02                       and     #2                                      ; test bit 1
 ;RAM:B543 C9                          ret
-;RAM:B543             ; End of function is_object_not_ignored
-;RAM:B543
+* End of function is_object_not_ignored
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -874,8 +473,8 @@ shuffle_objects_required:
        ori  a,>0400
 ;RAM:B54B 4F                          ld      c, a                                    ; random 4-7
        movb a,@c
-loc_B54C:                                                       ; 14 items (13 swaps)
-;RAM:B54C 06 0D                       ld      b, #13
+loc_B54C:
+;RAM:B54C 06 0D                       ld      b, #13                                  ; 14 items (13 swaps)
        movb @b0dh,b
 ;RAM:B54E FD 21 7D C2                 ld      iy, #objects_required
        li   iy,objects_required
@@ -903,8 +502,7 @@ loc_B555:
 * End of function shuffle_objects_required
 *
 * ---------------------------------------------------------------------------
-* sparkles from the blocks in the cauldron room
-* at the end of the game
+* sparkles from the blocks in the cauldron room at the end of the game
 *
 upd_131_to_133:
        b    @no_update
@@ -1280,9 +878,9 @@ upd_150_151:
 *
 upd_22:
 ;RAM:B7A3 CD 5C B8                    call    set_both_deadly_flags
-;      TODO
+       bl   @set_both_deadly_flags
 ;RAM:B7A6 C3 FC C4                    jp      adj_m7_m12                              ; adj(-7,-12)
-       b    @adj_m7_m12
+       b    @adj_m7_m12_1
 * ---------------------------------------------------------------------------
 ;RAM:B7A9             ; spiked ball
 ;RAM:B7A9
@@ -1395,18 +993,19 @@ upd_176_177:
 ;RAM:B856             set_deadly_wipe_and_draw_flags:
 ;RAM:B856 CD 5C B8                    call    set_both_deadly_flags
 ;RAM:B859 C3 92 C6                    jp      set_wipe_and_draw_flags
-;RAM:B85C
-;RAM:B85C             ; =============== S U B R O U T I N E =======================================
-;RAM:B85C
-;RAM:B85C
-;RAM:B85C             set_both_deadly_flags:
+*
+* =============== S U B R O U T I N E =======================================
+*
+set_both_deadly_flags:
 ;RAM:B85C DD 7E 0D                    ld      a, 13(ix)
+       socb @ba0h,@13(ix)
 ;RAM:B85F F6 A0                       or      #0xA0 ; '�'                             ; fatal if you hit it, it hits you
 ;RAM:B861 DD 77 0D                    ld      13(ix), a
-;RAM:B864 C9                          ret
-;RAM:B864             ; End of function set_both_deadly_flags
-;RAM:B864
-;RAM:B865             ; ---------------------------------------------------------------------------
+       rt
+*
+* End of function set_both_deadly_flags
+*
+* ---------------------------------------------------------------------------
 ;RAM:B865             ; ball up/down
 ;RAM:B865
 upd_178_179:                                                    ; adjust (-4,-8)
@@ -2568,7 +2167,8 @@ upd_127:
 * ---------------------------------------------------------------------------
 ;RAM:BF21             ; START OF FUNCTION CHUNK FOR chk_and_init_transform
 ;RAM:BF21
-;RAM:BF21             init_death_sparkles:                                            ; twinkly transform
+init_death_sparkles:                                                                  ; twinkly transform
+;      TODO
 ;RAM:BF21 DD 36 00 70                 ld      0(ix), #112
 ;RAM:BF25 DD CB 07 CE                 set     1, 7(ix)                                ; ignore in 3D calcs
 ;RAM:BF29 18 06                       jr      loc_BF31
@@ -3684,6 +3284,7 @@ adj_m4_m12_1:
 * End of function adj_m4_m12
 * =============== S U B R O U T I N E =======================================
 adj_m6_m12:
+       mov  r11,*sp+
 ;RAM:C4DD 21 F4 FA                    ld      hl, #0xFAF4                             ; -6, -12
        li   hl,>faf4
 ;RAM:C4E0 C3 2B C7                    jp      set_pixel_adj
@@ -3734,13 +3335,16 @@ adj_m8_m12:
 * End of function adj_m8_m12
 * =============== S U B R O U T I N E =======================================
 adj_m7_m12:
+       mov  r11,*sp+
 ;RAM:C4FC 21 F4 F9                    ld      hl, #0xF9F4                             ; -7, -12
+adj_m7_m12_1:
        li   hl,>f9f4
 ;RAM:C4FF 18 DF                       jr      jp_set_pixel_adj
        jmp  jp_set_pixel_adj
 * End of function adj_m7_m12
 * =============== S U B R O U T I N E =======================================
 adj_m12_m12:
+       mov  r11,*sp+
 ;RAM:C501 21 F4 F4                    ld      hl, #0xF4F4                             ; -12, -12
        li   hl,>f4f4
 ;RAM:C504 18 DA                       jr      jp_set_pixel_adj
@@ -4517,32 +4121,37 @@ loc_C820:
 *
 * End of function is_near_to
 *
-;RAM:C823             ; ---------------------------------------------------------------------------
-;RAM:C823             ; sabreman legs
-;RAM:C823
+* ---------------------------------------------------------------------------
+* sabreman legs
 upd_16_to_21_24_to_29:
-       b    @no_update
 ;RAM:C823 CD DD C4                    call    adj_m6_m12
+       bl   @adj_m6_m12
 ;RAM:C826 18 03                       jr      upd_player_bottom
-;RAM:C828             ; ---------------------------------------------------------------------------
-;RAM:C828             ; wulf legs
-;RAM:C828
+       jmp  upd_player_bottom
+* ---------------------------------------------------------------------------
+* wulf legs
 upd_48_to_53_56_to_61:
-       b    @no_update
 ;RAM:C828 CD FC C4                    call    adj_m7_m12
-;RAM:C82B
-;RAM:C82B             upd_player_bottom:                                              ; dead?
-;RAM:C82B DD CB 0D 76                 bit     6, 13(ix)
+       bl   @adj_m7_m12
+*
+upd_player_bottom:
+;RAM:C82B DD CB 0D 76                 bit     6, 13(ix)                               ; dead?
+       movb @13(ix),r0
+       andi r0,>4000
 ;RAM:C82F 28 0D                       jr      Z, loc_C83E                             ; no, skip
+       jeq  loc_C83E
 ;RAM:C831 3A C3 5B                    ld      a, (all_objs_in_cauldron)
+       movb @all_objs_in_cauldron,a
 ;RAM:C834 A7                          and     a
 ;RAM:C835 20 07                       jr      NZ, loc_C83E
+       jne  loc_C83E
 ;RAM:C837 DD CB 2D F6                 set     6, 0x2D(ix)                             ; set dead top half
+       socb @b40h,@>2d(ix)
 ;RAM:C83B C3 21 BF                    jp      init_death_sparkles
-;RAM:C83E             ; ---------------------------------------------------------------------------
-;RAM:C83E
-;RAM:C83E             loc_C83E:                                                       ; returns to caller if transforming
-;RAM:C83E CD 06 C3                    call    chk_and_init_transform
+       b    @init_death_sparkles      ; TODO
+* ---------------------------------------------------------------------------
+loc_C83E:
+;RAM:C83E CD 06 C3                    call    chk_and_init_transform                  ; returns to caller if transforming
 ;RAM:C841 CD 22 D0                    call    check_user_input
 ;RAM:C844 CD 0E C0                    call    handle_pickup_drop
 ;RAM:C847 CD 9F C8                    call    handle_left_right
@@ -4550,19 +4159,19 @@ upd_48_to_53_56_to_61:
 ;RAM:C84D CD 69 C9                    call    handle_forward
 ;RAM:C850 CD 7A C8                    call    chk_plyr_OOB
 ;RAM:C853 30 18                       jr      NC, plyr_OOB
-;RAM:C855
-;RAM:C855             loc_C855:                                                       ; fudge near arch
-;RAM:C855 DD CB 27 CE                 set     1, 0x27(ix)
+loc_C855:
+;RAM:C855 DD CB 27 CE                 set     1, 0x27(ix)                             ; fudge near arch
 ;RAM:C859 CD A1 C9                    call    move_player                             ; does the moving
 ;RAM:C85C DD CB 27 8E                 res     1, 0x27(ix)                             ; reset fudge
 ;RAM:C860 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
 ;RAM:C863 D6 10                       sub     #0x10                                   ; entering room?
 ;RAM:C865 38 03                       jr      C, loc_C86A                             ; no, skip
 ;RAM:C867 DD 77 0C                    ld      12(ix), a                               ; dec entering room counter
-;RAM:C86A
-;RAM:C86A             loc_C86A:
+loc_C86A:
 ;RAM:C86A C3 92 C6                    jp      set_wipe_and_draw_flags
-;RAM:C86D             ; ---------------------------------------------------------------------------
+       b    @set_wipe_and_draw_flags
+* ---------------------------------------------------------------------------
+*
 ;RAM:C86D             ; when walking through arches
 ;RAM:C86D
 ;RAM:C86D             plyr_OOB:                                                       ; dZ
@@ -4857,21 +4466,26 @@ upd_48_to_53_56_to_61:
 ;RAM:C9FA             ; End of function move_player
 ;RAM:C9FA
 ;RAM:C9FB
-;RAM:C9FB             ; =============== S U B R O U T I N E =======================================
-;RAM:C9FB
-;RAM:C9FB
-;RAM:C9FB             calc_plyr_dXY:
+* =============== S U B R O U T I N E =======================================
+*
+calc_plyr_dXY:
+       mov  r11,*sp+
 ;RAM:C9FB DD 7E 09                    ld      a, 9(ix)                                ; dX
 ;RAM:C9FE DD 86 0E                    add     a, 14(ix)                               ; dX_adjust
 ;RAM:CA01 DD 77 09                    ld      9(ix), a
+       ab   @14(ix),@9(ix)
 ;RAM:CA04 DD 7E 0A                    ld      a, 10(ix)                               ; dY
 ;RAM:CA07 DD 86 0F                    add     a, 15(ix)                               ; dY_adj
 ;RAM:CA0A DD 77 0A                    ld      10(ix), a
+       ab   @15(ix),@10(ix)
 ;RAM:CA0D AF                          xor     a
+       clr  a
 ;RAM:CA0E DD 77 0E                    ld      14(ix), a                               ; zap adjustment
+       movb a,@14(ix)
 ;RAM:CA11 DD 77 0F                    ld      15(ix), a                               ; zap adjustment
+       movb a,@15(ix)
 ;RAM:CA14 01 32 CA                    ld      bc, #off_CA32
-;RAM:CA17
+       li   bc,off_CA32
 lookup_plyr_dXY:
 ;RAM:CA17 CD 1E CA                    call    get_sprite_dir
        bl   @get_sprite_dir
@@ -4910,41 +4524,54 @@ get_sprite_dir:
 *
 * End of function get_sprite_dir
 *
-;RAM:CA31             ; ---------------------------------------------------------------------------
-;RAM:CA32 3A CA       off_CA32:       .dw move_plyr_W                                 ; dX -= 3
-;RAM:CA34 43 CA                       .dw move_plyr_E                                 ; dX += 3
-;RAM:CA36 4A CA                       .dw move_plyr_N                                 ; dY += 3
-;RAM:CA38 53 CA                       .dw move_plyr_S                                 ; dY -= 3
-;RAM:CA3A             ; ---------------------------------------------------------------------------
-;RAM:CA3A
-;RAM:CA3A             move_plyr_W:                                                    ; dX
-;RAM:CA3A DD 7E 09                    ld      a, 9(ix)
+* ---------------------------------------------------------------------------
+off_CA32:
+       data move_plyr_W                                 ; dX -= 3
+       data move_plyr_E                                 ; dX += 3
+       data move_plyr_N                                 ; dY += 3
+       data move_plyr_S                                 ; dY -= 3
+* ---------------------------------------------------------------------------
+move_plyr_W:
+;RAM:CA3A DD 7E 09                    ld      a, 9(ix)                                 ; dX
+       movb @9(ix),a
 ;RAM:CA3D C6 FD                       add     a, #0xFD ; '�'                          ; -3
-;RAM:CA3F
-;RAM:CA3F             loc_CA3F:
+       sb   @b03h,a
+loc_CA3F:
 ;RAM:CA3F DD 77 09                    ld      9(ix), a
+       movb a,@9(ix)
 ;RAM:CA42 C9                          ret
-;RAM:CA43             ; ---------------------------------------------------------------------------
-;RAM:CA43
-;RAM:CA43             move_plyr_E:                                                    ; dX
-;RAM:CA43 DD 7E 09                    ld      a, 9(ix)
+       dect sp
+       mov  *sp,r11
+       rt
+* ---------------------------------------------------------------------------
+move_plyr_E:
+;RAM:CA43 DD 7E 09                    ld      a, 9(ix)                                ; dX
+       movb @9(ix),a
 ;RAM:CA46 C6 03                       add     a, #3                                   ; +3
+       ab   @b03h,a
 ;RAM:CA48 18 F5                       jr      loc_CA3F
-;RAM:CA4A             ; ---------------------------------------------------------------------------
-;RAM:CA4A
-;RAM:CA4A             move_plyr_N:                                                    ; dY
-;RAM:CA4A DD 7E 0A                    ld      a, 10(ix)
+       jmp  loc_CA3F
+* ---------------------------------------------------------------------------
+move_plyr_N:
+;RAM:CA4A DD 7E 0A                    ld      a, 10(ix)                               ; dY
+       movb @10(ix),a
 ;RAM:CA4D C6 03                       add     a, #3                                   ; +3
-;RAM:CA4F
-;RAM:CA4F             loc_CA4F:
+       ab   @b03h,a
+loc_CA4F:
 ;RAM:CA4F DD 77 0A                    ld      10(ix), a
+       movb a,@10(ix)
 ;RAM:CA52 C9                          ret
-;RAM:CA53             ; ---------------------------------------------------------------------------
-;RAM:CA53
-;RAM:CA53             move_plyr_S:                                                    ; dY
-;RAM:CA53 DD 7E 0A                    ld      a, 10(ix)
+       dect sp
+       mov  *sp,r11
+       rt
+* ---------------------------------------------------------------------------
+move_plyr_S:
+;RAM:CA53 DD 7E 0A                    ld      a, 10(ix)                                ; dY
+       movb @9(ix),a
 ;RAM:CA56 C6 FD                       add     a, #0xFD ; '�'                          ; -3
+       sb   @b03h,a
 ;RAM:CA58 18 F5                       jr      loc_CA4F
+       jmp  loc_CA4F
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -5656,81 +5283,108 @@ loc_CDD3:
 *
 * End of function set_draw_objs_overlapped
 *
-;RAM:CDDA             ; ---------------------------------------------------------------------------
-;RAM:CDDA             ; player (human top half)
-;RAM:CDDA
+* ---------------------------------------------------------------------------
+* player (human top half)
 upd_32_to_47:
-       b    @no_update
 ;RAM:CDDA CD F7 C4                    call    adj_m8_m12
+       bl   @adj_m8_m12
 ;RAM:CDDD 18 03                       jr      upd_player_top
-;RAM:CDDF             ; ---------------------------------------------------------------------------
-;RAM:CDDF             ; player (wulf top half)
-;RAM:CDDF
+       jmp  upd_player_top
+* ---------------------------------------------------------------------------
+* player (wulf top half)
 upd_64_to_79:
        b    @no_update
 ;RAM:CDDF CD 01 C5                    call    adj_m12_m12
-;RAM:CDE2             ;
-;RAM:CDE2             ; copies most information from bottom half object
-;RAM:CDE2             ; handles randomly looking around
-;RAM:CDE2
+       bl   @adj_m12_m12
+*
+* copies most information from bottom half object
+* handles randomly looking around
+*
 upd_player_top:
 ;RAM:CDE2 3A C3 5B                    ld      a, (all_objs_in_cauldron)
+       movb @all_objs_in_cauldron,a
 ;RAM:CDE5 A7                          and     a
 ;RAM:CDE6 20 07                       jr      NZ, loc_CDEF
+       jeq  loc_CDEF
 ;RAM:CDE8 DD CB 0D 76                 bit     6, 13(ix)
+       movb @13(ix),r0
+       andi r0,>4000
 ;RAM:CDEC C2 21 BF                    jp      NZ, init_death_sparkles
-;RAM:CDEF
-;RAM:CDEF             loc_CDEF:
+       jeq  loc_CDEF
+       b    @init_death_sparkles      ; TODO
+loc_CDEF:
 ;RAM:CDEF DD E5                       push    ix
 ;RAM:CDF1 D1                          pop     de                                      ; DE=top
+       mov  ix,de
 ;RAM:CDF2 21 E0 FF                    ld      hl, #0xFFE0                             ; -32
+       li   hl,-32
 ;RAM:CDF5 19                          add     hl, de
+       a    de,hl
 ;RAM:CDF6 E5                          push    hl                                      ; HL=bottom
 ;RAM:CDF7 FD E1                       pop     iy                                      ; IY=player bottom half
+       mov  hl,iy
 ;RAM:CDF9 13                          inc     de                                      ; DE=top+1
+       inc  de
 ;RAM:CDFA 23                          inc     hl                                      ; HL=bottom+1
+       inc  hl
 ;RAM:CDFB 01 07 00                    ld      bc, #7
+       li   bc,7
 ;RAM:CDFE ED B0                       ldir                                            ; copy x,y,z,w,d,h,flags
+       bl   @ldir
 ;RAM:CE00 DD 36 06 00                 ld      6(ix), #0                               ; height (top)
+       movb @b00h,@6(ix)
 ;RAM:CE04 DD CB 07 CE                 set     1, 7(ix)                                ; ignore in 3D calcs
+       socb @b02h,@7(ix)
 ;RAM:CE08 DD 7E 0D                    ld      a, 13(ix)                               ; flags13
+       movb @13(ix),a
 ;RAM:CE0B E6 0F                       and     #0xF                                    ; look around counter
+       andi a,>0f00
 ;RAM:CE0D 28 05                       jr      Z, loc_CE14                             ; maybe look around again?
+       jeq  loc_CE14
 ;RAM:CE0F DD 35 0D                    dec     13(ix)                                  ; dec look around counter
+       sb   one,@13(ix)
 ;RAM:CE12 18 13                       jr      loc_CE27
-;RAM:CE14             ; ---------------------------------------------------------------------------
-;RAM:CE14
-;RAM:CE14             loc_CE14:                                                       ; look in a random direction
-;RAM:CE14 3A A5 5B                    ld      a, (seed_3)
+       jmp  loc_CE27
+* ---------------------------------------------------------------------------
+loc_CE14:
+;RAM:CE14 3A A5 5B                    ld      a, (seed_3)                             ; look in a random direction
+       movb @seed_3,a
 ;RAM:CE17 FE 02                       cp      #2                                      ; one way?
+       cb   a,@b02h
 ;RAM:CE19 38 18                       jr      C, loc_CE33                             ; yes, go
+       jl   loc_CE33
 ;RAM:CE1B FE FE                       cp      #0xFE ; '�'                             ; other way?
+       cb   a,@bfeh
 ;RAM:CE1D 30 21                       jr      NC, loc_CE40                            ; yes, go
+       jhe  loc_CE40
 ;RAM:CE1F FD 7E 00                    ld      a, 0(iy)                                ; straight ahead
-;RAM:CE22
-;RAM:CE22             set_top_sprite:
+       movb *iy,a
+set_top_sprite:
 ;RAM:CE22 C6 10                       add     a, #16
+       ab   @b10h,a
 ;RAM:CE24 DD 77 00                    ld      0(ix), a                                ; graphic_no (top half)
-;RAM:CE27
-;RAM:CE27             loc_CE27:                                                       ; Z (bottom half)
-;RAM:CE27 FD 7E 03                    ld      a, 3(iy)
+       movb a,*ix
+loc_CE27:
+;RAM:CE27 FD 7E 03                    ld      a, 3(iy)                                ; Z (bottom half)
 ;RAM:CE2A C6 0C                       add     a, #12                                  ; directly above
 ;RAM:CE2C DD 77 03                    ld      3(ix), a                                ; store in top half
+       ab   @b0ch,@3(iy)
 ;RAM:CE2F CD 4D CD                    call    set_draw_objs_overlapped
+       bl   @set_draw_objs_overlapped
 ;RAM:CE32 C9                          ret
-;RAM:CE33             ; ---------------------------------------------------------------------------
-;RAM:CE33
-;RAM:CE33             loc_CE33:                                                       ; graphic_no (bottom half)
+       dect sp
+       mov  *sp,r11
+       bl   *r11
+* ---------------------------------------------------------------------------
+loc_CE33:                                                       ; graphic_no (bottom half)
 ;RAM:CE33 FD 7E 00                    ld      a, 0(iy)
 ;RAM:CE36 E6 F8                       and     #0xF8 ; '�'
 ;RAM:CE38 F6 06                       or      #6                                      ; look one way
-;RAM:CE3A
-;RAM:CE3A             loc_CE3A:                                                       ; look for 8 iterations
+loc_CE3A:                                                       ; look for 8 iterations
 ;RAM:CE3A DD 36 0D 08                 ld      13(ix), #8
 ;RAM:CE3E 18 E2                       jr      set_top_sprite
-;RAM:CE40             ; ---------------------------------------------------------------------------
-;RAM:CE40
-;RAM:CE40             loc_CE40:
+* ---------------------------------------------------------------------------
+loc_CE40:
 ;RAM:CE40 FD 7E 00                    ld      a, 0(iy)
 ;RAM:CE43 E6 F8                       and     #0xF8 ; '�'
 ;RAM:CE45 F6 07                       or      #7                                      ; look the other way
@@ -7949,7 +7603,7 @@ loc_D6A7:
 * $100 entries x 1 byte/entry = $100 bytes
 *
 ;RAM:D6B8 21 00 F1                    ld      hl, #0xF100
-       li   hl,>f400
+       li   hl,reverse_bytes_lookup_table
 loc_D6BB:
 ;RAM:D6BB 55                          ld      d, l                                    ; byte offset from $F100
        movb @l,d
@@ -8699,8 +8353,8 @@ loc_D8A2:
        dect sp
        mov  *sp,hl
 ;RAM:D8BC 06 F1                       ld      b, #0xF1 ; '�'
-;       movb @bf1h,b
-       movb @bf4h,b                   ; Mirrored bytes stored at >F400 on TI
+       li   r0,reverse_bytes_lookup_table
+       movb r0,b
 ;RAM:D8BE D9                          exx
        bl   @exx
 loc_D8BF:
@@ -9106,6 +8760,7 @@ b68h   byte >68
 b60h   byte >60
 b80h   byte >80
 b8ch   byte >8c
+ba0h   byte >a0
 bb0h   byte >b0
 bb8h   byte >b8
 bbah   byte >ba
@@ -9115,7 +8770,7 @@ bd0h   byte >d0
 be1h   byte >e1
 bf0h   byte >f0
 bf1h   byte >f1
-bf4h   byte >f4
+bfeh   byte >fe
 bffh   byte >ff
 
 *===========================================================================
@@ -9124,18 +8779,420 @@ bffh   byte >ff
 *
        text 'COPYRIGHT 1984 A.C.G.'
 *
-* end of 'RAM'
-*
 *===========================================================================
 *
-* Segment type: Regular
-* .org 0xD8F3
+* Video memory buffer, length >1800
+*
 vidbuf:
        equ >6000
 *
-* end of 'VRAM'
 *===========================================================================
 *
+* Upper memory - tables and data
+*
+       aorg >A000
+*
+* Variables from here are zeroed at start of game
+* Stack grows down from here on ZX Specturm
+*
+seed_1:
+       data 0
+seed_2:
+       data 0
+* bit   3 : directional
+* bit 2-1 : 00=keybd, 01=kempston, 10=cursor, 11=i/f-ii
+user_input_method:
+       byte 0
+seed_3:
+       byte 0
+old_input_method:
+       data 0
+*
+* Variables from here are zeroed each game
+*
+tmp_SP:                                ; Swapped tmp_SP and objs_wiped_cnt
+       data 0
+objs_wiped_cnt:
+       byte 0
+room_size_X:
+       byte 0
+room_size_Y:
+       byte 0
+curr_room_attrib:
+       byte 0
+room_size_Z:
+       byte 0
+portcullis_moving:
+       byte 0
+portcullis_move_cnt:
+       byte 0
+transform_flag_graphic:
+       byte 0
+not_1st_screen:
+       byte 0
+pickup_drop_pressed:
+       byte 0
+objects_carried_changed:
+       byte 0
+* b5=???
+* b4=pickup/drop
+* b3=jump
+* b2=forward
+* b1=right
+* b0=left
+user_input:
+       byte 0
+tmp_attrib:
+       byte 0
+render_status_info:
+       byte 0
+suppress_border:
+       byte 0
+days:
+       byte 0
+lives:
+       byte 0
+objects_put_in_cauldron:
+       byte 0
+fire_seed:
+       byte 0
+ball_bounce_height:
+       byte 0
+rendered_objs_cnt:
+       byte 0
+is_spike_ball_dropping:
+       byte 0
+disable_spike_ball_drop:
+       byte 0
+tmp_dZ:
+       byte 0
+tmp_bouncing_ball_dZ:
+       byte 0
+all_objs_in_cauldron:
+       byte 0
+obj_dropping_into_cauldron:
+       byte 0
+rising_blocks_z:
+       byte 0
+num_scrns_visited:
+       byte 0
+audio_played:                          ; Moved from after render_obj_2
+       byte 0
+gfxbase_8x8:
+       data 0
+percent_msw:
+       byte 0
+percent_lsw:
+       byte 0
+tmp_objects_to_draw:
+       data 0
+render_obj_1:
+       data 0
+render_obj_2:
+       data 0
+debounce_5:
+       byte 0
+cant_drop:
+       bss 5
+inventory:
+       bss 4
+objects_carried:
+       bss 7
+unk_5BE3:
+       bss 1
+object_carried_2:
+       bss 3
+end_of_objects_carried:
+       bss 1
+*
+* table of bits (flags) denoting room has been visited
+* - used only in ratings calculations
+*
+scrn_visited:
+       bss 32
+**
+* Table of objects (40 max)
+*
+* - 00,01 player sprites (00=bottom, 01=top)
+* - 02,03 special object sprites
+* - 04-39 background, then foreground
+*
+* +0 graphic_no.
+* +1 x (center)
+* +2 y (center)
+* +3 z (bottom)
+* +4 width (X radius)
+* +5 depth (Y radius)
+* +6 height
+* +7 flags
+*    - 7=vflip sprite
+*    - 6=hflip sprite
+*    - 5=wipe
+*    - 4=draw
+*    - 3=auto-adjust near arches (player only)
+*    - 2=moveable
+*    - 1=ignore in 3D calculations
+*    - 0=is near arch (player only)
+* +8 screen
+* +9 dX
+* +10 dY
+* +11 dZ
+* +12 counter and flags
+*     - 7-4=counter when entering screen
+*     - 3=jumping
+*     - 2=Z out-of-bounds
+*     - 1=Y out-of-bounds
+*     - 0=X out-of-bounds
+* +13 per-object info/flags
+*     - direction and counters for looking, turning
+*     - 7=deadly if object hits player
+*     - 6=dead
+*     - 5=deadly if player hits object
+*     - 4=(not used)
+*     - 3=triggered (dropping, collapsing blocks)
+*     - 2=up (bouncing ball), dropping (spiked ball)
+*     - 1=north (NS fire)
+*     - 0=east (WE fire, EW guard), just dropped (spec objs)
+* +14 d_x_adj
+* +15 d_y_adj
+* +16-17 ptr object table entry or tmp player graphic_no
+* +18 pixel X adjustment
+* +19 pixel Y adjustment
+* +20-23 unused
+* +24 sprite data width (bytes)
+* +25 sprite data height (lines)
+* +26 pixel X
+* +27 pixel Y
+* +28 old sprite data width (bytes)
+* +29 old sprite data height (lines)
+* +30 old pixel X
+* +31 old pixel Y
+*
+graphic_objs_tbl:
+       bss 32                          ; 00,01 player sprites (00=bottom, 01=top)
+       bss 32
+special_objs_here:
+       bss 32                          ; 02,03 special object sprites
+special_objs_here_1:
+       bss 32
+other_objs_here:
+       bss 32                          ; 04-39 background, then foreground
+       bss 1120
+
+* End of 'SCRATCH'
+* ===========================================================================
+*
+* Segment type: Regular
+* .org 0x6108
+*
+       copy "font.a99"                 ; Must follow object table
+       copy "locations.a99"
+       copy "block-types.a99"
+       copy "background-types.a99"
+       copy "special-objects.a99"
+       copy "sprites.a99"
+
+* ---------------------------------------------------------------------------
+*
+* Update sprite jump table
+*
+upd_sprite_jmp_tbl:
+       data no_update
+       data no_update                                   ; (unused)
+       data upd_2_4                                     ; stone arch (near side)
+       data upd_3_5                                     ; stone arch (far side)
+       data upd_2_4                                     ; tree arch (near side)
+       data upd_3_5                                     ; tree arch (far side)
+       data upd_6_7                                     ; rock
+       data upd_6_7                                     ; block
+       data upd_8                                       ; portcullis (stationary)
+       data upd_9                                       ; portcullis (moving)
+       data upd_10                                      ; bricks
+       data upd_11                                      ; more bricks
+       data upd_12_to_15                                ; even more bricks
+       data upd_12_to_15                                ;   "
+       data upd_12_to_15                                ;   "
+       data upd_12_to_15                                ;   "
+       data upd_16_to_21_24_to_29                       ; human legs
+       data upd_16_to_21_24_to_29
+       data upd_16_to_21_24_to_29
+       data upd_16_to_21_24_to_29
+       data upd_16_to_21_24_to_29
+       data upd_16_to_21_24_to_29
+       data upd_22                                      ; gargoyle
+       data upd_23                                      ; spikes
+       data upd_16_to_21_24_to_29
+       data upd_16_to_21_24_to_29
+       data upd_16_to_21_24_to_29
+       data upd_16_to_21_24_to_29
+       data upd_16_to_21_24_to_29
+       data upd_16_to_21_24_to_29
+       data upd_30_31_158_159                           ; guard (moving NSEW) (top half)
+       data upd_30_31_158_159                           ;   "
+       data upd_32_to_47                                ; player (top half)
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_32_to_47
+       data upd_48_to_53_56_to_61                       ;   wulf legs
+       data upd_48_to_53_56_to_61
+       data upd_48_to_53_56_to_61
+       data upd_48_to_53_56_to_61
+       data upd_48_to_53_56_to_61
+       data upd_48_to_53_56_to_61
+       data upd_54                                      ; block (moving EW)
+       data upd_55                                      ; block (moving NS)
+       data upd_48_to_53_56_to_61
+       data upd_48_to_53_56_to_61
+       data upd_48_to_53_56_to_61
+       data upd_48_to_53_56_to_61
+       data upd_48_to_53_56_to_61
+       data upd_48_to_53_56_to_61
+       data upd_62                                      ; another block
+       data upd_63                                      ; spiked ball
+       data upd_64_to_79                                ; player (wulf top half)
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_64_to_79
+       data upd_80_to_83                                ; ghost
+       data upd_80_to_83                                ;   "
+       data upd_80_to_83                                ;   "
+       data upd_80_to_83                                ;   "
+       data upd_84                                      ; table
+       data upd_85                                      ; chest
+       data upd_86_87                                   ; fire (EW)
+       data upd_86_87                                   ; fire (EW)
+       data upd_88_to_90                                ; sun
+       data upd_88_to_90                                ; moon
+       data upd_88_to_90                                ; frame (left)
+       data upd_91                                      ; block (dropping)
+       data upd_92_to_95                                ; human/wulf transform
+       data upd_92_to_95
+       data upd_92_to_95
+       data upd_92_to_95
+       data upd_96_to_102                               ; diamond
+       data upd_96_to_102                               ; poison
+       data upd_96_to_102                               ; boot
+       data upd_96_to_102                               ; chalice
+       data upd_96_to_102                               ; cup
+       data upd_96_to_102                               ; bottle
+       data upd_96_to_102                               ; crystal ball
+       data upd_103                                     ; extra life
+       data upd_104_to_110                              ; special object (diamond)
+       data upd_104_to_110                              ;   " (poison)
+       data upd_104_to_110                              ;   " (boot)
+       data upd_104_to_110                              ;   " (chalice)
+       data upd_104_to_110                              ;   " (cup)
+       data upd_104_to_110                              ;   " (bottle)
+       data upd_104_to_110                              ;   " (crytsal ball)
+       data upd_111                                     ; final sparkles in cauldron
+       data upd_112_to_118_184                          ; death sparkles
+       data upd_112_to_118_184                          ;   "
+       data upd_112_to_118_184                          ;   "
+       data upd_112_to_118_184                          ;   "
+       data upd_112_to_118_184                          ;   "
+       data upd_112_to_118_184                          ;   "
+       data upd_112_to_118_184                          ;   "
+       data upd_119                                     ; last death sparkle
+       data upd_120_to_126                              ; player appears sparkles
+       data upd_120_to_126                              ;   "
+       data upd_120_to_126                              ;   "
+       data upd_120_to_126                              ;   "
+       data upd_120_to_126                              ;   "
+       data upd_120_to_126                              ;   "
+       data upd_120_to_126                              ;   "
+       data upd_127                                     ; last player appears sparkle
+       data upd_128_to_130                              ; tree wall
+       data upd_128_to_130                              ;   "
+       data upd_128_to_130                              ;   "
+       data upd_131_to_133                              ; sparkles in the cauldron room at end of game
+       data upd_131_to_133                              ;   "
+       data upd_131_to_133                              ;   "
+       data no_update
+       data no_update
+       data no_update
+       data no_update
+       data no_update
+       data no_update
+       data no_update
+       data upd_141                                     ; cauldron (bottom)
+       data upd_142                                     ; cauldron (top)
+       data upd_143                                     ; block (collapsing)
+       data upd_144_to_149_152_to_157                   ; guard & wizard (bottom half)
+       data upd_144_to_149_152_to_157                   ;   "
+       data upd_144_to_149_152_to_157                   ;   "
+       data upd_144_to_149_152_to_157                   ;   "
+       data upd_144_to_149_152_to_157                   ;   "
+       data upd_144_to_149_152_to_157                   ;   "
+       data upd_150_151                                 ; guard (EW) (top half)
+       data upd_150_151                                 ;   "
+       data upd_144_to_149_152_to_157                   ;   "
+       data upd_144_to_149_152_to_157                   ;   "
+       data upd_144_to_149_152_to_157                   ;   "
+       data upd_144_to_149_152_to_157                   ;   "
+       data upd_144_to_149_152_to_157                   ;   "
+       data upd_144_to_149_152_to_157                   ;   "
+       data upd_30_31_158_159                           ; wizard (top half)
+       data upd_30_31_158_159                           ;   "
+       data upd_160_to_163                              ; cauldron bubbles
+       data upd_160_to_163                              ;   "
+       data upd_160_to_163                              ;   "
+       data upd_160_to_163                              ;   "
+       data upd_164_to_167                              ; repel spell
+       data upd_164_to_167                              ;   "
+       data upd_164_to_167                              ;   "
+       data upd_164_to_167                              ;   "
+       data upd_168_to_175                              ; diamond
+       data upd_168_to_175                              ; poison
+       data upd_168_to_175                              ; boot
+       data upd_168_to_175                              ; chalice
+       data upd_168_to_175                              ; cup
+       data upd_168_to_175                              ; bottle
+       data upd_168_to_175                              ; crystal ball
+       data upd_168_to_175                              ; extra life
+       data upd_176_177                                 ; fire (stationary) (not used)
+       data upd_176_177                                 ; fire (stationary) (not used)
+       data upd_178_179                                 ; ball up/down
+       data upd_178_179                                 ; ball up/down
+       data upd_180_181                                 ; fire (NS)
+       data upd_180_181                                 ; fire (NS)
+       data upd_182_183                                 ; ball (bouncing around)
+       data upd_182_183                                 ;   "
+       data upd_112_to_118_184                          ; death sparkles
+       data upd_185_187                                 ; last obj in cauldron sparkle
+       data no_update
+       data upd_185_187                                 ; last obj in cauldron sparkle
+
+* ---------------------------------------------------------------------------
+*
+* Reverse bytes lookup table
+*
+reverse_bytes_lookup_table equ >FF00
+*
+* ---------------------------------------------------------------------------
 *
 * end of file
 *
