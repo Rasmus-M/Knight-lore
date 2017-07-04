@@ -2533,29 +2533,39 @@ multiple_print_sprite_loop:
 *
 * ---------------------------------------------------------------------------
 *
-;RAM:BEFE             ; player appear sparkles
-;RAM:BEFE
+* player appear sparkles
 upd_120_to_126:
-       b    @no_update
 ;RAM:BEFE CD D8 C4                    call    adj_m4_m12
+       bl   @adj_m4_m12
 ;RAM:BF01 3A A2 5B                    ld      a, (seed_2)
+       movb @seed_2,a
 ;RAM:BF04 2F                          cpl
+       inv  a
 ;RAM:BF05 E6 01                       and     #1
+       andi a,>0100
 ;RAM:BF07 C0                          ret     NZ
+       jeq  !
+       dect sp
+       mov  *sp,r11
+       rt
 ;RAM:BF08 DD 34 00                    inc     0(ix)                                   ; next sprite
+!      ab   one,*ix
 ;RAM:BF0B CD 19 B4                    call    audio_B419                              ; make a sound?
 ;RAM:BF0E C3 92 C6                    jp      set_wipe_and_draw_flags
-;RAM:BF11             ; ---------------------------------------------------------------------------
-;RAM:BF11             ; last player appears sparkle
-;RAM:BF11
+       b    @set_wipe_and_draw_flags
+* ---------------------------------------------------------------------------
+* last player appears sparkle
 upd_127:
-       b    @no_update
 ;RAM:BF11 CD D8 C4                    call    adj_m4_m12
+       bl   @adj_m4_m12
 ;RAM:BF14 DD CB 0D B6                 res     6, 13(ix)
+       szcb @b40h,@13(ix)
 ;RAM:BF18 DD 7E 10                    ld      a, 16(ix)                               ; player graphic_no
 ;RAM:BF1B DD 77 00                    ld      0(ix), a                                ; set as object graphic_no
+       movb @16(ix),*ix
 ;RAM:BF1E C3 D5 AF                    jp      jump_to_upd_object
-;RAM:BF21             ; ---------------------------------------------------------------------------
+       b    @jump_to_upd_object
+* ---------------------------------------------------------------------------
 ;RAM:BF21             ; START OF FUNCTION CHUNK FOR chk_and_init_transform
 ;RAM:BF21
 ;RAM:BF21             init_death_sparkles:                                            ; twinkly transform
@@ -3079,7 +3089,7 @@ upd_103:
 ;RAM:C1F1
 upd_104_to_110:
 ;RAM:C1F1 CD D8 C4                    call    adj_m4_m12
-       b    @adj_m4_m12
+       b    @adj_m4_m12_1
 ;RAM:C1F4 DD 7E 01                    ld      a, 1(ix)                                ; X
 ;RAM:C1F7 D6 80                       sub     #128
 ;RAM:C1F9 28 07                       jr      Z, loc_C202
@@ -3171,7 +3181,7 @@ objects_required:
 ;RAM:C28B
 upd_96_to_102:
 ;RAM:C28B CD D8 C4                    call    adj_m4_m12
-       b    @adj_m4_m12
+       b    @adj_m4_m12_1
 ;RAM:C28E CD 00 C7                    call    dec_dZ_and_update_XYZ
 ;RAM:C291 DD CB 0D 46                 bit     0, 13(ix)                               ; just dropped?
 ;RAM:C295 20 04                       jr      NZ, loc_C29B                            ; no, skip
@@ -3665,7 +3675,9 @@ upd_128_to_130:
 * End of function upd_128_to_130
 * =============== S U B R O U T I N E =======================================
 adj_m4_m12:
+       mov  r11,*sp+
 ;RAM:C4D8 21 F4 FC                    ld      hl, #0xFCF4                             ; -4, -12
+adj_m4_m12_1:
        li   hl,>fcf4
 ;RAM:C4DB 18 03                       jr      jp_set_pixel_adj
        jmp  jp_set_pixel_adj
@@ -4130,15 +4142,15 @@ upd_8:
 ;RAM:C691             loc_C691:                                                       ; flag portculis moving
 ;RAM:C691 34                          inc     (hl)
 ;RAM:C692
-;RAM:C692             ; =============== S U B R O U T I N E =======================================
-;RAM:C692
-;RAM:C692
-;RAM:C692             set_wipe_and_draw_flags:
+* =============== S U B R O U T I N E =======================================
+set_wipe_and_draw_flags:
 ;RAM:C692 DD 7E 07                    ld      a, 7(ix)                                ; flags
 ;RAM:C695 F6 30                       or      #0x30 ; '0'                             ; set WIPE & DRAW
 ;RAM:C697 DD 77 07                    ld      7(ix), a
+       socb @b30h,@7(ix)
 ;RAM:C69A C3 4D CD                    jp      set_draw_objs_overlapped
-;RAM:C69A             ; End of function set_wipe_and_draw_flags
+       b    @set_draw_objs_overlapped_1
+* End of function set_wipe_and_draw_flags
 ;RAM:C69A
 ;RAM:C69D
 ;RAM:C69D             ; =============== S U B R O U T I N E =======================================
@@ -5432,133 +5444,218 @@ get_sprite_dir:
 ;RAM:CD32 C9                          ret
 ;RAM:CD32             ; End of function adj_dY_for_out_of_bounds
 ;RAM:CD32
-;RAM:CD33
-;RAM:CD33             ; =============== S U B R O U T I N E =======================================
-;RAM:CD33
-;RAM:CD33
-;RAM:CD33             calc_2d_info:
+*
+* =============== S U B R O U T I N E =======================================
+*
+calc_2d_info:
+       mov  r11,*sp+
 ;RAM:CD33 CD C9 D6                    call    calc_pixel_XY
+       bl   @calc_pixel_XY
 ;RAM:CD36 CD EF D6                    call    flip_sprite
+       bl   @flip_sprite
 ;RAM:CD39 DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
+       movb @26(ix),a
 ;RAM:CD3C E6 07                       and     #7                                      ; bit offset
+       andi a,>0700
+       movb a,r0                      ; preserve flags
 ;RAM:CD3E 1A                          ld      a, (de)                                 ; ptr sprite data (width)
 ;RAM:CD3F 13                          inc     de                                      ; ptr height
+       movb *de+,a
 ;RAM:CD40 28 01                       jr      Z, loc_CD43
+       movb r0,r0
+       jeq  loc_CD43
 ;RAM:CD42 3C                          inc     a
-;RAM:CD43
-;RAM:CD43             loc_CD43:
+       ab   one,a
+loc_CD43:
 ;RAM:CD43 E6 0F                       and     #0xF
+       andi a,>0f00
 ;RAM:CD45 DD 77 18                    ld      24(ix), a                               ; sprite data width (bytes)
+       movb a,@24(ix)
 ;RAM:CD48 1A                          ld      a, (de)
+       movb *de,a
 ;RAM:CD49 DD 77 19                    ld      25(ix), a                               ; sprite data height
+       movb a,@25(ix)
 ;RAM:CD4C C9                          ret
-;RAM:CD4C             ; End of function calc_2d_info
-;RAM:CD4C
-;RAM:CD4D
-;RAM:CD4D             ; =============== S U B R O U T I N E =======================================
-;RAM:CD4D
-;RAM:CD4D
-;RAM:CD4D             set_draw_objs_overlapped:
+       dect sp
+       mov  *sp,r11
+       b    *r11
+*
+* End of function calc_2d_info
+*
+* =============== S U B R O U T I N E =======================================
+*
+set_draw_objs_overlapped:
+       mov  r11,*sp+
 ;RAM:CD4D FD 21 08 5C                 ld      iy, #graphic_objs_tbl
+set_draw_objs_overlapped_1:
+       li   iy,graphic_objs_tbl
 ;RAM:CD51 CD 33 CD                    call    calc_2d_info
+       bl   @calc_2d_info
 ;RAM:CD54 06 28                       ld      b, #40                                  ; max objects
+       movb @b28h,b
 ;RAM:CD56 DD 7E 1A                    ld      a, 26(ix)                               ; pixelX
+       movb @26(ix),a
 ;RAM:CD59 0F                          rrca
 ;RAM:CD5A 0F                          rrca
 ;RAM:CD5B 0F                          rrca
+       srl  a,3
 ;RAM:CD5C E6 1F                       and     #0x1F                                   ; byte address
+       andi a,>1f00
 ;RAM:CD5E 6F                          ld      l, a
+       movb a,@l
 ;RAM:CD5F DD 7E 1E                    ld      a, 30(ix)                               ; old pixelX
+       movb @30(ix),a
 ;RAM:CD62 0F                          rrca
 ;RAM:CD63 0F                          rrca
 ;RAM:CD64 0F                          rrca
+       srl a,3
 ;RAM:CD65 E6 1F                       and     #0x1F                                   ; bytes address
+       andi a,>1f00
 ;RAM:CD67 67                          ld      h, a
+       movb a,h
 ;RAM:CD68 BD                          cp      l
+       cb   a,@l
 ;RAM:CD69 38 01                       jr      C, loc_CD6C
+       jl   loc_CD6C                  ; TODO: test if this works
 ;RAM:CD6B 7D                          ld      a, l
-;RAM:CD6C
-;RAM:CD6C             loc_CD6C:                                                       ; left extremity (byte address)
-;RAM:CD6C 5F                          ld      e, a
+       movb @l,a
+loc_CD6C:
+;RAM:CD6C 5F                          ld      e, a                                    ; left extremity (byte address)
+       movb a,@e
 ;RAM:CD6D 7D                          ld      a, l                                    ; byte address
+       movb @l,a
 ;RAM:CD6E DD 86 18                    add     a, 24(ix)                               ; + data width (bytes)
+       ab   @24(ix),a
 ;RAM:CD71 6F                          ld      l, a
+       movb a,@l
 ;RAM:CD72 7C                          ld      a, h                                    ; old byte address
+       movb h,a
 ;RAM:CD73 DD 86 1C                    add     a, 28(ix)                               ; + old data width bytes
+       ab   @28(ix),a
 ;RAM:CD76 BD                          cp      l
+       cb   a,@l
 ;RAM:CD77 30 01                       jr      NC, loc_CD7A
+       jhe  loc_CD7A                  ; TODO: test if this works
 ;RAM:CD79 7D                          ld      a, l
-;RAM:CD7A
-;RAM:CD7A             loc_CD7A:                                                       ; combined width old & new
-;RAM:CD7A 93                          sub     e
+       movb @l,a
+loc_CD7A:
+;RAM:CD7A 93                          sub     e                                       ; combined width old & new
+       sb   @e,a
 ;RAM:CD7B 57                          ld      d, a
+       movb a,d
 ;RAM:CD7C DD 7E 1B                    ld      a, 27(ix)                               ; pixel Y
+       movb @27(ix),a
 ;RAM:CD7F DD BE 1F                    cp      31(ix)                                  ; old pixelY
+       cb   @a,@31(ix)
 ;RAM:CD82 38 03                       jr      C, loc_CD87
+       jl   loc_CD87                  ; TODO: test if this works
 ;RAM:CD84 DD 7E 1F                    ld      a, 31(ix)                               ; old pixelY
-;RAM:CD87
-;RAM:CD87             loc_CD87:                                                       ; lowest Y
-;RAM:CD87 6F                          ld      l, a
+       movb @31(ix),a
+loc_CD87:
+;RAM:CD87 6F                          ld      l, a                                    ; lowest Y
+       movb a,@l
 ;RAM:CD88 DD 7E 1B                    ld      a, 27(ix)                               ; pixel Y
+       movb   @27(ix),a
 ;RAM:CD8B DD 86 19                    add     a, 25(ix)                               ; + data height (lines)
+       ab   @25(ix),a
 ;RAM:CD8E 67                          ld      h, a
+       movb a,h
 ;RAM:CD8F DD 7E 1F                    ld      a, 31(ix)                               ; old pixelY
+       movb @31(ix),a
 ;RAM:CD92 DD 86 1D                    add     a, 29(ix)                               ; + old data height (lines)
+       ab   @29(ix),a
 ;RAM:CD95 BC                          cp      h
+       cb   a,h
 ;RAM:CD96 30 01                       jr      NC, loc_CD99
+       jhe   loc_CD99                 ; TODO: test if this works
 ;RAM:CD98 7C                          ld      a, h
-;RAM:CD99
-;RAM:CD99             loc_CD99:
+       movb h,a
+loc_CD99:
 ;RAM:CD99 95                          sub     l
+       ab   @l,a
 ;RAM:CD9A 67                          ld      h, a                                    ; combined height (lines)
-;RAM:CD9B
-;RAM:CD9B             test_overlap_obj:                                               ; graphic_no
-;RAM:CD9B FD 7E 00                    ld      a, 0(iy)
+       movb a,h
+test_overlap_obj:
+;RAM:CD9B FD 7E 00                    ld      a, 0(iy)                                ; graphic_no
+       movb *iy,a
 ;RAM:CD9E A7                          and     a                                       ; null?
 ;RAM:CD9F 28 21                       jr      Z, next_overlap_obj                     ; yes, skip
+       jeq  next_overlap_obj
 ;RAM:CDA1 FD CB 07 66                 bit     4, 7(iy)                                ; DRAW flag already set?
+       movb @7(ix),r0
+       andi r0,>1000
 ;RAM:CDA5 20 1B                       jr      NZ, next_overlap_obj                    ; yes, skip
+       jeq  next_overlap_obj
 ;RAM:CDA7 FD 7E 1A                    ld      a, 26(iy)                               ; pixel X
+       movb @26(iy),a
 ;RAM:CDAA 0F                          rrca
 ;RAM:CDAB 0F                          rrca
 ;RAM:CDAC 0F                          rrca
+       sla  a,3
 ;RAM:CDAD E6 1F                       and     #0x1F                                   ; byte address of pixel
+       andi a,>1f00
 ;RAM:CDAF 93                          sub     e                                       ; < left extremity (to the left)?
 ;RAM:CDB0 38 1A                       jr      C, loc_CDCC                             ; yes, go
+       cb   a,@e                       ; TODO: test if this works
+       jhe  !
+       sb   @e,a
+       jmp  loc_CDCC
+!      sb   @e,a
 ;RAM:CDB2 BA                          cp      d                                       ; < right extermity (overlapping)?
-;RAM:CDB3
-;RAM:CDB3             loc_CDB3:                                                       ; no, skip
-;RAM:CDB3 30 0D                       jr      NC, next_overlap_obj
+       cb   a,d
+loc_CDB3:
+;RAM:CDB3 30 0D                       jr      NC, next_overlap_obj                    ; no, skip
+       jhe  next_overlap_obj
 ;RAM:CDB5 FD 7E 1B                    ld      a, 27(iy)                               ; pixel Y
+       movb @27(iy),a
 ;RAM:CDB8 95                          sub     l                                       ; < lowest Y (below)?
 ;RAM:CDB9 38 18                       jr      C, loc_CDD3                             ; yes, go
+       cb   a,@l                      ; TODO: test if this works
+       jhe  !
+       sb   @l,a
+       jmp  loc_CDD3
+!      sb   @l,a
 ;RAM:CDBB BC                          cp      h                                       ; < height (overlapping)?
-;RAM:CDBC
-;RAM:CDBC             loc_CDBC:                                                       ; no, skip
-;RAM:CDBC 30 04                       jr      NC, next_overlap_obj
+       cb   a,h
+loc_CDBC:
+;RAM:CDBC 30 04                       jr      NC, next_overlap_obj                    ; no, skip
+       jhe  next_overlap_obj
 ;RAM:CDBE FD CB 07 E6                 set     4, 7(iy)                                ; set DRAW flag
-;RAM:CDC2
-;RAM:CDC2             next_overlap_obj:
+       socb @b10h,@7(iy)
+next_overlap_obj:
 ;RAM:CDC2 D9                          exx
 ;RAM:CDC3 11 20 00                    ld      de, #32                                 ; entry size
 ;RAM:CDC6 FD 19                       add     iy, de                                  ; next entry
 ;RAM:CDC8 D9                          exx
+       ai   iy,32
 ;RAM:CDC9 10 D0                       djnz    test_overlap_obj
+       sb   one,b
+       jne  test_overlap_obj
 ;RAM:CDCB C9                          ret
-;RAM:CDCC             ; ---------------------------------------------------------------------------
-;RAM:CDCC
-;RAM:CDCC             loc_CDCC:
+       dect sp
+       mov  *sp,r11
+       b    *r11
+* ---------------------------------------------------------------------------
+loc_CDCC:
 ;RAM:CDCC ED 44                       neg
+       inv  a
+       ab   one,a
 ;RAM:CDCE FD BE 18                    cp      24(iy)                                  ; data width (bytes)
+       cb   a,@24(iy)
 ;RAM:CDD1 18 E0                       jr      loc_CDB3
-;RAM:CDD3             ; ---------------------------------------------------------------------------
-;RAM:CDD3
-;RAM:CDD3             loc_CDD3:
+       jmp  loc_CDB3
+* ---------------------------------------------------------------------------
+loc_CDD3:
 ;RAM:CDD3 ED 44                       neg
+       inv  a
+       ab   one,a
 ;RAM:CDD5 FD BE 19                    cp      25(iy)                                  ; data height (lines)
+       cb   a,@24(iy)
 ;RAM:CDD8 18 E2                       jr      loc_CDBC
-;RAM:CDD8             ; End of function set_draw_objs_overlapped
-;RAM:CDD8
+       jmp  loc_CDBC
+*
+* End of function set_draw_objs_overlapped
+*
 ;RAM:CDDA             ; ---------------------------------------------------------------------------
 ;RAM:CDDA             ; player (human top half)
 ;RAM:CDDA
@@ -6352,6 +6449,14 @@ start_loc_2:
 byte_D191:
        byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 plyr_spr_init_data:
+* +0 graphic_no.
+* +1 x (center)
+* +2 y (center)
+* +3 z (bottom)
+* +4 width (X radius)
+* +5 depth (Y radius)
+* +6 height
+* +7 flags
        byte >78, >80, >80, >80, >05, >05, >17, >1C
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
 *
@@ -6374,13 +6479,11 @@ init_start_location:
 ;RAM:D1C2 ED B0                       ldir
        bl   @ldir
 ;RAM:D1C4 3E 12                       ld      a, #18                                  ; graphic_no (player top half)
-       li   a,>1200
 ;RAM:D1C6 32 71 D1                    ld      (byte_D171), a                          ; plyr_spr_1_scratchpad (byte 16)
-       movb a,@byte_D171
+       movb @b12h,@byte_D171
 ;RAM:D1C9 3E 22                       ld      a, #34                                  ; graphic_no (player bottom half)
-       li   a,>22
 ;RAM:D1CB 32 91 D1                    ld      (byte_D191), a                          ; plyr_spr_2_scratchpad (byte 16)
-       movb a,@byte_D191
+       movb @b22h,@byte_D191
 ;RAM:D1CE 3A A0 5B                    ld      a, (seed_1)
        movb @seed_1,a
 ;RAM:D1D1 E6 03                       and     #3                                      ; random 0-3
@@ -6408,8 +6511,9 @@ init_start_location:
 *
 * ---------------------------------------------------------------------------
 start_locations:
-;       byte >2F, >44, >B3, >8F
-       byte >6d,>27,>d0,>0a            ; Rooms with special objects
+       byte >2F, >44, >B3, >8F         ; Standard
+;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
+;       byte 136,136,136,136            ; Cauldron room
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -7511,7 +7615,7 @@ wipe_next_object:
 ;RAM:D5D2 DD 96 1E                    sub     30(ix)                                  ; old pixel X
        cb   a,@30(ix)
 ;RAM:D5D5 DA 49 D6                    jp      C, loc_D649
-       jhe loc_D649                   ; TODO: check if this works
+       jhe loc_D649                   ; TODO: test if this works
 ;RAM:D5D8 DD 4E 1E                    ld      c, 30(ix)                               ; old pixel X
        movb @30(ix),@c
 loc_D5DB:
@@ -8987,11 +9091,13 @@ b0ch   byte >0c
 b0dh   byte >0d
 b0eh   byte >0e
 b10h   byte >10
+b12h   byte >12
 b14h   byte >14
 b17h   byte >17
 b20h   byte >20
 b22h   byte >22
 b28h   byte >28
+b30h   byte >30
 b40h   byte >40
 b47h   byte >47
 b58h   byte >58
