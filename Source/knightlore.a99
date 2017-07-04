@@ -5256,9 +5256,14 @@ loc_CDBC:
        socb @b10h,@7(iy)
 next_overlap_obj:
 ;RAM:CDC2 D9                          exx
+;      bl   @exx
 ;RAM:CDC3 11 20 00                    ld      de, #32                                 ; entry size
+;      li   de,32
 ;RAM:CDC6 FD 19                       add     iy, de                                  ; next entry
+;      a    de,iy
 ;RAM:CDC8 D9                          exx
+;      bl   @exx
+*      Replaced by:
        ai   iy,32
 ;RAM:CDC9 10 D0                       djnz    test_overlap_obj
        sb   one,b
@@ -8734,14 +8739,14 @@ daa:
        mov  a,r0
        andi r0,>0f00
        cb   r0,@b09h
-       jl   daa1
+       jle  daa1
        ab   @b06h,a
 daa1:
        mov  a,r0
        andi r0,>f000
        srl  r0,4
        cb   r0,@b09h
-       jl   daa1
+       jle  daa2
        ab   @b60h,a
 daa2:
        rt
