@@ -3570,6 +3570,7 @@ init_special_objects:
        movb a,@e
 ;RAM:C485 ED 5F                       ld      a, r
 ;      TODO
+       li   a,>9e00
 ;RAM:C487 83                          add     a, e
        ab   @e,a
 ;RAM:C488 5F                          ld      e, a
@@ -3595,22 +3596,19 @@ init_obj_loop:
 ;RAM:C496 19                          add     hl, de                                  ; HL=ptr Current X
        a    de,hl
 ;RAM:C497 EB                          ex      de, hl                                  ; DE = ptr Current X
-       mov  de,r0
-       mov  hl,de
-       mov  r0,hl
+       bl   @ex_de_hl
 ;RAM:C498 01 04 00                    ld      bc, #4
        li   bc,4
 ;RAM:C49B ED B0                       ldir                                            ; copy Start X,Y,Z,screen to Current
        bl   @ldir
 ;RAM:C49D EB                          ex      de, hl
-       mov  de,r0
-       mov  hl,de
-       mov  r0,hl
+       bl   @ex_de_hl
 ;RAM:C49E E5                          push    hl                                      ; save ptr next Current
 ;RAM:C49F 01 12 71                    ld      bc, #sprite_tbl                         ; end of object table
 ;RAM:C4A2 A7                          and     a
 ;RAM:C4A3 ED 42                       sbc     hl, bc                                  ; done table?
 ;RAM:C4A5 E1                          pop     hl
+*      ai   hl,-sprite_tbl
 ;RAM:C4A6 D1                          pop     de
        dect sp
        mov  *sp,de
@@ -3865,7 +3863,7 @@ loc_C530:
        movb @b0ch,*hl+
 ;RAM:C558 36 14                       ld      (hl), #0x14                             ; flag DRAW & MOVEABLE
 ;RAM:C55A 23                          inc     hl
-       movb @b0eh,*hl+
+       movb @b14h,*hl+
 ;RAM:C55B EB                          ex      de, hl
        bl   @ex_de_hl
 ;RAM:C55C 7E                          ld      a, (hl)                                 ; get current screen
@@ -6411,7 +6409,7 @@ init_start_location:
 * ---------------------------------------------------------------------------
 start_locations:
 ;       byte >2F, >44, >B3, >8F
-       byte 0,1,4,8
+       byte >6d,>27,>d0,>0a            ; Rooms with special objects
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -8989,6 +8987,7 @@ b0ch   byte >0c
 b0dh   byte >0d
 b0eh   byte >0e
 b10h   byte >10
+b14h   byte >14
 b17h   byte >17
 b20h   byte >20
 b22h   byte >22
