@@ -3078,8 +3078,8 @@ upd_103:
 ;RAM:C1F1             ; special objects being put in cauldron
 ;RAM:C1F1
 upd_104_to_110:
-       b    @no_update
 ;RAM:C1F1 CD D8 C4                    call    adj_m4_m12
+       b    @adj_m4_m12
 ;RAM:C1F4 DD 7E 01                    ld      a, 1(ix)                                ; X
 ;RAM:C1F7 D6 80                       sub     #128
 ;RAM:C1F9 28 07                       jr      Z, loc_C202
@@ -3170,8 +3170,8 @@ objects_required:
 ;RAM:C28B             ; special objects
 ;RAM:C28B
 upd_96_to_102:
-       b    @no_update
 ;RAM:C28B CD D8 C4                    call    adj_m4_m12
+       b    @adj_m4_m12
 ;RAM:C28E CD 00 C7                    call    dec_dZ_and_update_XYZ
 ;RAM:C291 DD CB 0D 46                 bit     0, 13(ix)                               ; just dropped?
 ;RAM:C295 20 04                       jr      NZ, loc_C29B                            ; no, skip
