@@ -5178,7 +5178,7 @@ loc_CD7A:
 ;RAM:CD7C DD 7E 1B                    ld      a, 27(ix)                               ; pixel Y
        movb @27(ix),a
 ;RAM:CD7F DD BE 1F                    cp      31(ix)                                  ; old pixelY
-       cb   @a,@31(ix)
+       cb   a,@31(ix)
 ;RAM:CD82 38 03                       jr      C, loc_CD87
        jl   loc_CD87                  ; TODO: test if this works
 ;RAM:CD84 DD 7E 1F                    ld      a, 31(ix)                               ; old pixelY
@@ -5199,12 +5199,12 @@ loc_CD87:
 ;RAM:CD95 BC                          cp      h
        cb   a,h
 ;RAM:CD96 30 01                       jr      NC, loc_CD99
-       jhe   loc_CD99                 ; TODO: test if this works
+       jhe  loc_CD99                 ; TODO: test if this works
 ;RAM:CD98 7C                          ld      a, h
        movb h,a
 loc_CD99:
 ;RAM:CD99 95                          sub     l
-       ab   @l,a
+       sb   @l,a
 ;RAM:CD9A 67                          ld      h, a                                    ; combined height (lines)
        movb a,h
 test_overlap_obj:
@@ -5214,7 +5214,7 @@ test_overlap_obj:
 ;RAM:CD9F 28 21                       jr      Z, next_overlap_obj                     ; yes, skip
        jeq  next_overlap_obj
 ;RAM:CDA1 FD CB 07 66                 bit     4, 7(iy)                                ; DRAW flag already set?
-       movb @7(ix),r0
+       movb @7(iy),r0
        andi r0,>1000
 ;RAM:CDA5 20 1B                       jr      NZ, next_overlap_obj                    ; yes, skip
        jeq  next_overlap_obj
@@ -5223,7 +5223,7 @@ test_overlap_obj:
 ;RAM:CDAA 0F                          rrca
 ;RAM:CDAB 0F                          rrca
 ;RAM:CDAC 0F                          rrca
-       sla  a,3
+       srl  a,3
 ;RAM:CDAD E6 1F                       and     #0x1F                                   ; byte address of pixel
        andi a,>1f00
 ;RAM:CDAF 93                          sub     e                                       ; < left extremity (to the left)?
@@ -5282,7 +5282,7 @@ loc_CDD3:
        inv  a
        ab   one,a
 ;RAM:CDD5 FD BE 19                    cp      25(iy)                                  ; data height (lines)
-       cb   a,@24(iy)
+       cb   a,@25(iy)
 ;RAM:CDD8 18 E2                       jr      loc_CDBC
        jmp  loc_CDBC
 *
@@ -5302,7 +5302,7 @@ upd_64_to_79:
        b    @no_update
 ;RAM:CDDF CD 01 C5                    call    adj_m12_m12
        bl   @adj_m12_m12
-*
+* ---------------------------------------------------------------------------
 * copies most information from bottom half object
 * handles randomly looking around
 *
@@ -5372,9 +5372,11 @@ set_top_sprite:
        movb a,*ix
 loc_CE27:
 ;RAM:CE27 FD 7E 03                    ld      a, 3(iy)                                ; Z (bottom half)
+       movb @3(iy),a
 ;RAM:CE2A C6 0C                       add     a, #12                                  ; directly above
+       ab   @b0ch,a
 ;RAM:CE2C DD 77 03                    ld      3(ix), a                                ; store in top half
-       ab   @b0ch,@3(iy)
+       movb a,@3(ix)
 ;RAM:CE2F CD 4D CD                    call    set_draw_objs_overlapped
        bl   @set_draw_objs_overlapped
 ;RAM:CE32 C9                          ret
