@@ -4160,6 +4160,7 @@ loc_C83E:
        bl   @handle_left_right
 ;RAM:C84A CD 48 C9                    call    handle_jump
 ;RAM:C84D CD 69 C9                    call    handle_forward
+       bl   @handle_forward
 ;RAM:C850 CD 7A C8                    call    chk_plyr_OOB
 ;RAM:C853 30 18                       jr      NC, plyr_OOB
 loc_C855:
@@ -4442,52 +4443,79 @@ loc_C940:
 ;RAM:C968 C9                          ret
 ;RAM:C968             ; End of function handle_jump
 ;RAM:C968
-;RAM:C969
-;RAM:C969             ; =============== S U B R O U T I N E =======================================
-;RAM:C969
-;RAM:C969
-;RAM:C969             handle_forward:
+*
+* =============== S U B R O U T I N E =======================================
+*
+handle_forward:
 ;RAM:C969 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
-;RAM:C96C E6 F0                       and     #0xF0 ; '�'                             ; entering sccreen?
+       movb @12(ix),a
+;RAM:C96C E6 F0                       and     #0xF0 ; '�'                             ; entering screen?
+       andi a,>f000
 ;RAM:C96E 20 0A                       jr      NZ, loc_C97A                            ; yes, skip
+       jne  loc_C97A
 ;RAM:C970 DD CB 0C 5E                 bit     3, 12(ix)                               ; already jumping?
+       movb @12(ix),r0
+       andi r0,>0800
 ;RAM:C974 20 04                       jr      NZ, loc_C97A                            ; yes, skip
+       jne  loc_C97A
 ;RAM:C976 CB 51                       bit     2, c                                    ; forward?
+       movb @c,r0
+       andi r0,>0400
 ;RAM:C978 28 1A                       jr      Z, loc_C994                             ; no, go
-;RAM:C97A
-;RAM:C97A             loc_C97A:
+       jeq  loc_C994
+loc_C97A:
 ;RAM:C97A C5                          push    bc
 ;RAM:C97B CD BB B4                    call    audio_B4BB
+;      TODO
 ;RAM:C97E C1                          pop     bc
-;RAM:C97F
-;RAM:C97F             animate_human_legs:                                             ; graphic_no
-;RAM:C97F DD 7E 00                    ld      a, 0(ix)
+animate_human_legs:
+;RAM:C97F DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
+       movb *ix,a
 ;RAM:C982 5F                          ld      e, a
+       movb a,@e
 ;RAM:C983 3C                          inc     a                                       ; next sprite
+       ab   one,a
 ;RAM:C984 E6 07                       and     #7
+       andi a,>0700
 ;RAM:C986 FE 06                       cp      #6                                      ; wrap?
+       cb   a,@b06h
 ;RAM:C988 20 01                       jr      NZ, loc_C98B                            ; no, skip
+       jne  loc_C98B
 ;RAM:C98A AF                          xor     a
-;RAM:C98B
-;RAM:C98B             loc_C98B:
+       clr  a
+loc_C98B:
 ;RAM:C98B 57                          ld      d, a
+       movb a,d
 ;RAM:C98C 7B                          ld      a, e
+       movb @e,a
 ;RAM:C98D E6 F8                       and     #0xF8 ; '�'
+       andi a,>f800
 ;RAM:C98F B2                          or      d
+       socb d,a
 ;RAM:C990 DD 77 00                    ld      0(ix), a                                ; update sprite
+       movb a,*ix
 ;RAM:C993 C9                          ret
-;RAM:C994             ; ---------------------------------------------------------------------------
-;RAM:C994
-;RAM:C994             loc_C994:                                                       ; graphic_no
-;RAM:C994 DD 7E 00                    ld      a, 0(ix)
+handle_forward_return:
+       b    *r11
+* ---------------------------------------------------------------------------
+loc_C994:
+;RAM:C994 DD 7E 00                    ld      a, 0(ix)                               ; graphic_no
+       movb *ix,a
 ;RAM:C997 E6 07                       and     #7
+       andi a,7
 ;RAM:C999 FE 02                       cp      #2
+       cb   a,@b02h
 ;RAM:C99B C8                          ret     Z
+       jeq  handle_forward_return
 ;RAM:C99C FE 04                       cp      #4
+       cb   a,@b04h
 ;RAM:C99E C8                          ret     Z
+       jeq  handle_forward_return
 ;RAM:C99F 18 DE                       jr      animate_human_legs
-;RAM:C99F             ; End of function handle_forward
-;RAM:C99F
+       jmp  animate_human_legs
+*
+* End of function handle_forward
+*
 ;RAM:C9A1
 ;RAM:C9A1             ; =============== S U B R O U T I N E =======================================
 ;RAM:C9A1
