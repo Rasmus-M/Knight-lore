@@ -4958,7 +4958,7 @@ screen_south:
 *
 adj_for_out_of_bounds:
        mov  r11,*sp+
-;RAM:CB45 DD CB 07 4E                 bit     1, 7(ix)
+;RAM:CB45 DD CB 07 4E                 bit     1, 7(ix)                                ; ignore bit
        mov  @7(ix),r0
        andi r0,>0200
 ;RAM:CB49 C0                          ret     NZ
@@ -5000,14 +5000,14 @@ dZ_ok:
 ;RAM:CB6F 28 0A                       jr      Z, loc_CB7B                             ; yes, skip
        jeq  loc_CB7B
 ;RAM:CB71 CD DD CC                    call    adj_dX_for_out_of_bounds
-;       bl   @adj_dX_for_out_of_bounds
+;       bl   @adj_dX_for_out_of_bounds     ; TODO
 ;RAM:CB74 79                          ld      a, c                                    ; new dX
        movb a,@c
 ;RAM:CB75 A7                          and     a                                       ; zero?
 ;RAM:CB76 28 03                       jr      Z, loc_CB7B                             ; yes, skip
        jeq  loc_CB7B
 ;RAM:CB78 CD 9A CB                    call    adj_dX_for_obj_intersect
-;       bl   @adj_dX_for_obj_intersect
+;       bl   @adj_dX_for_obj_intersect     ; TODO
 loc_CB7B:
 ;RAM:CB7B DD 7E 0A                    ld      a, 10(ix)                               ; dY
        movb @10(ix),a
@@ -5017,14 +5017,14 @@ loc_CB7B:
 ;RAM:CB80 28 0A                       jr      Z, loc_CB8C                             ; yes, skip
        jeq  loc_CB8C
 ;RAM:CB82 CD 08 CD                    call    adj_dY_for_out_of_bounds
-;       bl   @adj_dY_for_out_of_bounds
+;       bl   @adj_dY_for_out_of_bounds     ; TODO
 ;RAM:CB85 7D                          ld      a, l                                    ; new dY
        movb @l,a
 ;RAM:CB86 A7                          and     a                                       ; zero?
 ;RAM:CB87 28 03                       jr      Z, loc_CB8C                             ; yes, skip
        jeq  loc_CB8C
 ;RAM:CB89 CD E9 CB                    call    adj_dY_for_obj_intersect
-;       bl   @adj_dY_for_obj_intersect
+;       bl   @adj_dY_for_obj_intersect     ; TODO
 loc_CB8C:
 ;RAM:CB8C DD 71 09                    ld      9(ix), c                                ; new dX
        movb @c,@9(ix)
