@@ -1781,6 +1781,7 @@ do_menu_selection:
 ;RAM:BD85             clr_debounce:
 ;RAM:BD85 CB 86                       res     0, (hl)
 ;RAM:BD87 18 E3                       jr      check_for_start_game                    ; continue
+       movb  @b02h,@user_input_method
        rt
 *
 * End of function do_menu_selection
@@ -4158,6 +4159,7 @@ upd_player_bottom:
 loc_C83E:
 ;RAM:C83E CD 06 C3                    call    chk_and_init_transform                  ; returns to caller if transforming
 ;RAM:C841 CD 22 D0                    call    check_user_input
+       bl   @check_user_input
 ;RAM:C844 CD 0E C0                    call    handle_pickup_drop
 ;RAM:C847 CD 9F C8                    call    handle_left_right
 ;RAM:C84A CD 48 C9                    call    handle_jump
@@ -5851,26 +5853,40 @@ render_list:
        byte >FF
 *
 * =============== S U B R O U T I N E =======================================
-;RAM:D022
-;RAM:D022
-;RAM:D022             check_user_input:
+*
+check_user_input:
+       mov  r11,*sp+
 ;RAM:D022 3A C3 5B                    ld      a, (all_objs_in_cauldron)
 ;RAM:D025 4F                          ld      c, a
+       movb @all_objs_in_cauldron,@c
 ;RAM:D026 3A C4 5B                    ld      a, (obj_dropping_into_cauldron)
+       movb @obj_dropping_into_cauldron,a
 ;RAM:D029 B1                          or      c
+       socb @c,a
 ;RAM:D02A 0E 00                       ld      c, #0
 ;RAM:D02C C2 11 D1                    jp      NZ, finished_input
+       jeq  !
+       movb @b00h,@c
+       b    @finished_input
 ;RAM:D02F 3A A4 5B                    ld      a, (user_input_method)
+!      movb @b00h,@c
+       movb @user_input_method,a
 ;RAM:D032 0F                          rrca
+       srl  a,1
 ;RAM:D033 E6 03                       and     #3                                      ; keybd/joystick bits only
+       andi a,>0300
 ;RAM:D035 CA C8 D0                    jp      Z, keyboard
+       jeq  keyboard
 ;RAM:D038 3D                          dec     a
+       sb   one,a
 ;RAM:D039 28 3C                       jr      Z, kempston
+       jeq  kempston
 ;RAM:D03B 3D                          dec     a
+       sb   one,a
 ;RAM:D03C 28 5E                       jr      Z, cursor
-;RAM:D03E
-;RAM:D03E             interface_ii:                                                   ; address interface ii joystick
-;RAM:D03E 3E F7                       ld      a, #0xF7 ; '�'
+       jeq  cursor
+interface_ii:
+;RAM:D03E 3E F7                       ld      a, #0xF7 ; '�'                         ; address interface ii joystick
 ;RAM:D040 CD F7 B5                    call    read_port                               ; read joystick
 ;RAM:D043 C5                          push    bc
 ;RAM:D044 06 05                       ld      b, #5                                   ; 5 bits to read
@@ -5912,40 +5928,56 @@ render_list:
 ;RAM:D074
 ;RAM:D074             loc_D074:
 ;RAM:D074 C3 11 D1                    jp      finished_input
-;RAM:D077             ; ---------------------------------------------------------------------------
-;RAM:D077
-;RAM:D077             kempston:
+       b    @finished_input
+* ---------------------------------------------------------------------------
+kempston:
 ;RAM:D077 DB 1F                       in      a, (0x1F)
+*      Read joystick using CRU
+       li   r12,>0024                 ; CRU address of the column decoder
+       li   r0,>0600                  ; Column 6, i.e joystick #1
+       ldcr r0,3                      ; Select it
+       li   r12,>0006                 , Base CRU address for joystick 1
 ;RAM:D079 0E 00                       ld      c, #0
+       movb @b00h,@c
 ;RAM:D07B CB 47                       bit     0, a                                    ; right?
+       tb   2
 ;RAM:D07D 28 02                       jr      Z, loc_D081
+       jeq loc_D081
 ;RAM:D07F CB C9                       set     1, c                                    ; flag RIGHT
-;RAM:D081
-;RAM:D081             loc_D081:                                                       ; left?
-;RAM:D081 CB 4F                       bit     1, a
+       socb @b02h,@c
+loc_D081:
+;RAM:D081 CB 4F                       bit     1, a                                    ; left?
+       tb   1
 ;RAM:D083 28 02                       jr      Z, loc_D087
+       jeq  loc_D087
 ;RAM:D085 CB C1                       set     0, c                                    ; flag LEFT
-;RAM:D087
-;RAM:D087             loc_D087:                                                       ; down?
-;RAM:D087 CB 57                       bit     2, a
+       socb @b01h,@c
+loc_D087:
+;RAM:D087 CB 57                       bit     2, a                                    ; down?
+       tb   3
 ;RAM:D089 28 02                       jr      Z, loc_D08D
+       jeq  loc_D08D
 ;RAM:D08B CB E1                       set     4, c                                    ; flag PICKUP/DROP
-;RAM:D08D
-;RAM:D08D             loc_D08D:                                                       ; up?
-;RAM:D08D CB 5F                       bit     3, a
+       socb @b10h,@c
+loc_D08D:
+;RAM:D08D CB 5F                       bit     3, a                                    ; up?
+       tb   4
 ;RAM:D08F 28 02                       jr      Z, loc_D093
+       jeq  loc_D093
 ;RAM:D091 CB D1                       set     2, c                                    ; flag FORWARD
-;RAM:D093
-;RAM:D093             loc_D093:                                                       ; fire?
-;RAM:D093 CB 67                       bit     4, a
+       socb @b04h,@c
+loc_D093:
+;RAM:D093 CB 67                       bit     4, a                                    ; fire?
+       tb   0
 ;RAM:D095 28 02                       jr      Z, loc_D099
+       jeq  loc_D099
 ;RAM:D097 CB D9                       set     3, c                                    ; flag JUMP
-;RAM:D099
-;RAM:D099             loc_D099:
+       socb @b08h,@c
+loc_D099:
 ;RAM:D099 C3 11 D1                    jp      finished_input
-;RAM:D09C             ; ---------------------------------------------------------------------------
-;RAM:D09C
-;RAM:D09C             cursor:
+       b    @finished_input
+* ---------------------------------------------------------------------------
+cursor:
 ;RAM:D09C 0E 00                       ld      c, #0
 ;RAM:D09E 3E F7                       ld      a, #0xF7 ; '�'                          ; row 3
 ;RAM:D0A0 CD F7 B5                    call    read_port
@@ -5975,10 +6007,9 @@ render_list:
 ;RAM:D0C2 28 4D                       jr      Z, finished_input
 ;RAM:D0C4 CB E1                       set     4, c
 ;RAM:D0C6 18 49                       jr      finished_input
-;RAM:D0C8             ; ---------------------------------------------------------------------------
-;RAM:D0C8
-;RAM:D0C8             keyboard:                                                       ; row 0 (SHIFT,Z,X,C,V)
-;RAM:D0C8 3E FE                       ld      a, #0xFE ; '�'
+* ---------------------------------------------------------------------------
+keyboard:
+;RAM:D0C8 3E FE                       ld      a, #0xFE ; '�'                          ; row 0 (SHIFT,Z,X,C,V)
 ;RAM:D0CA CD F7 B5                    call    read_port
 ;RAM:D0CD 0F                          rrca
 ;RAM:D0CE 4F                          ld      c, a
@@ -5993,42 +6024,35 @@ render_list:
 ;RAM:D0DE CB 4F                       bit     1, a                                    ; SYM SHIFT? (right)
 ;RAM:D0E0 28 02                       jr      Z, loc_D0E4                             ; no, skip
 ;RAM:D0E2 CB C9                       set     1, c                                    ; flag RIGHT
-;RAM:D0E4
-;RAM:D0E4             loc_D0E4:                                                       ; 'M'? (left)
-;RAM:D0E4 CB 57                       bit     2, a
+loc_D0E4:
+;RAM:D0E4 CB 57                       bit     2, a                                    ; 'M'? (left)
 ;RAM:D0E6 28 02                       jr      Z, loc_D0EA                             ; no, skip
 ;RAM:D0E8 CB C1                       set     0, c                                    ; flag LEFT
-;RAM:D0EA
-;RAM:D0EA             loc_D0EA:                                                       ; 'N'? (right)
-;RAM:D0EA CB 5F                       bit     3, a
+loc_D0EA:
+;RAM:D0EA CB 5F                       bit     3, a                                    ; 'N'? (right)
 ;RAM:D0EC 28 02                       jr      Z, loc_D0F0                             ; no, skip
 ;RAM:D0EE CB C9                       set     1, c                                    ; flag RIGHT
-;RAM:D0F0
-;RAM:D0F0             loc_D0F0:                                                       ; 'B'? (left)
-;RAM:D0F0 CB 67                       bit     4, a
+loc_D0F0:
+;RAM:D0F0 CB 67                       bit     4, a                                    ; 'B'? (left)
 ;RAM:D0F2 28 02                       jr      Z, loc_D0F6
 ;RAM:D0F4 CB C1                       set     0, c                                    ; flag LEFT
-;RAM:D0F6
-;RAM:D0F6             loc_D0F6:                                                       ; row 1,6 (2nd row) A,S,F,G,G,H,J,K,L,ENTER (FORWARD)
-;RAM:D0F6 3E BD                       ld      a, #0xBD ; '�'
+loc_D0F6:
+;RAM:D0F6 3E BD                       ld      a, #0xBD ; '�'                         ; row 1,6 (2nd row) A,S,F,G,G,H,J,K,L,ENTER (FORWARD)
 ;RAM:D0F8 CD F7 B5                    call    read_port
 ;RAM:D0FB 28 02                       jr      Z, loc_D0FF
 ;RAM:D0FD CB D1                       set     2, c                                    ; flag FORWARD
-;RAM:D0FF
-;RAM:D0FF             loc_D0FF:                                                       ; row 2,5 (1st row) QWERTYUIOP (JUMP)
-;RAM:D0FF 3E DB                       ld      a, #0xDB ; '�'
+loc_D0FF:
+;RAM:D0FF 3E DB                       ld      a, #0xDB ; '�'                         ; row 2,5 (1st row) QWERTYUIOP (JUMP)
 ;RAM:D101 CD F7 B5                    call    read_port
 ;RAM:D104 28 02                       jr      Z, loc_D108
 ;RAM:D106 CB D9                       set     3, c                                    ; flag JUMP
-;RAM:D108
-;RAM:D108             loc_D108:                                                       ; row 3,4 (0-9) (PICKUP/DROP)
-;RAM:D108 3E E7                       ld      a, #0xE7 ; '�'
+loc_D108:
+;RAM:D108 3E E7                       ld      a, #0xE7 ; '�'                         ; row 3,4 (0-9) (PICKUP/DROP)
 ;RAM:D10A CD F7 B5                    call    read_port
 ;RAM:D10D 28 02                       jr      Z, finished_input
 ;RAM:D10F CB E1                       set     4, c                                    ; flag PICKUP/DROP
-;RAM:D111
-;RAM:D111             finished_input:                                                 ; (3rd row) SHIFT,Z,X,C,V,SPACE,SYMSHIFT,M,N,B (LEFT/RIGHT)
-;RAM:D111 3E 7E                       ld      a, #0x7E ; '~'
+finished_input:
+;RAM:D111 3E 7E                       ld      a, #0x7E ; '~'                          ; (3rd row) SHIFT,Z,X,C,V,SPACE,SYMSHIFT,M,N,B (LEFT/RIGHT)
 ;RAM:D113 CD F7 B5                    call    read_port
 ;RAM:D116 E6 1E                       and     #0x1E                                   ; Z,X,C,V,SYMSHIFT,M,N,B
 ;RAM:D118 C5                          push    bc
@@ -6037,15 +6061,23 @@ render_list:
 ;RAM:D11C CD F7 B5                    call    read_port
 ;RAM:D11F B0                          or      b
 ;RAM:D120 C1                          pop     bc
+       li   r0,KEY_SP
+       bl   @chkkey
 ;RAM:D121 28 02                       jr      Z, loc_D125
+       jeq  loc_D125
 ;RAM:D123 CB E9                       set     5, c                                    ; flag PICKUP/DROP (directional)
-;RAM:D125
-;RAM:D125             loc_D125:
+       socb @b10h,@c
+loc_D125:
 ;RAM:D125 79                          ld      a, c
+       movb @c,a
 ;RAM:D126 32 B5 5B                    ld      (user_input), a
+       movb a,@user_input
 ;RAM:D129 C9                          ret
-;RAM:D129             ; End of function check_user_input
-;RAM:D129
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function check_user_input
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -8796,6 +8828,10 @@ vsbw:
        b    *r11
 *// vsbw
 
+***************************************************************************
+*
+* Emulation of Z80 instructions
+*
 exx:
        mov  bc,r0
        mov  bc_,bc
@@ -8838,6 +8874,82 @@ daa1:
        ab   @b60h,a
 daa2:
        rt
+
+***************************************************************************
+*
+* Check key
+*
+* R0: Column in MSB: >0000 - >0700, Row in LSB: >0006 - >0014
+*
+*       Column   0      1    2    3    4    5     6       7
+*     Row
+*     >0006      =      .    ,    M    N    /    Fire    Fire
+*     >0008    Space    L    K    J    H    ;    Left    Left
+*     >000A    Enter    O    I    U    Y    P    Right   Right
+*     >000C             9    8    7    6    0    Down    Down
+*     >000E    Fctn     2    3    4    5    1    Up      Up
+*     >0010    Shift    S    D    F    G    A
+*     >0012    Ctrl     W    E    R    T    Q
+*     >0014             X    C    V    B    Z
+*
+* On return NEQ means that the key is pressed
+*
+KEY_FI EQU  >0606
+KEY_LF EQU  >0608
+KEY_RG EQU  >060A
+KEY_DN EQU  >060C
+KEY_UP EQU  >060E
+KEY_CM EQU  >0206
+KEY_FS EQU  >0106
+KEY_0  EQU  >050C
+KEY_1  EQU  >050E
+KEY_2  EQU  >010E
+KEY_3  EQU  >020E
+KEY_4  EQU  >030E
+KEY_5  EQU  >040E
+KEY_6  EQU  >040C
+KEY_7  EQU  >030C
+KEY_8  EQU  >020C
+KEY_9  EQU  >010C
+KEY_A  EQU  >0510
+KEY_B  EQU  >0414
+KEY_C  EQU  >0214
+KEY_D  EQU  >0210
+KEY_E  EQU  >0212
+KEY_F  EQU  >0310
+KEY_G  EQU  >0410
+KEY_H  EQU  >0408
+KEY_I  EQU  >020A
+KEY_J  EQU  >0308
+KEY_K  EQU  >0208
+KEY_L  EQU  >0108
+KEY_M  EQU  >0306
+KEY_N  EQU  >0406
+KEY_O  EQU  >010A
+KEY_P  EQU  >050A
+KEY_Q  EQU  >0512
+KEY_R  EQU  >0312
+KEY_S  EQU  >0110
+KEY_T  EQU  >0412
+KEY_U  EQU  >030A
+KEY_V  EQU  >0314
+KEY_W  EQU  >0112
+KEY_X  EQU  >0114
+KEY_Y  EQU  >040A
+KEY_Z  EQU  >0514
+KEY_SP EQU  >0008
+KEY_FN EQU  >000E
+KEY_SH EQU  >0010
+KEY_CT EQU  >0012
+*
+chkkey:
+       li   r12,>0024                  ; CRU address of the column decoder
+       ldcr r0,3                       ; Select column
+       andi r0,>00ff
+       mov  r0,r12                     ; Select row
+       tb   0                          ; Test key, EQ if not pressed
+       b    *r11
+*// CHKKEY
 
 *********************************************************************
 *
