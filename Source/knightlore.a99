@@ -6136,9 +6136,6 @@ plyr_spr_init_data:
 * +7 flags
        byte >78, >80, >80, >80, >05, >05, >17, >1C
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
-* Start with Sabre Man
-;       byte >10, >80, >80, >80, >05, >05, >17, >1C
-;       byte >20, >80, >80, >8C, >05, >05, >00, >1E
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -6191,8 +6188,9 @@ init_start_location:
 *
 * ---------------------------------------------------------------------------
 start_locations:
-       byte >2F, >44, >B3, >8F         ; Standard
+        byte >2F, >44, >B3, >8F         ; Standard
 ;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
+;       byte >00,>01,>04,>08
 ;       byte 136,136,136,136            ; Cauldron room
 *
 * =============== S U B R O U T I N E =======================================
@@ -6214,7 +6212,7 @@ loc_D1EF:
 ;RAM:D1F5 CD 25 C5                    call    find_special_objs_here                  ; find special objects in new room
        bl   @find_special_objs_here
 ;RAM:D1F8 CD 20 D3                    call    adjust_plyr_xyz_for_room_size
-       bl   @adjust_plyr_xyz_for_room_size ; TODO
+       bl   @adjust_plyr_xyz_for_room_size
 ;RAM:D1FB AF                          xor     a
        clr  a
 ;RAM:D1FC 32 AF 5B                    ld      (portcullis_moving), a                  ; flag not moving
@@ -6457,106 +6455,163 @@ loc_D317:                                                                       
 * =============== S U B R O U T I N E =======================================
 *
 adjust_plyr_xyz_for_room_size:
+       mov  r11,*sp+
 ;RAM:D320 3A AB 5B                    ld      a, (room_size_X)
+       movb  @room_size_X,a
 ;RAM:D323 D6 02                       sub     #2
+       sb   @b02h,a
 ;RAM:D325 6F                          ld      l, a
+       movb a,@l
 ;RAM:D326 3A AC 5B                    ld      a, (room_size_Y)
+       movb  @room_size_Y,a
 ;RAM:D329 D6 02                       sub     #2
+       sb   @b02h,a
 ;RAM:D32B 67                          ld      h, a
+       movb a,h
 ;RAM:D32C DD 7E 01                    ld      a, 1(ix)                                ; X
+       movb @1(ix),a
 ;RAM:D32F A7                          and     a                                       ; 0?
 ;RAM:D330 28 4D                       jr      Z, enter_arch_e                         ; yes, go
+       jeq  enter_arch_e
 ;RAM:D332 3C                          inc     a                                       ; -1?
+       ab   one,a
 ;RAM:D333 28 3A                       jr      Z, enter_arch_w                         ; yes, go
+       jeq  enter_arch_w
 ;RAM:D335 DD 7E 02                    ld      a, 2(ix)                                ; Y
+       movb  @2(ix),a
 ;RAM:D338 A7                          and     a                                       ; 0?
 ;RAM:D339 28 27                       jr      Z, enter_arch_n                         ; yes, go
+       jeq  enter_arch_n
 ;RAM:D33B 3C                          inc     a                                       ; -1?
+       ab   one,a
 ;RAM:D33C 28 01                       jr      Z, enter_arch_s                         ; yes, go
+       jeq  enter_arch_s
 ;RAM:D33E C9                          ret
        rt
 * ---------------------------------------------------------------------------
-;RAM:D33F
-;RAM:D33F             enter_arch_s:
+enter_arch_s:
 ;RAM:D33F 0E C8                       ld      c, #200
+       movb @bc8h,@c
 ;RAM:D341 CD 8C D3                    call    adjust_plyr_Z_for_arch
+       bl   @adjust_plyr_Z_for_arch
 ;RAM:D344 3E 80                       ld      a, #128                                 ; 128
+       movb @b80h,a
 ;RAM:D346 94                          sub     h                                       ; sub (room_size_Y-2)
+       sb   h,a
 ;RAM:D347 DD 96 05                    sub     5(ix)                                   ; sub depth
-;RAM:D34A
-;RAM:D34A             adjust_plyr_y:                                                  ; plyr_spr_1 Y
-;RAM:D34A DD 77 02                    ld      2(ix), a
-;RAM:D34D
-;RAM:D34D             copy_spr_1_xy_2:                                                ; set draw plyr_spr_1
-;RAM:D34D DD CB 07 E6                 set     4, 7(ix)
+       sb   @5(ix),a
+adjust_plyr_y:
+;RAM:D34A DD 77 02                    ld      2(ix), a                                ; plyr_spr_1 Y
+       movb a,@2(ix)
+copy_spr_1_xy_2:
+;RAM:D34D DD CB 07 E6                 set     4, 7(ix)                                ; set draw plyr_spr_1
+       socb @b10h,@7(ix)
 ;RAM:D351 DD CB 27 E6                 set     4, 0x27(ix)                             ; set draw_plyr_spr_2
+       socb @b10h,@>27(ix)
 ;RAM:D355 DD 7E 01                    ld      a, 1(ix)                                ; plyr_spr_1 X
 ;RAM:D358 DD 77 21                    ld      0x21(ix), a                             ; set plyr_spr_2 X
+       movb @1(ix),@>21(ix)
 ;RAM:D35B DD 7E 02                    ld      a, 2(ix)                                ; plyr_spr_1 Y
 ;RAM:D35E DD 77 22                    ld      0x22(ix), a                             ; set plyr_spr_2 Y
+       movb @2(ix),@>22(ix)
 ;RAM:D361 C9                          ret
-;RAM:D362             ; ---------------------------------------------------------------------------
-;RAM:D362
-;RAM:D362             enter_arch_n:
+       dect sp
+       mov  *sp,r11
+       rt
+* ---------------------------------------------------------------------------
+enter_arch_n:
 ;RAM:D362 0E 51                       ld      c, #81
+       movb @b51h,@c
 ;RAM:D364 CD 8C D3                    call    adjust_plyr_Z_for_arch
+       bl   @adjust_plyr_Z_for_arch
 ;RAM:D367 7C                          ld      a, h                                    ; room_size_Y-2
+       movb @h,a
 ;RAM:D368 C6 80                       add     a, #128
+       ab   @b80h,a
 ;RAM:D36A DD 86 05                    add     a, 5(ix)                                ; add depth
+       ab   @5(ix),a
 ;RAM:D36D 18 DB                       jr      adjust_plyr_y
-;RAM:D36F             ; ---------------------------------------------------------------------------
-;RAM:D36F
-;RAM:D36F             enter_arch_w:
+       jmp  adjust_plyr_y
+* ---------------------------------------------------------------------------
+enter_arch_w:
 ;RAM:D36F 0E AE                       ld      c, #174
+       movb @baeh,@c
 ;RAM:D371 CD 8C D3                    call    adjust_plyr_Z_for_arch
+       bl   @adjust_plyr_Z_for_arch
 ;RAM:D374 3E 80                       ld      a, #128
+       movb @b80h,a
 ;RAM:D376 95                          sub     l                                       ; sub (room_size_X-2)
+       sb   @l,a
 ;RAM:D377 DD 96 04                    sub     4(ix)                                   ; sub width
-;RAM:D37A
-;RAM:D37A             adjust_plyr_x:
+       sb   @4(ix),a
+adjust_plyr_x:
 ;RAM:D37A DD 77 01                    ld      1(ix), a
+       movb a,@1(ix)
 ;RAM:D37D 18 CE                       jr      copy_spr_1_xy_2
-;RAM:D37F             ; ---------------------------------------------------------------------------
-;RAM:D37F
-;RAM:D37F             enter_arch_e:
+       jmp  copy_spr_1_xy_2
+* ---------------------------------------------------------------------------
+enter_arch_e:
 ;RAM:D37F 0E 37                       ld      c, #55
+       movb @b37h,@c
 ;RAM:D381 CD 8C D3                    call    adjust_plyr_Z_for_arch
+       bl   @adjust_plyr_Z_for_arch
 ;RAM:D384 7D                          ld      a, l                                    ; room_size_X-2
+       movb @l,a
 ;RAM:D385 C6 80                       add     a, #128                                 ; add 128
+       ab   @b80h,a
 ;RAM:D387 DD 86 04                    add     a, 4(ix)                                ; add width
+       ab   @4(ix),a
 ;RAM:D38A 18 EE                       jr      adjust_plyr_x
-;RAM:D38A             ; End of function adjust_plyr_xyz_for_room_size
-;RAM:D38A
-;RAM:D38C
-;RAM:D38C             ; =============== S U B R O U T I N E =======================================
-;RAM:D38C
-;RAM:D38C
-;RAM:D38C             adjust_plyr_Z_for_arch:
+       jmp  adjust_plyr_x
+*
+* End of function adjust_plyr_xyz_for_room_size
+*
+* =============== S U B R O U T I N E =======================================
+*
+adjust_plyr_Z_for_arch:
 ;RAM:D38C FD 21 88 5C                 ld      iy, #other_objs_here
+       li   iy,other_objs_here
 ;RAM:D390 11 40 00                    ld      de, #0x40 ; '@'                         ; 2 object entries
+       li   de,>0040
 ;RAM:D393 06 04                       ld      b, #4                                   ; max 4 arches/location
-;RAM:D395
-;RAM:D395             loc_D395:                                                       ; graphic no.
-;RAM:D395 FD 7E 00                    ld      a, 0(iy)
+       movb @b04h,b
+loc_D395:
+;RAM:D395 FD 7E 00                    ld      a, 0(iy)                                ; graphic no.
+       movb *iy,a
 ;RAM:D398 FE 06                       cp      #6                                      ; arch?
+       cb   @a,@b06h
 ;RAM:D39A D0                          ret     NC                                      ; no, return
+       jl   !
+       rt
 ;RAM:D39B FD 7E 01                    ld      a, 1(iy)                                ; X
+!      movb @1(iy),a
 ;RAM:D39E FD 86 02                    add     a, 2(iy)                                ; (X+Y)=pixelY
+       ab   @2(iy),a
 ;RAM:D3A1 B9                          cp      c                                       ; match?
+       cb   a,@c
 ;RAM:D3A2 28 05                       jr      Z, adj_plyr_Z                           ; yes, adjust player
+       jeq  adj_plyr_Z
 ;RAM:D3A4 FD 19                       add     iy, de                                  ; next object sprite pair
+       a    de,iy
 ;RAM:D3A6 10 ED                       djnz    loc_D395                                ; loop through all arches
+       sb   one,b
+       jne  loc_D395
 ;RAM:D3A8 C9                          ret
-;RAM:D3A9             ; ---------------------------------------------------------------------------
-;RAM:D3A9
-;RAM:D3A9             adj_plyr_Z:                                                     ; arch Z
-;RAM:D3A9 FD 7E 03                    ld      a, 3(iy)
+       rt
+* ---------------------------------------------------------------------------
+adj_plyr_Z:
+;RAM:D3A9 FD 7E 03                    ld      a, 3(iy)                                ; arch Z
+       movb @3(iy),a
 ;RAM:D3AC DD 77 03                    ld      3(ix), a                                ; set player_sprite_1 Z
+       movb a,@3(ix)
 ;RAM:D3AF C6 0C                       add     a, #12
+       ab   @b0ch,a
 ;RAM:D3B1 DD 77 23                    ld      0x23(ix), a                             ; set player_sprite_2 Z
+       movb a,@>23(ix)
 ;RAM:D3B4 C9                          ret
-;RAM:D3B4             ; End of function adjust_plyr_Z_for_arch
-;RAM:D3B4
+       rt
+*
+* End of function adjust_plyr_Z_for_arch
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -8810,8 +8865,10 @@ b20h   byte >20
 b22h   byte >22
 b28h   byte >28
 b30h   byte >30
+b37h   byte >37
 b40h   byte >40
 b47h   byte >47
+b51h   byte >51
 b58h   byte >58
 b5ah   byte >5a
 b68h   byte >68
@@ -8819,11 +8876,13 @@ b60h   byte >60
 b80h   byte >80
 b8ch   byte >8c
 ba0h   byte >a0
+baeh   byte >ae
 bb0h   byte >b0
 bb8h   byte >b8
 bbah   byte >ba
 bbbh   byte >bb
 bc0h   byte >c0
+bc8h   byte >c8
 bd0h   byte >d0
 be1h   byte >e1
 bf0h   byte >f0
