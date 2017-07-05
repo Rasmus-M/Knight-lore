@@ -3816,25 +3816,35 @@ upd_9:
 ;RAM:C6FC 30 94                       jr      NC, set_wipe_and_draw_flags             ; yes, go
 ;RAM:C6FE 18 E0                       jr      stop_portcullis
 ;RAM:C700
-;RAM:C700             ; =============== S U B R O U T I N E =======================================
-;RAM:C700
-;RAM:C700
-;RAM:C700             dec_dZ_and_update_XYZ:
+;* =============== S U B R O U T I N E =======================================
+*
+dec_dZ_and_update_XYZ:
+       mov  r11,*sp+
 ;RAM:C700 DD 35 0B                    dec     11(ix)                                  ; dec dZ?
+       sb   one,@11(ix)
 ;RAM:C703 CD 45 CB                    call    adj_for_out_of_bounds
-;RAM:C706
-;RAM:C706             add_dXYZ:                                                       ; X
-;RAM:C706 DD 7E 01                    ld      a, 1(ix)
+       bl   @adj_for_out_of_bounds
+       jmp  add_dXYZ_1
+add_dXYZ:
+       mov  r11,*sp+
+add_dXYZ_1
+;RAM:C706 DD 7E 01                    ld      a, 1(ix)                                ; X
 ;RAM:C709 DD 86 09                    add     a, 9(ix)                                ; dX
 ;RAM:C70C DD 77 01                    ld      1(ix), a                                ; X+=dX
+       ab   @9(ix),@1(ix)
 ;RAM:C70F DD 7E 02                    ld      a, 2(ix)                                ; Y
 ;RAM:C712 DD 86 0A                    add     a, 10(ix)                               ; dY
 ;RAM:C715 DD 77 02                    ld      2(ix), a                                ; y+=dY
+       ab   @10(ix),@2(ix)
 ;RAM:C718 DD 7E 03                    ld      a, 3(ix)                                ; Z
 ;RAM:C71B DD 86 0B                    add     a, 11(ix)                               ; dZ
 ;RAM:C71E DD 77 03                    ld      3(ix), a                                ; Z+=dZ
+       ab   @11(ix),@3(ix)
 ;RAM:C721 C9                          ret
-;RAM:C721             ; End of function dec_dZ_and_update_XYZ
+       dect sp
+       mov  *sp,r11
+       rt
+* End of function dec_dZ_and_update_XYZ
 *
 * ---------------------------------------------------------------------------
 * arch (far side)
@@ -4160,63 +4170,94 @@ loc_C83E:
        bl   @handle_left_right
 ;RAM:C84A CD 48 C9                    call    handle_jump
 ;RAM:C84D CD 69 C9                    call    handle_forward
-       bl   @handle_forward
+ ;      bl   @handle_forward
 ;RAM:C850 CD 7A C8                    call    chk_plyr_OOB
+;       bl   @chk_plyr_OOB
 ;RAM:C853 30 18                       jr      NC, plyr_OOB
+;       jhe  plyr_OOB
 loc_C855:
 ;RAM:C855 DD CB 27 CE                 set     1, 0x27(ix)                             ; fudge near arch
+       socb @b02h,@>27(ix)
 ;RAM:C859 CD A1 C9                    call    move_player                             ; does the moving
+;       bl   @move_player
 ;RAM:C85C DD CB 27 8E                 res     1, 0x27(ix)                             ; reset fudge
+       szcb @b02h,@>27(ix)
 ;RAM:C860 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
+       movb @12(ix),a
 ;RAM:C863 D6 10                       sub     #0x10                                   ; entering room?
+       sb   @b10h,a
 ;RAM:C865 38 03                       jr      C, loc_C86A                             ; no, skip
+       jl   loc_C86A
 ;RAM:C867 DD 77 0C                    ld      12(ix), a                               ; dec entering room counter
+       movb a,@12(ix)
 loc_C86A:
 ;RAM:C86A C3 92 C6                    jp      set_wipe_and_draw_flags
        b    @set_wipe_and_draw_flags
 * ---------------------------------------------------------------------------
 *
-;RAM:C86D             ; when walking through arches
-;RAM:C86D
-;RAM:C86D             plyr_OOB:                                                       ; dZ
-;RAM:C86D DD 7E 0B                    ld      a, 11(ix)
+* when walking through arches
+*
+plyr_OOB:
+;RAM:C86D DD 7E 0B                    ld      a, 11(ix)                               ; dZ
+       movb @11(ix),a
 ;RAM:C870 A7                          and     a                                       ; <0?
 ;RAM:C871 FA 55 C8                    jp      M, loc_C855                             ; yes, go
+       jlt  loc_C855
 ;RAM:C874 AF                          xor     a
+       clr  a
 ;RAM:C875 DD 77 0B                    ld      11(ix), a                               ; dZ=0
+       movb a,@11(ix)
 ;RAM:C878 18 DB                       jr      loc_C855
-;RAM:C87A             ;
-;RAM:C87A             ; returns NC if out-of-bounds
-;RAM:C87A
-;RAM:C87A             ; =============== S U B R O U T I N E =======================================
-;RAM:C87A
-;RAM:C87A
-;RAM:C87A             chk_plyr_OOB:
+       jmp  loc_C855
+*
+* =============== S U B R O U T I N E =======================================
+*
+* returns NC if out-of-bounds
+*
+chk_plyr_OOB:
 ;RAM:C87A 2A AB 5B                    ld      hl, (room_size_X)
+       movb @room_size_X,@l
+       movb @room_size_Y,h
 ;RAM:C87D 7D                          ld      a, l                                    ; room_size_X
 ;RAM:C87E DD 96 04                    sub     4(ix)                                   ; sub width
 ;RAM:C881 6F                          ld      l, a
+       sb   @4(ix),@l
 ;RAM:C882 7C                          ld      a, h                                    ; room_size_Y
 ;RAM:C883 DD 96 05                    sub     5(ix)                                   ; sub depth
 ;RAM:C886 67                          ld      h, a
+       sb   @5(ix),h
 ;RAM:C887 DD 7E 01                    ld      a, 1(ix)                                ; X
+       movb @1(ix),a
 ;RAM:C88A D6 80                       sub     #128
+       sb   @b80h,a
 ;RAM:C88C F2 91 C8                    jp      P, loc_C891
+       jgt  loc_C891
 ;RAM:C88F ED 44                       neg
-;RAM:C891
-;RAM:C891             loc_C891:
+       inv  a
+       ab   one,a
+loc_C891:
 ;RAM:C891 BD                          cp      l
+       cb   a,@l
 ;RAM:C892 D0                          ret     NC                                      ; OOB
+       jhe  chk_plyr_OOB_return
 ;RAM:C893 DD 7E 02                    ld      a, 2(ix)                                ; Y
+       movb @2(ix),a
 ;RAM:C896 D6 80                       sub     #128
+       sb   @b80h,a
 ;RAM:C898 F2 9D C8                    jp      P, loc_C89D
+       jgt  loc_C89D
 ;RAM:C89B ED 44                       neg
-;RAM:C89D
-;RAM:C89D             loc_C89D:                                                       ; set/clr carry
-;RAM:C89D BC                          cp      h
+       inv  a
+       ab   one,a
+loc_C89D:
+;RAM:C89D BC                          cp      h                                       ; set/clr carry
+       cb   @a,h
+chk_plyr_OOB_return:
 ;RAM:C89E C9                          ret
-;RAM:C89E             ; End of function chk_plyr_OOB
-;RAM:C89E
+       rt
+*
+* End of function chk_plyr_OOB
+*
 * =============== S U B R O U T I N E =======================================
 *
 handle_left_right:
@@ -4516,64 +4557,100 @@ loc_C994:
 *
 * End of function handle_forward
 *
-;RAM:C9A1
-;RAM:C9A1             ; =============== S U B R O U T I N E =======================================
-;RAM:C9A1
-;RAM:C9A1
-;RAM:C9A1             move_player:
+* =============== S U B R O U T I N E =======================================
+*
+move_player:
+       mov  r11,*sp+
 ;RAM:C9A1 3A C4 5B                    ld      a, (obj_dropping_into_cauldron)
+       movb @obj_dropping_into_cauldron,a
 ;RAM:C9A4 A7                          and     a
 ;RAM:C9A5 28 04                       jr      Z, loc_C9AB
+       jeq  loc_C9AB
 ;RAM:C9A7 DD 36 0B 02                 ld      11(ix), #2                              ; dZ=2
-;RAM:C9AB
-;RAM:C9AB             loc_C9AB:                                                       ; already jumping?
-;RAM:C9AB DD CB 0C 5E                 bit     3, 12(ix)
+       movb @b02h,@11(ix)
+loc_C9AB:
+;RAM:C9ABDD CB 0C 5E                  bit     3, 12(ix)                               ; already jumping?
+       movb @12(ix),r0
+       andi r0,>0800
 ;RAM:C9AF 20 0B                       jr      NZ, loc_C9BC                            ; yes, skip
+       jne  loc_C9BC
 ;RAM:C9B1 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
-;RAM:C9B4 E6 F0                       and     #0xF0 ; '�'                             ; entering screen?
+       movb @12(ix),a
+;RAM:C9B4 E6 F0                       and     #0xF0 ; '�'                            ; entering screen?
+       andi a,>f000
 ;RAM:C9B6 20 04                       jr      NZ, loc_C9BC                            ; yes, skip
+       jne  loc_C9BC
 ;RAM:C9B8 CB 51                       bit     2, c                                    ; forward?
+       movb @c,r0
+       andi r0,>0400
 ;RAM:C9BA 28 05                       jr      Z, loc_C9C1                             ; no, skip
-;RAM:C9BC
-;RAM:C9BC             loc_C9BC:
+       jeq  loc_C9C1
+loc_C9BC:
 ;RAM:C9BC C5                          push    bc
+       mov  bc,*sp+
 ;RAM:C9BD CD FB C9                    call    calc_plyr_dXY
+       bl   @calc_plyr_dXY
 ;RAM:C9C0 C1                          pop     bc
-;RAM:C9C1
-;RAM:C9C1             loc_C9C1:                                                       ; dZ
-;RAM:C9C1 DD 7E 0B                    ld      a, 11(ix)
+       dect sp
+       mov  *sp,bc
+loc_C9C1:
+;RAM:C9C1 DD 7E 0B                    ld      a, 11(ix)                                ; dZ
+       movb @11(ix),a
 ;RAM:C9C4 A7                          and     a
 ;RAM:C9C5 FA CC C9                    jp      M, loc_C9CC
+       jlt  loc_C9CC
 ;RAM:C9C8 CB 59                       bit     3, c                                    ; jump?
+       movb @c,r0
+       andi r0,>0400
 ;RAM:C9CA 20 01                       jr      NZ, loc_C9CD                            ; yes, skip
-;RAM:C9CC
-;RAM:C9CC             loc_C9CC:
+       jne  loc_C9CD
+loc_C9CC:
 ;RAM:C9CC 3D                          dec     a
-;RAM:C9CD
-;RAM:C9CD             loc_C9CD:
+       sb   one,a
+loc_C9CD:
 ;RAM:C9CD 3D                          dec     a
+       sb   one,a
 ;RAM:C9CE DD 77 0B                    ld      11(ix), a                               ; dZ
+       movb a,@11(ix)
 ;RAM:C9D1 32 C1 5B                    ld      (tmp_dZ), a
+       movb a,@tmp_dZ
 ;RAM:C9D4 C6 02                       add     a, #2
+       ab   @b02h,a
 ;RAM:C9D6 FC 51 B4                    call    M, audio_B451
+;      TODO
 ;RAM:C9D9 CD 45 CB                    call    adj_for_out_of_bounds
+       bl   @adj_for_out_of_bounds    ; TODO
 ;RAM:C9DC CD 70 CA                    call    handle_exit_screen
+;      TODO
 ;RAM:C9DF CD 06 C7                    call    add_dXYZ
+       bl   @add_DXYZ
 ;RAM:C9E2 DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB?
+       movb @12(ix),r0
+       andi r0,>0400
 ;RAM:C9E6 28 0B                       jr      Z, clear_dX_dY                          ; no, go
+       jeq  clear_dX_dY
 ;RAM:C9E8 3A C1 5B                    ld      a, (tmp_dZ)
+       movb @tmp_dZ,a
 ;RAM:C9EB A7                          and     a
+       andi a,>ff00
 ;RAM:C9EC F2 F3 C9                    jp      P, clear_dX_dY
+       jgt  clear_dX_dY
 ;RAM:C9EF DD CB 0C 9E                 res     3, 12(ix)                               ; clear jumping flag
-;RAM:C9F3
-;RAM:C9F3             clear_dX_dY:
+       szcb @b04h,@12(ix)
+clear_dX_dY:
 ;RAM:C9F3 AF                          xor     a
+       clr  a
 ;RAM:C9F4 DD 77 09                    ld      9(ix), a                                ; dX=0
+       movb a,@9(ix)
 ;RAM:C9F7 DD 77 0A                    ld      10(ix), a                               ; dY=0
+       movb a,@10(ix)
 ;RAM:C9FA C9                          ret
-;RAM:C9FA             ; End of function move_player
-;RAM:C9FA
-;RAM:C9FB
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function move_player
+*
 * =============== S U B R O U T I N E =======================================
 *
 calc_plyr_dXY:
@@ -4675,7 +4752,7 @@ loc_CA4F:
 * ---------------------------------------------------------------------------
 move_plyr_S:
 ;RAM:CA53 DD 7E 0A                    ld      a, 10(ix)                                ; dY
-       movb @9(ix),a
+       movb @10(ix),a
 ;RAM:CA56 C6 FD                       add     a, #0xFD ; '�'                          ; -3
        sb   @b03h,a
 ;RAM:CA58 18 F5                       jr      loc_CA4F
@@ -4841,16 +4918,23 @@ move_plyr_S:
 ;RAM:CB40 D6 10                       sub     #16                                     ; screen to the south
 ;RAM:CB42 C3 BA CA                    jp      exit_screen
 ;RAM:CB45
-;RAM:CB45             ; =============== S U B R O U T I N E =======================================
-;RAM:CB45
-;RAM:CB45
-;RAM:CB45             adj_for_out_of_bounds:
+* =============== S U B R O U T I N E =======================================
+*
+adj_for_out_of_bounds:
+       mov  r11,*sp+
 ;RAM:CB45 DD CB 07 4E                 bit     1, 7(ix)
+       mov  @7(ix),r0
+       andi r0,>0200
 ;RAM:CB49 C0                          ret     NZ
+       jne  adj_for_out_of_bounds_return
 ;RAM:CB4A DD CB 07 CE                 set     1, 7(ix)
+       socb @b02h,@7(ix)
 ;RAM:CB4E DD 7E 0C                    ld      a, 12(ix)
+       movb @12(ix),a
 ;RAM:CB51 E6 F8                       and     #0xF8 ; '�'                             ; clear X,Y,Z OOB
+       andi a,>f800
 ;RAM:CB53 DD 77 0C                    ld      12(ix), a
+       movb a,@23(ix)
 ;RAM:CB56 2E 00                       ld      l, #0
 ;RAM:CB58 4D                          ld      c, l
 ;RAM:CB59 DD 7E 0B                    ld      a, 11(ix)                               ; dZ
@@ -4891,10 +4975,14 @@ move_plyr_S:
 ;RAM:CB92 DD 74 0B                    ld      11(ix), h                               ; new dZ
 ;RAM:CB95 DD CB 07 8E                 res     1, 7(ix)
 ;RAM:CB99 C9                          ret
-;RAM:CB99             ; End of function adj_for_out_of_bounds
-;RAM:CB99
-;RAM:CB9A
-;RAM:CB9A             ; =============== S U B R O U T I N E =======================================
+adj_for_out_of_bounds_return:
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function adj_for_out_of_bounds
+*
+* =============== S U B R O U T I N E =======================================
 ;RAM:CB9A
 ;RAM:CB9A
 ;RAM:CB9A             adj_dX_for_obj_intersect:
