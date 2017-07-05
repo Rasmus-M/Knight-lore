@@ -113,12 +113,7 @@ zx_aram:
 *
 start:
 *      Init TI-99/4A
-       limi 0
-       lwpi WRKSP
-       li   sp,STACK
-       li   one,>0101
-       bl   @gmode
-*
+       bl   @ti_99_4a_init
 ;RAM:AF6C 21 A0 5B                    ld      hl, #seed_1                             ; location to clear
        li   hl,seed_1
 ;RAM:AF6F 01 68 05                    ld      bc, #0x568                              ; # bytes to clear
@@ -4162,6 +4157,7 @@ loc_C83E:
        bl   @check_user_input
 ;RAM:C844 CD 0E C0                    call    handle_pickup_drop
 ;RAM:C847 CD 9F C8                    call    handle_left_right
+       bl   @handle_left_right
 ;RAM:C84A CD 48 C9                    call    handle_jump
 ;RAM:C84D CD 69 C9                    call    handle_forward
 ;RAM:C850 CD 7A C8                    call    chk_plyr_OOB
@@ -4220,134 +4216,211 @@ loc_C86A:
 ;RAM:C89E C9                          ret
 ;RAM:C89E             ; End of function chk_plyr_OOB
 ;RAM:C89E
-;RAM:C89F
-;RAM:C89F             ; =============== S U B R O U T I N E =======================================
-;RAM:C89F
-;RAM:C89F
-;RAM:C89F             handle_left_right:
+* =============== S U B R O U T I N E =======================================
+*
+handle_left_right:
+       mov  r11,*sp+
 ;RAM:C89F 21 A4 5B                    ld      hl, #user_input_method
+       li   hl,user_input_method
 ;RAM:C8A2 7E                          ld      a, (hl)
+       movb *hl,a
 ;RAM:C8A3 E6 06                       and     #6                                      ; joystick/keyboard bits only
+       andi a,>0600
 ;RAM:C8A5 28 4B                       jr      Z, left_right_rotational                ; keybd? yes, skip
+       jeq  left_right_rotational
 ;RAM:C8A7 CB 5E                       bit     3, (hl)                                 ; directional?
+       movb @hl,r0
+       andi r0,>0800
 ;RAM:C8A9 28 47                       jr      Z, left_right_rotational
+       jeq  left_right_rotational
 ;RAM:C8AB DD 7E 0C                    ld      a, 12(ix)                               ; flags12
+       movb @12(ix),a
 ;RAM:C8AE E6 F0                       and     #0xF0 ; '�'                             ; entering screen?
+       andi a,>f000
 ;RAM:C8B0 C0                          ret     NZ                                      ; yes, exit
+       jne  handle_left_right_return
 ;RAM:C8B1 DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB?
+       movb @12(ix),r0
+       andi r0,>0400
 ;RAM:C8B5 C8                          ret     Z                                       ; no, exit
+       jeq  handle_left_right_return
 ;RAM:C8B6 CB 41                       bit     0, c                                    ; joystick left?
+       mov  bc,r1
+       mov  r1,r0
+       andi r0,>0001
 ;RAM:C8B8 20 04                       jr      NZ, loc_C8BE                            ; yes, skip
+       jne  loc_C8BE
 ;RAM:C8BA CB 51                       bit     2, c                                    ; joystick up?
+       mov  r1,r0
+       andi r0,>0004
 ;RAM:C8BC 20 0F                       jr      NZ, chk_facing_N                        ; yes, skip
-;RAM:C8BE
-;RAM:C8BE             loc_C8BE:                                                       ; joystick right?
-;RAM:C8BE CB 49                       bit     1, c
+       jne  chk_facing_N
+loc_C8BE:
+;RAM:C8BE CB 49                       bit     1, c                                    ; joystick right?
+       mov  r1,r0
+       andi r0,>0002
 ;RAM:C8C0 20 17                       jr      NZ, chk_facing_E                        ; yes, go
+       jne  chk_facing_E
 ;RAM:C8C2 CB 61                       bit     4, c                                    ; joystick down?
+       mov  r1,r0
+       andi r0,>0010
 ;RAM:C8C4 20 1A                       jr      NZ, chk_facing_S                        ; yes, go
+       jne  chk_facing_S
 ;RAM:C8C6 CB 41                       bit     0, c                                    ; joystick left?
+       mov  r1,r0
+       andi r0,>0001
 ;RAM:C8C8 20 1F                       jr      NZ, chk_facing_W                        ; yes, go
+       jne  chk_facing_W
 ;RAM:C8CA CB 91                       res     2, c
+       szcb @b04h,@c
 ;RAM:C8CC C9                          ret
-;RAM:C8CD             ; ---------------------------------------------------------------------------
-;RAM:C8CD
-;RAM:C8CD             chk_facing_N:
+handle_left_right_return:
+       dect sp
+       mov  *sp,r11
+       rt
+* ---------------------------------------------------------------------------
+chk_facing_N:
 ;RAM:C8CD CD 1E CA                    call    get_sprite_dir
+       bl   @get_sprite_dir
 ;RAM:C8D0 FE 02                       cp      #2                                      ; N?
-;RAM:C8D2
-;RAM:C8D2             loc_C8D2:
+       cb   @b02h,a
+loc_C8D2:
 ;RAM:C8D2 28 1B                       jr      Z, flag_forward
+       jeq  flag_forward
 ;RAM:C8D4 2F                          cpl
-;RAM:C8D5
-;RAM:C8D5             loc_C8D5:
+       inv  a
+loc_C8D5:
 ;RAM:C8D5 E6 01                       and     #1
+       andi a,>0100
 ;RAM:C8D7 18 46                       jr      left_right_calc_sprite
-;RAM:C8D9             ; ---------------------------------------------------------------------------
-;RAM:C8D9
-;RAM:C8D9             chk_facing_E:
+       jmp  left_right_calc_sprite
+* ---------------------------------------------------------------------------
+chk_facing_E:
 ;RAM:C8D9 CD 1E CA                    call    get_sprite_dir
+       bl   @get_sprite_dir
 ;RAM:C8DC FE 01                       cp      #1                                      ; E?
+       cb   a,@b01h
 ;RAM:C8DE 18 F2                       jr      loc_C8D2
-;RAM:C8E0             ; ---------------------------------------------------------------------------
-;RAM:C8E0
-;RAM:C8E0             chk_facing_S:
+       jmp  loc_C8D2
+* ---------------------------------------------------------------------------
+chk_facing_S:
 ;RAM:C8E0 CD 1E CA                    call    get_sprite_dir
+       bl   @get_sprite_dir
 ;RAM:C8E3 FE 03                       cp      #3                                      ; S?
-;RAM:C8E5
-;RAM:C8E5             loc_C8E5:
+       cb   a,@b03h
+loc_C8E5:
 ;RAM:C8E5 28 08                       jr      Z, flag_forward
+       jeq  flag_forward
 ;RAM:C8E7 18 EC                       jr      loc_C8D5
-;RAM:C8E9             ; ---------------------------------------------------------------------------
-;RAM:C8E9
-;RAM:C8E9             chk_facing_W:
+       jmp  loc_C8D5
+* ---------------------------------------------------------------------------
+chk_facing_W:
 ;RAM:C8E9 CD 1E CA                    call    get_sprite_dir
+       bl   @get_sprite_dir
 ;RAM:C8EC A7                          and     a                                       ; W?
+       clr  a
 ;RAM:C8ED 18 F6                       jr      loc_C8E5
-;RAM:C8EF             ; ---------------------------------------------------------------------------
-;RAM:C8EF
-;RAM:C8EF             flag_forward:
+       jmp  loc_C8E5
+* ---------------------------------------------------------------------------
+flag_forward:
 ;RAM:C8EF CB D1                       set     2, c
+       socb @b04h,@c
 ;RAM:C8F1 C9                          ret
-;RAM:C8F2             ; ---------------------------------------------------------------------------
-;RAM:C8F2
-;RAM:C8F2             left_right_rotational:
+       jmp  handle_left_right_return
+* ---------------------------------------------------------------------------
+left_right_rotational:
 ;RAM:C8F2 DD 7E 0D                    ld      a, 13(ix)
+       movb @13(ix),a
 ;RAM:C8F5 E6 07                       and     #7                                      ; too soon to turn again?
+       andi a,>0700
 ;RAM:C8F7 28 04                       jr      Z, loc_C8FD                             ; no, skip
+       jeq  loc_C8FD
 ;RAM:C8F9 DD 35 0D                    dec     13(ix)                                  ; dec delay counter
+       sb   one,@13(ix)
 ;RAM:C8FC C9                          ret
-;RAM:C8FD             ; ---------------------------------------------------------------------------
-;RAM:C8FD
-;RAM:C8FD             loc_C8FD:                                                       ; user input
-;RAM:C8FD 79                          ld      a, c
+       jmp  handle_left_right_return
+* ---------------------------------------------------------------------------
+loc_C8FD:
+;RAM:C8FD 79                          ld      a, c                                    ; user input
+       movb @c,a
 ;RAM:C8FE E6 03                       and     #3                                      ; left or right?
+       andi a,>0300
 ;RAM:C900 C8                          ret     Z                                       ; no, return
+       jeq  handle_left_right_return
 ;RAM:C901 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
+       movb @12(ix),a
 ;RAM:C904 E6 F0                       and     #0xF0 ; '�'                             ; entering screen?
+       andi a,>f000
 ;RAM:C906 C0                          ret     NZ                                      ; yes, exit
+       jne  handle_left_right_return
 ;RAM:C907 DD CB 0C 5E                 bit     3, 12(ix)                               ; already jumping?
+       movb @12(ix),r0
+       andi r0,>0800
 ;RAM:C90B C0                          ret     NZ                                      ; yes, exit
+       jne  handle_left_right_return
 ;RAM:C90C CB 51                       bit     2, c                                    ; forward?
+       movb  @c,r0
+       andi r0,>0400
 ;RAM:C90E 20 05                       jr      NZ, loc_C915                            ; yes, skip
+       jne  loc_C915
 ;RAM:C910 C5                          push    bc
 ;RAM:C911 CD C1 B4                    call    audio_B4C1
+;      TODO
 ;RAM:C914 C1                          pop     bc
-;RAM:C915
-;RAM:C915             loc_C915:
+loc_C915:
 ;RAM:C915 DD 7E 0D                    ld      a, 13(ix)
+       movb @13(ix),a
 ;RAM:C918 F6 02                       or      #2                                      ; init turning delay counter
+       ori  a,>0200
 ;RAM:C91A DD 77 0D                    ld      13(ix), a
+       movb a,@13(ix)
 ;RAM:C91D CB 49                       bit     1, c                                    ; right?
-;RAM:C91F
-;RAM:C91F             left_right_calc_sprite:                                         ; yes, skip
-;RAM:C91F 20 1F                       jr      NZ, loc_C940
+       movb  @c,r0
+       andi r0,>0200
+left_right_calc_sprite:
+;RAM:C91F 20 1F                       jr      NZ, loc_C940                            ; yes, skip
+       jne  loc_C940
 ;RAM:C921 DD CB 07 76                 bit     6, 7(ix)                                ; hflip?
+       movb @7(ix),r0
+       andi r0,>4000
 ;RAM:C925 20 08                       jr      NZ, loc_C92F                            ; yes, skip
-;RAM:C927
-;RAM:C927             loc_C927:                                                       ; graphic_no
-;RAM:C927 DD 7E 00                    ld      a, 0(ix)
+       jne  loc_C92F
+loc_C927:
+;RAM:C927 DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
+       movb *ix,a
 ;RAM:C92A EE 08                       xor     #8
+       li   r0,>0800
+       xor  r0,a
 ;RAM:C92C DD 77 00                    ld      0(ix), a
-;RAM:C92F
-;RAM:C92F             loc_C92F:
+       movb a,*ix
+loc_C92F:
 ;RAM:C92F DD 7E 07                    ld      a, 7(ix)
+       movb @7(ix),a
 ;RAM:C932 EE 40                       xor     #0x40 ; '@'                             ; toggle hflip
+       li   r0,>4000
+       xor  r0,a
 ;RAM:C934 DD 77 07                    ld      7(ix), a
+       movb a,@7(ix)
 ;RAM:C937 DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
+       movb *ix,a
 ;RAM:C93A C6 10                       add     a, #0x10                                ; top half
+       ab   @b10h,a
 ;RAM:C93C DD 77 20                    ld      0x20(ix), a                             ; set sprite for top half
+       movb a,@>20(ix)
 ;RAM:C93F C9                          ret
-;RAM:C940             ; ---------------------------------------------------------------------------
-;RAM:C940
-;RAM:C940             loc_C940:                                                       ; hflip?
-;RAM:C940 DD CB 07 76                 bit     6, 7(ix)
+       jmp  handle_left_right_return
+;* ---------------------------------------------------------------------------
+loc_C940:
+;RAM:C940 DD CB 07 76                 bit     6, 7(ix)                                ; hflip?
+       movb @7(ix),r0
+       andi r0,>4000
 ;RAM:C944 20 E1                       jr      NZ, loc_C927                            ; yes, go
+       jne  loc_C927
 ;RAM:C946 18 E7                       jr      loc_C92F
-;RAM:C946             ; End of function handle_left_right
-;RAM:C946
-;RAM:C948
-;RAM:C948             ; =============== S U B R O U T I N E =======================================
+       jmp  loc_C92F
+* End of function handle_left_right
+*
+* =============== S U B R O U T I N E =======================================
 ;RAM:C948
 ;RAM:C948
 ;RAM:C948             handle_jump:
@@ -8572,436 +8645,6 @@ loc_D8DC:
 * END OF FUNCTION CHUNK FOR vflip_sprite_data
 * ---------------------------------------------------------------------------
 
-*********************************************************************************
-*
-* Set graphics mode
-*
-gmode:
-       lwpi wrksp2
-       clr  r0
-       li   r1,vregs
-       li   r2,8
-gmode1:
-       swpb r0
-       movb *r1+,r0
-       swpb r0
-       bl   @vwtr                          ; Set register
-       ai   r0,>0100
-       dec  r2
-       jne  gmode1
-*      Setup name table for bitmap drawing
-       li   r0, nametb
-       bl   @vwad
-       clr  r1
-       li   r2,>300
-gmode2:
-       movb r1,@vdpwd
-       ai   r1,>0100
-       dec  r2
-       jne  gmode2
-*      Disable sprites
-       li   r0,spratb
-       li   r1,>d000
-       bl   @vsbw
-*      Return
-       lwpi wrksp
-       b    *r11
-*      VDP registers
-vregs:
-       byte >02                            ; Graphics II mode
-       byte >e2                            ; 16K, display on, interrupt enabled
-       byte nametb/>400                    ; Name table
-       byte >ff                            ; Color table
-       byte ptrntb/>800+>03                ; Pattern table
-       byte spratb/>80                     ; Sprite attribute table
-       byte sprptb/>800                    ; Sprite pattern table
-       byte >01                            ; Backdrop color
-*// gmode
-
-*********************************************************************************
-*
-* HL = starting location in zx_aram
-* A = attribute
-*
-set_attribute:
-       mov  r11,*sp+
-       mov  bc,*sp+
-       li   bc,>0101
-       bl   @fill_color_window
-       dect sp
-       mov  *sp,bc
-       dect sp
-       mov  *sp,r11
-       b    *r11
-*// set_attribute
-
-*********************************************************************************
-*
-* Fill color window
-*
-* HL = starting location in zx_aram
-* B = width (bytes)
-* C = height (lines)
-* A = attribute
-*
-       data 0
-fill_color_window:
-       mov  r11,*sp+
-       bl   @ti_color
-       mov  hl,r0
-       ai   r0,-zx_aram
-       mov  r0,r1
-       srl  r0,5                       ; Divide by 32 to get row
-       swpb r0                         ; Multiply by 256, this is the row offset
-       andi r1,>1f                     ; Column
-       sla  r1,3                       ; Multiply by 8, this is the column offset
-       a    r1,r0                      ; Add to row offset
-       ai   r0,COLRTB
-       li   r1,VDPWD
-       mov  bc,r2
-fill_color_window_1:
-       bl   @vwad
-       movb r2,b
-fill_color_window_2:
-       movb af_,*r1
-       movb af_,*r1
-       movb af_,*r1
-       movb af_,*r1
-       movb af_,*r1
-       movb af_,*r1
-       movb af_,*r1
-       movb af_,*r1
-       sb   one,b
-       jne  fill_color_window_2
-       ai   r0,256
-       sb   one,@c
-       jne  fill_color_window_1
-       dect sp
-       mov  *sp,r11
-       rt
-*// fill_color_window
-
-*********************************************************************************
-*
-* Get TI-99 color from ZX Spectrum color
-*
-* a: Colour-byte FBPPPIII
-*  - I - Ink colour (0-7)
-*  - P - Paper colour (0-7)
-*  - B - Bright (0-No, 1-Yes)
-*  - F - Flash  (0-No, 1-Yes)
-*
-* On return af_ contains the TI color FFFFBBBB.
-*
-ti_color:
-       movb a,@wrksp2
-       lwpi wrksp2
-       clr  r1
-*      Foreground
-       mov  r0,r2
-       andi r2,>0700                   ; Foreground bits
-       mov  r0,r3
-       andi r3,>4000                   ; Bright bit
-       srl  r3,3
-       soc  r3,r2
-       swpb r2
-       movb @tipal(r2),r1
-       sla  r1,4
-*      Background
-       mov  r0,r2
-       andi r2,>3800                   ; Background bits
-       srl  r2,3
-       soc  r3,r2
-       swpb r2
-       movb @tipal(r2),r3
-       socb r3,r1
-       lwpi wrksp
-       movb @wrksp2+2,af_
-       b    *r11
-
-* Spectrum palette
-* 0  Black,    1 D Blue,   2 D Red,     3 D Magenta
-* 4  D Green,  5 D Cyan,   6 D Yellow,  7 Grey
-* 8  Black,    9 Blue,    10 Red,      11 Magenta
-* 12 Green,   13 Cyan,    14 Yellow,   15 White
-
-* TI palette
-* 0  Trans,    1 Black,    2 M Green,   3 L Green
-* 4  D Blue,   5 L Blue,   6 D Red,     7 Cyan
-* 8  M Red,    9 L Red,   10 D Yellow, 11 L Yellow
-* 12 D Green, 13 Magenta, 14 Gray,     15 White
-
-tipal  byte 1,4,6,13,12,7,10,14,1,5,8,13,2,7,11,15
-* Not used: 3 L Green, 9 L Red
-* Not available: D Cyan, D Magenta
-*// ti_color
-       
-*********************************************************************
-*
-* Fast CPU to VDP write, replaces VSMW
-*
-* R0: Destination address
-* R1: Byte to write in MSB
-* R2: Number of bytes to copy
-*
-vdpwr:
-       mov  r0,@wrksp2
-       mov  r1,@wrksp2+2
-       mov  r2,@wrksp2+4
-       lwpi wrksp2
-       bl   @vwad
-       li   r0,vdpwd
-       mov  r2,r3
-       srl  r3,3                       ; Number of groups of 8
-       jeq  vdpwr2
-vdpwr1:
-       movb r1,*r0
-       movb r1,*r0
-       movb r1,*r0
-       movb r1,*r0
-       movb r1,*r0
-       movb r1,*r0
-       movb r1,*r0
-       movb r1,*r0
-       dec  r3
-       jne  vdpwr1
-       andi r2,>0007                   ; Isolate number of remaining bytes
-       jeq  vdpwr3
-vdpwr2:
-       movb r1,*r0
-       dec  r2
-       jne  vdpwr2
-vdpwr3:
-       lwpi wrksp
-       b    *r11
-*// vdpwr
-
-*********************************************************************
-*
-* VDP Write To Register
-*
-* R0 MSB: VDP register to write to
-* R0 LSB: Value to write
-*
-vwtr:
-       swpb r0
-       movb r0,@vdpwa                  ; Send low byte (value) to write to VDP register
-       swpb r0
-       ori  r0,>8000                   ; Set up a VDP register write operation (10)
-       movb r0,@vdpwa                  ; Send high byte (address) of VDP register
-       b    *r11
-*// vwtr
-
-*********************************************************************
-*
-* VDP Set Write Address
-*
-* R0: Write address in VDP RAM
-*
-* R0 is modified, but can be restored with: ANDI R0,>3FFF
-*
-vwad:
-       swpb r0
-       movb r0,@vdpwa                  ; Send low byte of VDP RAM write address
-       swpb r0
-       ori  r0,>4000                   ; Set read/write bits 14 and 15 to write (01)
-       movb r0,@vdpwa                  ; Send high byte of VDP RAM write address
-       b    *r11
-*// vwad
-
-*********************************************************************
-*
-* VDP Single Byte Write
-*
-* R0: Write address in VDP RAM
-* R1: MSB of R1 sent to VDP RAM
-*
-* R0 is modified, but can be restored with: ANDI R0,>3FFF
-*
-vsbw:
-       swpb r0
-       movb r0,@vdpwa                  ; Send low byte of VDP RAM write address
-       swpb r0
-       ori  r0,>4000                   ; Set read/write bits 14 and 15 to write (01)
-       movb r0,@vdpwa                  ; Send high byte of VDP RAM write address
-       movb r1,@vdpwd                  ; Write byte to VDP RAM
-       b    *r11
-*// vsbw
-
-***************************************************************************
-*
-* Emulation of Z80 instructions
-*
-exx:
-       mov  bc,r0
-       mov  bc_,bc
-       mov  r0,bc_
-       mov  hl,r0
-       mov  hl_,hl
-       mov  r0,hl_
-       mov  de,r0
-       mov  de_,de
-       mov  r0,de_
-       rt
-
-ex_de_hl:
-       mov  de,r0
-       mov  hl,de
-       mov  r0,hl
-       rt
-
-ldir:
-       movb *hl+,*de+
-       dec  bc
-       jne  ldir
-       b    *r11
-
-* If the least significant four bits of A contain a non-BCD digit (i. e. it is greater than 9)
-* or the H flag is set, then $06 is added to the register. Then the four most significant bits are checked.
-* If this more significant digit also happens to be greater than 9 or the C flag is set, then $60 is added.
-daa:
-       mov  a,r0
-       andi r0,>0f00
-       cb   r0,@b09h
-       jle  daa1
-       ab   @b06h,a
-daa1:
-       mov  a,r0
-       andi r0,>f000
-       srl  r0,4
-       cb   r0,@b09h
-       jle  daa2
-       ab   @b60h,a
-daa2:
-       rt
-
-***************************************************************************
-*
-* Check key
-*
-* R0: Column in MSB: >0000 - >0700, Row in LSB: >0006 - >0014
-*
-*       Column   0      1    2    3    4    5     6       7
-*     Row
-*     >0006      =      .    ,    M    N    /    Fire    Fire
-*     >0008    Space    L    K    J    H    ;    Left    Left
-*     >000A    Enter    O    I    U    Y    P    Right   Right
-*     >000C             9    8    7    6    0    Down    Down
-*     >000E    Fctn     2    3    4    5    1    Up      Up
-*     >0010    Shift    S    D    F    G    A
-*     >0012    Ctrl     W    E    R    T    Q
-*     >0014             X    C    V    B    Z
-*
-* On return NEQ means that the key is pressed
-*
-KEY_FI EQU  >0606
-KEY_LF EQU  >0608
-KEY_RG EQU  >060A
-KEY_DN EQU  >060C
-KEY_UP EQU  >060E
-KEY_CM EQU  >0206
-KEY_FS EQU  >0106
-KEY_0  EQU  >050C
-KEY_1  EQU  >050E
-KEY_2  EQU  >010E
-KEY_3  EQU  >020E
-KEY_4  EQU  >030E
-KEY_5  EQU  >040E
-KEY_6  EQU  >040C
-KEY_7  EQU  >030C
-KEY_8  EQU  >020C
-KEY_9  EQU  >010C
-KEY_A  EQU  >0510
-KEY_B  EQU  >0414
-KEY_C  EQU  >0214
-KEY_D  EQU  >0210
-KEY_E  EQU  >0212
-KEY_F  EQU  >0310
-KEY_G  EQU  >0410
-KEY_H  EQU  >0408
-KEY_I  EQU  >020A
-KEY_J  EQU  >0308
-KEY_K  EQU  >0208
-KEY_L  EQU  >0108
-KEY_M  EQU  >0306
-KEY_N  EQU  >0406
-KEY_O  EQU  >010A
-KEY_P  EQU  >050A
-KEY_Q  EQU  >0512
-KEY_R  EQU  >0312
-KEY_S  EQU  >0110
-KEY_T  EQU  >0412
-KEY_U  EQU  >030A
-KEY_V  EQU  >0314
-KEY_W  EQU  >0112
-KEY_X  EQU  >0114
-KEY_Y  EQU  >040A
-KEY_Z  EQU  >0514
-KEY_SP EQU  >0008
-KEY_FN EQU  >000E
-KEY_SH EQU  >0010
-KEY_CT EQU  >0012
-*
-chkkey:
-       li   r12,>0024                  ; CRU address of the column decoder
-       ldcr r0,3                       ; Select column
-       andi r0,>00ff
-       mov  r0,r12                     ; Select row
-       tb   0                          ; Test key, EQ if not pressed
-       b    *r11
-*// CHKKEY
-
-*********************************************************************
-*
-* Byte constants
-*
-b00h   byte >00
-b01h   byte >01
-b02h   byte >02
-b03h   byte >03
-b04h   byte >04
-b05h   byte >05
-b06h   byte >06
-b07h   byte >07
-b08h   byte >08
-b09h   byte >09
-b0ah   byte >0a
-b0ch   byte >0c
-b0dh   byte >0d
-b0eh   byte >0e
-b10h   byte >10
-b12h   byte >12
-b14h   byte >14
-b17h   byte >17
-b20h   byte >20
-b22h   byte >22
-b28h   byte >28
-b30h   byte >30
-b37h   byte >37
-b40h   byte >40
-b47h   byte >47
-b51h   byte >51
-b58h   byte >58
-b5ah   byte >5a
-b68h   byte >68
-b60h   byte >60
-b80h   byte >80
-b8ch   byte >8c
-ba0h   byte >a0
-baeh   byte >ae
-bb0h   byte >b0
-bb8h   byte >b8
-bbah   byte >ba
-bbbh   byte >bb
-bc0h   byte >c0
-bc8h   byte >c8
-bd0h   byte >d0
-be1h   byte >e1
-bf0h   byte >f0
-bf1h   byte >f1
-bfeh   byte >fe
-bffh   byte >ff
-
 *===========================================================================
 *
 * End of lower memory
@@ -9418,9 +9061,458 @@ upd_sprite_jmp_tbl:
        data no_update
        data upd_185_187                                 ; last obj in cauldron sparkle
 
+*********************************************************************
+*
+* Byte constants
+*
+b00h   byte >00
+b01h   byte >01
+b02h   byte >02
+b03h   byte >03
+b04h   byte >04
+b05h   byte >05
+b06h   byte >06
+b07h   byte >07
+b08h   byte >08
+b09h   byte >09
+b0ah   byte >0a
+b0ch   byte >0c
+b0dh   byte >0d
+b0eh   byte >0e
+b10h   byte >10
+b12h   byte >12
+b14h   byte >14
+b17h   byte >17
+b20h   byte >20
+b22h   byte >22
+b28h   byte >28
+b30h   byte >30
+b37h   byte >37
+b40h   byte >40
+b47h   byte >47
+b51h   byte >51
+b58h   byte >58
+b5ah   byte >5a
+b68h   byte >68
+b60h   byte >60
+b80h   byte >80
+b8ch   byte >8c
+ba0h   byte >a0
+baeh   byte >ae
+bb0h   byte >b0
+bb8h   byte >b8
+bbah   byte >ba
+bbbh   byte >bb
+bc0h   byte >c0
+bc8h   byte >c8
+bd0h   byte >d0
+be1h   byte >e1
+bf0h   byte >f0
+bf1h   byte >f1
+bfeh   byte >fe
+bffh   byte >ff
+
+*********************************************************************************
+*
+* TI-99/4 helper routines
+*
+*********************************************************************************
+
+ti_99_4a_init:
+       mov  r11,@ret_from_init
+       limi 0
+       lwpi WRKSP
+       li   sp,STACK
+       li   one,>0101
+       bl   @gmode
+       mov  @ret_from_init,r11
+       rt
+ret_from_init:
+       data 0
+
+*********************************************************************************
+*
+* Set graphics mode
+*
+gmode:
+       lwpi wrksp2
+       clr  r0
+       li   r1,vregs
+       li   r2,8
+gmode1:
+       swpb r0
+       movb *r1+,r0
+       swpb r0
+       bl   @vwtr                          ; Set register
+       ai   r0,>0100
+       dec  r2
+       jne  gmode1
+*      Setup name table for bitmap drawing
+       li   r0, nametb
+       bl   @vwad
+       clr  r1
+       li   r2,>300
+gmode2:
+       movb r1,@vdpwd
+       ai   r1,>0100
+       dec  r2
+       jne  gmode2
+*      Disable sprites
+       li   r0,spratb
+       li   r1,>d000
+       bl   @vsbw
+*      Return
+       lwpi wrksp
+       rt
+*      VDP registers
+vregs:
+       byte >02                            ; Graphics II mode
+       byte >e2                            ; 16K, display on, interrupt enabled
+       byte nametb/>400                    ; Name table
+       byte >ff                            ; Color table
+       byte ptrntb/>800+>03                ; Pattern table
+       byte spratb/>80                     ; Sprite attribute table
+       byte sprptb/>800                    ; Sprite pattern table
+       byte >01                            ; Backdrop color
+*// gmode
+
+*********************************************************************************
+*
+* HL = starting location in zx_aram
+* A = attribute
+*
+set_attribute:
+       mov  r11,*sp+
+       mov  bc,*sp+
+       li   bc,>0101
+       bl   @fill_color_window
+       dect sp
+       mov  *sp,bc
+       dect sp
+       mov  *sp,r11
+       rt
+*// set_attribute
+
+*********************************************************************************
+*
+* Fill color window
+*
+* HL = starting location in zx_aram
+* B = width (bytes)
+* C = height (lines)
+* A = attribute
+*
+       data 0
+fill_color_window:
+       mov  r11,*sp+
+       bl   @ti_color
+       mov  hl,r0
+       ai   r0,-zx_aram
+       mov  r0,r1
+       srl  r0,5                       ; Divide by 32 to get row
+       swpb r0                         ; Multiply by 256, this is the row offset
+       andi r1,>1f                     ; Column
+       sla  r1,3                       ; Multiply by 8, this is the column offset
+       a    r1,r0                      ; Add to row offset
+       ai   r0,COLRTB
+       li   r1,VDPWD
+       mov  bc,r2
+fill_color_window_1:
+       bl   @vwad
+       movb r2,b
+fill_color_window_2:
+       movb af_,*r1
+       movb af_,*r1
+       movb af_,*r1
+       movb af_,*r1
+       movb af_,*r1
+       movb af_,*r1
+       movb af_,*r1
+       movb af_,*r1
+       sb   one,b
+       jne  fill_color_window_2
+       ai   r0,256
+       sb   one,@c
+       jne  fill_color_window_1
+       dect sp
+       mov  *sp,r11
+       rt
+*// fill_color_window
+
+*********************************************************************************
+*
+* Get TI-99 color from ZX Spectrum color
+*
+* a: Colour-byte FBPPPIII
+*  - I - Ink colour (0-7)
+*  - P - Paper colour (0-7)
+*  - B - Bright (0-No, 1-Yes)
+*  - F - Flash  (0-No, 1-Yes)
+*
+* On return af_ contains the TI color FFFFBBBB.
+*
+ti_color:
+       movb a,@wrksp2
+       lwpi wrksp2
+       clr  r1
+*      Foreground
+       mov  r0,r2
+       andi r2,>0700                   ; Foreground bits
+       mov  r0,r3
+       andi r3,>4000                   ; Bright bit
+       srl  r3,3
+       soc  r3,r2
+       swpb r2
+       movb @tipal(r2),r1
+       sla  r1,4
+*      Background
+       mov  r0,r2
+       andi r2,>3800                   ; Background bits
+       srl  r2,3
+       soc  r3,r2
+       swpb r2
+       movb @tipal(r2),r3
+       socb r3,r1
+       lwpi wrksp
+       movb @wrksp2+2,af_
+       rt
+
+* Spectrum palette
+* 0  Black,    1 D Blue,   2 D Red,     3 D Magenta
+* 4  D Green,  5 D Cyan,   6 D Yellow,  7 Grey
+* 8  Black,    9 Blue,    10 Red,      11 Magenta
+* 12 Green,   13 Cyan,    14 Yellow,   15 White
+
+* TI palette
+* 0  Trans,    1 Black,    2 M Green,   3 L Green
+* 4  D Blue,   5 L Blue,   6 D Red,     7 Cyan
+* 8  M Red,    9 L Red,   10 D Yellow, 11 L Yellow
+* 12 D Green, 13 Magenta, 14 Gray,     15 White
+
+tipal  byte 1,4,6,13,12,7,10,14,1,5,8,13,2,7,11,15
+* Not used: 3 L Green, 9 L Red
+* Not available: D Cyan, D Magenta
+*// ti_color
+
+*********************************************************************
+*
+* Fast CPU to VDP write, replaces VSMW
+*
+* R0: Destination address
+* R1: Byte to write in MSB
+* R2: Number of bytes to copy
+*
+vdpwr:
+       mov  r0,@wrksp2
+       mov  r1,@wrksp2+2
+       mov  r2,@wrksp2+4
+       lwpi wrksp2
+       bl   @vwad
+       li   r0,vdpwd
+       mov  r2,r3
+       srl  r3,3                       ; Number of groups of 8
+       jeq  vdpwr2
+vdpwr1:
+       movb r1,*r0
+       movb r1,*r0
+       movb r1,*r0
+       movb r1,*r0
+       movb r1,*r0
+       movb r1,*r0
+       movb r1,*r0
+       movb r1,*r0
+       dec  r3
+       jne  vdpwr1
+       andi r2,>0007                   ; Isolate number of remaining bytes
+       jeq  vdpwr3
+vdpwr2:
+       movb r1,*r0
+       dec  r2
+       jne  vdpwr2
+vdpwr3:
+       lwpi wrksp
+       rt
+*// vdpwr
+
+*********************************************************************
+*
+* VDP Write To Register
+*
+* R0 MSB: VDP register to write to
+* R0 LSB: Value to write
+*
+vwtr:
+       swpb r0
+       movb r0,@vdpwa                  ; Send low byte (value) to write to VDP register
+       swpb r0
+       ori  r0,>8000                   ; Set up a VDP register write operation (10)
+       movb r0,@vdpwa                  ; Send high byte (address) of VDP register
+       rt
+*// vwtr
+
+*********************************************************************
+*
+* VDP Set Write Address
+*
+* R0: Write address in VDP RAM
+*
+* R0 is modified, but can be restored with: ANDI R0,>3FFF
+*
+vwad:
+       swpb r0
+       movb r0,@vdpwa                  ; Send low byte of VDP RAM write address
+       swpb r0
+       ori  r0,>4000                   ; Set read/write bits 14 and 15 to write (01)
+       movb r0,@vdpwa                  ; Send high byte of VDP RAM write address
+       rt
+*// vwad
+
+*********************************************************************
+*
+* VDP Single Byte Write
+*
+* R0: Write address in VDP RAM
+* R1: MSB of R1 sent to VDP RAM
+*
+* R0 is modified, but can be restored with: ANDI R0,>3FFF
+*
+vsbw:
+       swpb r0
+       movb r0,@vdpwa                  ; Send low byte of VDP RAM write address
+       swpb r0
+       ori  r0,>4000                   ; Set read/write bits 14 and 15 to write (01)
+       movb r0,@vdpwa                  ; Send high byte of VDP RAM write address
+       movb r1,@vdpwd                  ; Write byte to VDP RAM
+       rt
+*// vsbw
+
+***************************************************************************
+*
+* Emulation of Z80 instructions
+*
+exx:
+       mov  bc,r0
+       mov  bc_,bc
+       mov  r0,bc_
+       mov  hl,r0
+       mov  hl_,hl
+       mov  r0,hl_
+       mov  de,r0
+       mov  de_,de
+       mov  r0,de_
+       rt
+
+ex_de_hl:
+       mov  de,r0
+       mov  hl,de
+       mov  r0,hl
+       rt
+
+ldir:
+       movb *hl+,*de+
+       dec  bc
+       jne  ldir
+       rt
+
+* If the least significant four bits of A contain a non-BCD digit (i. e. it is greater than 9)
+* or the H flag is set, then $06 is added to the register. Then the four most significant bits are checked.
+* If this more significant digit also happens to be greater than 9 or the C flag is set, then $60 is added.
+daa:
+       mov  a,r0
+       andi r0,>0f00
+       cb   r0,@b09h
+       jle  daa1
+       ab   @b06h,a
+daa1:
+       mov  a,r0
+       andi r0,>f000
+       srl  r0,4
+       cb   r0,@b09h
+       jle  daa2
+       ab   @b60h,a
+daa2:
+       rt
+
+***************************************************************************
+*
+* Check key
+*
+* R0: Column in MSB: >0000 - >0700, Row in LSB: >0006 - >0014
+*
+*       Column   0      1    2    3    4    5     6       7
+*     Row
+*     >0006      =      .    ,    M    N    /    Fire    Fire
+*     >0008    Space    L    K    J    H    ;    Left    Left
+*     >000A    Enter    O    I    U    Y    P    Right   Right
+*     >000C             9    8    7    6    0    Down    Down
+*     >000E    Fctn     2    3    4    5    1    Up      Up
+*     >0010    Shift    S    D    F    G    A
+*     >0012    Ctrl     W    E    R    T    Q
+*     >0014             X    C    V    B    Z
+*
+* On return NEQ means that the key is pressed
+*
+KEY_FI EQU  >0606
+KEY_LF EQU  >0608
+KEY_RG EQU  >060A
+KEY_DN EQU  >060C
+KEY_UP EQU  >060E
+KEY_CM EQU  >0206
+KEY_FS EQU  >0106
+KEY_0  EQU  >050C
+KEY_1  EQU  >050E
+KEY_2  EQU  >010E
+KEY_3  EQU  >020E
+KEY_4  EQU  >030E
+KEY_5  EQU  >040E
+KEY_6  EQU  >040C
+KEY_7  EQU  >030C
+KEY_8  EQU  >020C
+KEY_9  EQU  >010C
+KEY_A  EQU  >0510
+KEY_B  EQU  >0414
+KEY_C  EQU  >0214
+KEY_D  EQU  >0210
+KEY_E  EQU  >0212
+KEY_F  EQU  >0310
+KEY_G  EQU  >0410
+KEY_H  EQU  >0408
+KEY_I  EQU  >020A
+KEY_J  EQU  >0308
+KEY_K  EQU  >0208
+KEY_L  EQU  >0108
+KEY_M  EQU  >0306
+KEY_N  EQU  >0406
+KEY_O  EQU  >010A
+KEY_P  EQU  >050A
+KEY_Q  EQU  >0512
+KEY_R  EQU  >0312
+KEY_S  EQU  >0110
+KEY_T  EQU  >0412
+KEY_U  EQU  >030A
+KEY_V  EQU  >0314
+KEY_W  EQU  >0112
+KEY_X  EQU  >0114
+KEY_Y  EQU  >040A
+KEY_Z  EQU  >0514
+KEY_SP EQU  >0008
+KEY_FN EQU  >000E
+KEY_SH EQU  >0010
+KEY_CT EQU  >0012
+*
+chkkey:
+       li   r12,>0024                  ; CRU address of the column decoder
+       ldcr r0,3                       ; Select column
+       andi r0,>00ff
+       mov  r0,r12                     ; Select row
+       tb   0                          ; Test key, EQ if not pressed
+       rt
+*// CHKKEY
+
+
 * ---------------------------------------------------------------------------
 *
-* 2492 bytes free
+* 1934 bytes free
 *
 * ---------------------------------------------------------------------------
 *
