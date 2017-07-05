@@ -7395,7 +7395,7 @@ loc_D61C:
 ;RAM:D62B 6F                          ld      l, a
        movb a,@l
 loc_D62C:
-;RAM:D62C CD 26 D8                    call    calc_vram_addr
+;RAM:D62C CD 26 D8                    call    calc_vram_addr                          ; in DE
        bl   @calc_vram_addr
 ;RAM:D62F CD 11 D8                    call    calc_vidbuf_addr                        ; in BC
        bl   @calc_vidbuf_addr
@@ -7532,59 +7532,81 @@ blit_to_screen:
 ;RAM:D69A C1                          pop     bc
 ;RAM:D69B 10 DF                       djnz    blit_to_screen                          ; no, loop
 ;RAM:D69D C9                          ret
+
        mov  de,@wrksp2                 ; Destination: de -> r0
        mov  hl,@wrksp2+2               ; Source: hl -> r1
        mov  bc,@wrksp2+4               ; Dimensions: bc -> r2
        lwpi wrksp2
+
+;x1     equ  8
+;y1     equ  4
+;w1     equ  16
+;h1     equ  16
+;       li   r0,(y1+h1)*256-(256-7)+(x1*8)        ; Dest
+;       li   r1,vidbuf+>1800-32-(y1*8*32)+x1      ; Source
+;       li   r2,(h1*8*256)+w1                     ; Size (lines, bytes/line)
+
        mov  r2,r3
        andi r2,>ff00                   ; Lines
        swpb r2
        andi r3,>00ff                   ; Bytes/line
+
        mov  r0,r4
        andi r4,7                       ; Number of lines into character row (n)
        ci   r4,7                       ; If n is 7 it's a full row
        jeq  blit1                      ; and we can skip adding more lines
        neg  r4                         ; -n
-       a    r4,7                       ; 7 - n extra lines
+       ai   r4,7                       ; 7 - n extra lines
        a    r4,r2                      ; add extra lines
+       sla  r4,5
+       s    r4,r1                      ; Adjust source
+
 blit1:
-       ai   r1,7*32                    ; start 7 lines down
        andi r0,>FFF8                   ; Move dest to top of character row
-       mov  r3,r4                      ; Copy bytes/line
+       mov  r3,r4                      ; Copy number of bytes/line
        li   r15,vdpwd
 blit2:
        bl   @vwad                      ; Set VDP write address
        li   r3,32
        mov  r1,r5
-       s    r3,r1
+       a    r3,r1
        mov  r1,r6
-       s    r3,r1
+       a    r3,r1
        mov  r1,r7
-       s    r3,r1
+       a    r3,r1
        mov  r1,r8
-       s    r3,r1
+       a    r3,r1
        mov  r1,r9
-       s    r3,r1
+       a    r3,r1
        mov  r1,r10
-       s    r3,r1
+       a    r3,r1
        mov  r1,r11
-       s    r3,r1
+       a    r3,r1
        mov  r1,r12
-       s    r3,r1
+       a    r3,r1
        mov  r4,r3                      ; Reset bytes/line counter
 blit3:
-       movb *r5+,*r15
-       movb *r6+,*r15
-       movb *r7+,*r15
-       movb *r8+,*r15
-       movb *r9+,*r15
-       movb *r10+,*r15
+       movb *r12+,*r15                 ; Output in reverse order
        movb *r11+,*r15
-       movb *r12+,*r15
+       movb *r10+,*r15
+       movb *r9+,*r15
+       movb *r8+,*r15
+       movb *r7+,*r15
+       movb *r6+,*r15
+       movb *r5+,*r15
+
+;       seto *r15
+;       seto *r15
+;       seto *r15
+;       seto *r15
+;       seto *r15
+;       seto *r15
+;       seto *r15
+;       seto *r15
+
        dec  r3
        jne  blit3
        ai   r0,-256
-       ai   r1,512                     ; Move 16 lines down
        ai   r2,-8
        jgt  blit2
        lwpi wrksp
@@ -8140,10 +8162,20 @@ calc_vidbuf_addr:
 *
 * =============== S U B R O U T I N E =======================================
 *
-* b: pixel Y (0 is bottom line)
+* b: pixel Y (0 is bottom line of screen)
 * c: pixel X
 *
 * Result in de
+*
+; Given a Y coordinate stored in an 8-bit register:
+;
+; Y Coordinate bit layout (MSB to LSB):
+; zzxx xnnn
+;
+; we can produce a 16-bit address in a register pair by placing these bits as follows:
+;
+; Register pair bit layout (R are the bits for the x-axis offset, 010 provides the base address $4000):
+; 010z znnn xxxR RRRR
 *
 calc_vram_addr:
 ;RAM:D826 79                          ld      a, c
@@ -8151,40 +8183,39 @@ calc_vram_addr:
 ;RAM:D828 0F                          rrca
 ;RAM:D829 0F                          rrca
 ;RAM:D82A E6 1F                       and     #0x1F
-;RAM:D82C 5F                          ld      e, a
+;RAM:D82C 5F                          ld      e, a        ; 000 RRRRR
 ;RAM:D82D 78                          ld      a, b
 ;RAM:D82E 2F                          cpl
 ;RAM:D82F E6 07                       and     #7
-;RAM:D831 08                          ex      af, af'
+;RAM:D831 08                          ex      af, af'     ; 00000 ~nnn
 ;RAM:D832 78                          ld      a, b
 ;RAM:D833 2F                          cpl
 ;RAM:D834 07                          rlca
 ;RAM:D835 07                          rlca
-;RAM:D836 E6 E0                       and     #0xE0 ; '�'
-;RAM:D838 B3                          or      e
+;RAM:D836 E6 E0                       and     #0xE0        ; ~xxx 00000
+;RAM:D838 B3                          or      e            ; ~xxx RRRRR
 ;RAM:D839 5F                          ld      e, a
-;RAM:D83A 78                          ld      a, b
-;RAM:D83B 2F                          cpl
+;RAM:D83A 78                          ld      a, b         ; zzxxxnnn
+;RAM:D83B 2F                          cpl                  ; ~zzxxxnnn
 ;RAM:D83C 0F                          rrca
 ;RAM:D83D 0F                          rrca
-;RAM:D83E 0F                          rrca
-;RAM:D83F E6 18                       and     #0x18
+;RAM:D83E 0F                          rrca                 ; ~nnnzzxxx
+;RAM:D83F E6 18                       and     #0x18        ; 000 ~zz 000
 ;RAM:D841 57                          ld      d, a
-;RAM:D842 08                          ex      af, af'
-;RAM:D843 B2                          or      d
-;RAM:D844 C6 38                       add     a, #0x38 ; '8'
+;RAM:D842 08                          ex      af, af'      ; 00000 ~nnn
+;RAM:D843 B2                          or      d            ; 000 ~zz ~nnn
+;RAM:D844 C6 38                       add     a, #0x38     ; + 0011 1000 ?
 ;RAM:D846 57                          ld      d, a
 ;RAM:D847 C9                          ret
 *      Reverse y
-       li   r0,>bf00
-       sb   b,r0
-       movb r0,b
+       li   r1,>bf00
+       sb   b,r1
 *      Calculate address E/A manual way
-       movb b,@e                       ; ????????yyyyyyyy
+       movb r1,@e                      ; ????????yyyyyyyy
        sla  de,5                       ; ???yyyyyyyy00000
-       socb b,@e                       ; ???yyyyy???yyyyy
+       socb r1,@e                      ; ???yyyyy???yyyyy
        andi de,>1f07                   ; 000yyyyy00000yyy
-       mov  bc,r0                      ; yyyyyyyyxxxxxxxx
+       mov  @c,@r0lb                   ; yyyyyyyyxxxxxxxx
        andi r0,7                       ; 0000000000000xxx
        ab   @c,@e                      ; 000yyyyyxxxxx???
        s    r0,de                      ; 000yyyyyxxxxxyyy
