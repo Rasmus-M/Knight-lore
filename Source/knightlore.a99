@@ -117,16 +117,16 @@ zx_aram:
 *
 *===========================================================================
 *
-* Video memory buffer, length >1800
+* Linear video memory buffer, length >1800
 *
 vidbuf:
        equ >6000
 *
-* 2048 bytes free
+* 2048 bytes free after this.
 *
 *===========================================================================
 *
-* Upper memory - tables and data
+* Upper memory - primarily data
 *
        aorg >A000
        copy "upper_memory.a99"
@@ -139,3 +139,5 @@ upper_memory_end:
 * End of file
 *
        end  start
+*
+*===========================================================================
