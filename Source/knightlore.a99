@@ -402,8 +402,7 @@ loc_B090:
 
 * =============== S U B R O U T I N E =======================================
 *
-* returns C flag set if any other object
-* intersects with this one
+* returns C flag set if any other object intersects with this one
 *
 ;RAM:B4FD             do_any_objs_intersect:
 ;RAM:B4FD C5                          push    bc
@@ -447,14 +446,22 @@ loc_B090:
 *
 * =============== S U B R O U T I N E =======================================
 *
-;RAM:B538             is_object_not_ignored:
+is_object_not_ignored:
 ;RAM:B538 FD 7E 00                    ld      a, 0(iy)                                ; graphic no.
+       movb *iy,a
 ;RAM:B53B A7                          and     a                                       ; null?
 ;RAM:B53C C8                          ret     Z                                       ; yes, exit
+       jne  !
+       rt
 ;RAM:B53D FD 7E 07                    ld      a, 7(iy)                                ; flags
+!      movb @7(iy),a
 ;RAM:B540 2F                          cpl
+       inv  a
 ;RAM:B541 E6 02                       and     #2                                      ; test bit 1
+       andi a,>0200
 ;RAM:B543 C9                          ret
+       rt
+*
 * End of function is_object_not_ignored
 *
 * =============== S U B R O U T I N E =======================================
@@ -4131,9 +4138,11 @@ upd_player_bottom:
 * ---------------------------------------------------------------------------
 loc_C83E:
 ;RAM:C83E CD 06 C3                    call    chk_and_init_transform                  ; returns to caller if transforming
+;      bl   @chk_and_init_transform   ; TODO
 ;RAM:C841 CD 22 D0                    call    check_user_input
        bl   @check_user_input
 ;RAM:C844 CD 0E C0                    call    handle_pickup_drop
+;      bl   @handle_pickup_drop       ; TODO
 ;RAM:C847 CD 9F C8                    call    handle_left_right
        bl   @handle_left_right
 ;RAM:C84A CD 48 C9                    call    handle_jump
@@ -4201,6 +4210,7 @@ chk_plyr_OOB:
        sb   @b80h,a
 ;RAM:C88C F2 91 C8                    jp      P, loc_C891
        jgt  loc_C891
+       jeq  loc_C891
 ;RAM:C88F ED 44                       neg
        inv  a
        ab   one,a
@@ -4215,6 +4225,7 @@ loc_C891:
        sb   @b80h,a
 ;RAM:C898 F2 9D C8                    jp      P, loc_C89D
        jgt  loc_C89D
+       jeq  loc_C89D
 ;RAM:C89B ED 44                       neg
        inv  a
        ab   one,a
@@ -4587,7 +4598,7 @@ loc_C9C1:
        jlt  loc_C9CC
 ;RAM:C9C8 CB 59                       bit     3, c                                    ; jump?
        movb @c,r0
-       andi r0,>0400
+       andi r0,>0800
 ;RAM:C9CA 20 01                       jr      NZ, loc_C9CD                            ; yes, skip
        jne  loc_C9CD
 loc_C9CC:
@@ -4621,6 +4632,7 @@ loc_C9CD:
        andi a,>ff00
 ;RAM:C9EC F2 F3 C9                    jp      P, clear_dX_dY
        jgt  clear_dX_dY
+       jeq  clear_dX_dY
 ;RAM:C9EF DD CB 0C 9E                 res     3, 12(ix)                               ; clear jumping flag
        szcb @b04h,@12(ix)
 clear_dX_dY:
@@ -4825,6 +4837,7 @@ adj_d_for_out_of_bounds:
        jeq  adj_d_for_out_of_bounds_return
 ;RAM:CA8B F2 90 CA                    jp      P, loc_CA90                             ; skip if >0
        jgt  loc_CA90
+       jeq  loc_CA90
 ;RAM:CA8E 3C                          inc     a
 ;RAM:CA8F 3C                          inc     a
        ab   @b02h,a
@@ -4977,32 +4990,50 @@ adj_for_out_of_bounds:
 ;RAM:CB65 28 03                       jr      Z, dZ_ok                                ; yes, skip
        jeq  dZ_ok
 ;RAM:CB67 CD 38 CC                    call    adj_dZ_for_obj_intersect
-;       bl   @adj_dZ_for_obj_intersect
+       bl   @adj_dZ_for_obj_intersect
 dZ_ok:
 ;RAM:CB6A DD 7E 09                    ld      a, 9(ix)                                ; dX
+       movb  @9(ix),a
 ;RAM:CB6D A7                          and     a                                       ; zero?
 ;RAM:CB6E 4F                          ld      c, a
+       movb a,@c
 ;RAM:CB6F 28 0A                       jr      Z, loc_CB7B                             ; yes, skip
+       jeq  loc_CB7B
 ;RAM:CB71 CD DD CC                    call    adj_dX_for_out_of_bounds
+;       bl   @adj_dX_for_out_of_bounds
 ;RAM:CB74 79                          ld      a, c                                    ; new dX
+       movb a,@c
 ;RAM:CB75 A7                          and     a                                       ; zero?
 ;RAM:CB76 28 03                       jr      Z, loc_CB7B                             ; yes, skip
+       jeq  loc_CB7B
 ;RAM:CB78 CD 9A CB                    call    adj_dX_for_obj_intersect
+;       bl   @adj_dX_for_obj_intersect
 loc_CB7B:
 ;RAM:CB7B DD 7E 0A                    ld      a, 10(ix)                               ; dY
+       movb @10(ix),a
 ;RAM:CB7E A7                          and     a                                       ; zero?
 ;RAM:CB7F 6F                          ld      l, a
+       movb a,@l
 ;RAM:CB80 28 0A                       jr      Z, loc_CB8C                             ; yes, skip
+       jeq  loc_CB8C
 ;RAM:CB82 CD 08 CD                    call    adj_dY_for_out_of_bounds
+;       bl   @adj_dY_for_out_of_bounds
 ;RAM:CB85 7D                          ld      a, l                                    ; new dY
+       movb @l,a
 ;RAM:CB86 A7                          and     a                                       ; zero?
 ;RAM:CB87 28 03                       jr      Z, loc_CB8C                             ; yes, skip
+       jeq  loc_CB8C
 ;RAM:CB89 CD E9 CB                    call    adj_dY_for_obj_intersect
+;       bl   @adj_dY_for_obj_intersect
 loc_CB8C:
 ;RAM:CB8C DD 71 09                    ld      9(ix), c                                ; new dX
+       movb @c,@9(ix)
 ;RAM:CB8F DD 75 0A                    ld      10(ix), l                               ; new dY
+       movb @l,@10(ix)
 ;RAM:CB92 DD 74 0B                    ld      11(ix), h                               ; new dZ
+       movb h,@11(ix)
 ;RAM:CB95 DD CB 07 8E                 res     1, 7(ix)
+       szcb @b02h,@7(ix)
 ;RAM:CB99 C9                          ret
 adj_for_out_of_bounds_return:
        dect sp
@@ -5012,8 +5043,6 @@ adj_for_out_of_bounds_return:
 * End of function adj_for_out_of_bounds
 *
 * =============== S U B R O U T I N E =======================================
-;RAM:CB9A
-;RAM:CB9A
 ;RAM:CB9A             adj_dX_for_obj_intersect:
 ;RAM:CB9A FD 21 08 5C                 ld      iy, #graphic_objs_tbl
 ;RAM:CB9E 06 28                       ld      b, #40                                  ; max objects
@@ -5108,130 +5137,193 @@ adj_for_out_of_bounds_return:
 ;RAM:CC37 C9                          ret
 ;RAM:CC37             ; End of function adj_dY_for_obj_intersect
 ;RAM:CC37
-;RAM:CC38
-;RAM:CC38             ; =============== S U B R O U T I N E =======================================
-;RAM:CC38
-;RAM:CC38
-;RAM:CC38             adj_dZ_for_obj_intersect:
+*
+* =============== S U B R O U T I N E =======================================
+*
+adj_dZ_for_obj_intersect:
+       mov  r11,*sp+
 ;RAM:CC38 FD 21 08 5C                 ld      iy, #graphic_objs_tbl
+       li   iy,graphic_objs_tbl
 ;RAM:CC3C 06 28                       ld      b, #40                                  ; max objects
-;RAM:CC3E
-;RAM:CC3E             loc_CC3E:
+       movb  @b28h,b
+loc_CC3E:
 ;RAM:CC3E CD 38 B5                    call    is_object_not_ignored
+       bl   @is_object_not_ignored
 ;RAM:CC41 28 52                       jr      Z, loc_CC95                             ; next entry
+       jeq  loc_CC95
 ;RAM:CC43 CD 9D CC                    call    do_objs_intersect_on_x
+       bl   @do_objs_intersect_on_x
 ;RAM:CC46 30 4D                       jr      NC, loc_CC95                            ; next entry
+       jhe  loc_CC95
 ;RAM:CC48 CD B2 CC                    call    do_objs_intersect_on_y
+       bl   @do_objs_intersect_on_y
 ;RAM:CC4B 30 48                       jr      NC, loc_CC95                            ; next entry
-;RAM:CC4D
-;RAM:CC4D             loc_CC4D:
+       jne  loc_CC95
+loc_CC4D:
 ;RAM:CC4D CD C7 CC                    call    do_objs_intersect_on_z
+       bl   @do_objs_intersect_on_z
 ;RAM:CC50 30 43                       jr      NC, loc_CC95                            ; next entry
+       jhe  loc_CC95
 ;RAM:CC52 DD CB 0C D6                 set     2, 12(ix)                               ; set Z OOB
+       socb @b04h,@12(ix)
 ;RAM:CC56 DD 7E 0D                    ld      a, 13(ix)
+       movb  @13(ix),a
 ;RAM:CC59 0F                          rrca
+       srl  a,1
 ;RAM:CC5A E6 40                       and     #0x40 ; '@'                             ; bit 7->6
+       andi a,>4000
 ;RAM:CC5C FD B6 0D                    or      13(iy)                                  ; obj2 destroyed?
+       socb @13(iy),a
 ;RAM:CC5F FD 77 0D                    ld      13(iy), a
+       movb a,@13(iy)
 ;RAM:CC62 07                          rlca
+       sla  a,1
 ;RAM:CC63 E6 40                       and     #0x40 ; '@'                             ; bit 5->6
+       andi a,>4000
 ;RAM:CC65 DD B6 0D                    or      13(ix)                                  ; obj1 destroyed?
+       socb @13(ix),a
 ;RAM:CC68 DD 77 0D                    ld      13(ix), a
+       movb a,@13(ix)
 ;RAM:CC6B FD CB 0D DE                 set     3, 13(iy)                               ; triggered (falling, collapsing blocks)
+       socb @b08h,@13(iy)
 ;RAM:CC6F DD CB 07 56                 bit     2, 7(ix)                                ; moveable?
+       movb @7(ix),r0
+       andi r0,>0400
 ;RAM:CC73 28 18                       jr      Z, loc_CC8D                             ; no, skip
+       jeq  loc_CC8D
 ;RAM:CC75 DD 7E 09                    ld      a, 9(ix)                                ; dX
+       movb @9(ix),a
 ;RAM:CC78 A7                          and     a                                       ; zero?
 ;RAM:CC79 20 06                       jr      NZ, loc_CC81                            ; no, skip
+       jne  loc_CC81
 ;RAM:CC7B FD 7E 09                    ld      a, 9(iy)
 ;RAM:CC7E DD 77 09                    ld      9(ix), a                                ; copy dX
-;RAM:CC81
-;RAM:CC81             loc_CC81:                                                       ; objdY
-;RAM:CC81 DD 7E 0A                    ld      a, 10(ix)
+       movb  @9(iy),@9(ix)
+loc_CC81:
+;RAM:CC81 DD 7E 0A                    ld      a, 10(ix)                               ; objdY
+       movb @10(ix),a
 ;RAM:CC84 A7                          and     a                                       ; moving along Y?
 ;RAM:CC85 20 06                       jr      NZ, loc_CC8D                            ; yes, skip
+       jne  loc_CC8D
 ;RAM:CC87 FD 7E 0A                    ld      a, 10(iy)
 ;RAM:CC8A DD 77 0A                    ld      10(ix), a                               ; copy dY
-;RAM:CC8D
-;RAM:CC8D             loc_CC8D:
+       movb @10(iy),@10(ix)
+loc_CC8D:
 ;RAM:CC8D 7C                          ld      a, h
+       movb h,a
 ;RAM:CC8E CD 89 CA                    call    adj_d_for_out_of_bounds
+       bl   @adj_d_for_out_of_bounds
 ;RAM:CC91 67                          ld      h, a
+       movb a,h
 ;RAM:CC92 C8                          ret     Z
+       jeq  adj_dZ_for_obj_intersect_return
 ;RAM:CC93 18 B8                       jr      loc_CC4D
-;RAM:CC95             ; ---------------------------------------------------------------------------
-;RAM:CC95
-;RAM:CC95             loc_CC95:                                                       ; entry size
-;RAM:CC95 11 20 00                    ld      de, #32
+       jmp  loc_CC4D
+* ---------------------------------------------------------------------------
+loc_CC95:
+;RAM:CC95 11 20 00                    ld      de, #32                                 ; entry size
+       li   de,32
 ;RAM:CC98 FD 19                       add     iy, de                                  ; next entry
+       a    de,iy
 ;RAM:CC9A 10 A2                       djnz    loc_CC3E                                ; loop through table
+       sb   one,b
+       jne  loc_CC3E
 ;RAM:CC9C C9                          ret
-;RAM:CC9C             ; End of function adj_dZ_for_obj_intersect
-;RAM:CC9C
-;RAM:CC9D
-;RAM:CC9D             ; =============== S U B R O U T I N E =======================================
-;RAM:CC9D
-;RAM:CC9D
-;RAM:CC9D             do_objs_intersect_on_x:
+adj_dZ_for_obj_intersect_return:
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function adj_dZ_for_obj_intersect
+*
+* =============== S U B R O U T I N E =======================================
+*
+do_objs_intersect_on_x:
 ;RAM:CC9D DD 7E 04                    ld      a, 4(ix)                                ; objW (width)
+       movb @4(ix),a
 ;RAM:CCA0 FD 86 04                    add     a, 4(iy)                                ; thisW
+       ab   @4(iy),a
 ;RAM:CCA3 57                          ld      d, a                                    ; objW+thisW
+       movb a,d
 ;RAM:CCA4 DD 7E 01                    ld      a, 1(ix)                                ; obj X
+       movb @1(ix),a
 ;RAM:CCA7 81                          add     a, c                                    ; new dX
+       ab   @c,a
 ;RAM:CCA8 FD 96 01                    sub     1(iy)                                   ; objX + newdX - thisX
+       sb   @1(iy),a
 ;RAM:CCAB F2 B0 CC                    jp      P, loc_CCB0
+       jgt  loc_CCB0
 ;RAM:CCAE ED 44                       neg                                             ; abs()
-;RAM:CCB0
-;RAM:CCB0             loc_CCB0:                                                       ; abs(objX+newdX-thisX)-(objW+thisW)
-;RAM:CCB0 92                          sub     d
+       inv  a
+       ab   one,a
+loc_CCB0:
+;RAM:CCB0 92                          sub     d                                       ; abs(objX+newdX-thisX)-(objW+thisW)
+       cb   a,d
 ;RAM:CCB1 C9                          ret                                             ; C flag set indicates intersection
-;RAM:CCB1             ; End of function do_objs_intersect_on_x
-;RAM:CCB1
-;RAM:CCB2
-;RAM:CCB2             ; =============== S U B R O U T I N E =======================================
-;RAM:CCB2
-;RAM:CCB2
-;RAM:CCB2             do_objs_intersect_on_y:
+       rt
+*
+* End of function do_objs_intersect_on_x
+*
+* =============== S U B R O U T I N E =======================================
+*
+do_objs_intersect_on_y:
 ;RAM:CCB2 DD 7E 05                    ld      a, 5(ix)                                ; objD (depth)
+       movb @5(ix),a
 ;RAM:CCB5 FD 86 05                    add     a, 5(iy)                                ; thisD
+       ab   @5(iy),a
 ;RAM:CCB8 57                          ld      d, a                                    ; (objD+thisD)
+       movb a,d
 ;RAM:CCB9 DD 7E 02                    ld      a, 2(ix)                                ; objY
+       movb @2(ix),a
 ;RAM:CCBC 85                          add     a, l
+       ab   @l,a
 ;RAM:CCBD FD 96 02                    sub     2(iy)                                   ; (objY+new dY-thisY)
+       sb   @2(iy),a
 ;RAM:CCC0 F2 C5 CC                    jp      P, loc_CCC5
+       jgt  loc_CCC5
 ;RAM:CCC3 ED 44                       neg                                             ; abs()
-;RAM:CCC5
-;RAM:CCC5             loc_CCC5:                                                       ; (objY+l+thisY)-(objD+thisD)
-;RAM:CCC5 92                          sub     d
+       inv  a
+       ab   one,a
+loc_CCC5:
+;RAM:CCC5 92                          sub     d                                       ; (objY+l+thisY)-(objD+thisD)
+       cb   a,d
 ;RAM:CCC6 C9                          ret                                             ; C flag set indicates intersection
-;RAM:CCC6             ; End of function do_objs_intersect_on_y
-;RAM:CCC6
-;RAM:CCC7
-;RAM:CCC7             ; =============== S U B R O U T I N E =======================================
-;RAM:CCC7
-;RAM:CCC7
-;RAM:CCC7             do_objs_intersect_on_z:
+       rt
+*
+* End of function do_objs_intersect_on_y
+*
+* =============== S U B R O U T I N E =======================================
+*
+do_objs_intersect_on_z:
 ;RAM:CCC7 DD 7E 03                    ld      a, 3(ix)                                ; objZ
+       movb @3(ix),a
 ;RAM:CCCA 84                          add     a, h
+       ab   h,a
 ;RAM:CCCB FD 96 03                    sub     3(iy)                                   ; (objZ+new dZ-thisZ)
+       sb   @3(iy),a
 ;RAM:CCCE F2 D8 CC                    jp      P, loc_CCD8
+       jgt  loc_CCD8
 ;RAM:CCD1 ED 44                       neg                                             ; abs()
+       inv  a
+       ab   one,a
 ;RAM:CCD3 DD 56 06                    ld      d, 6(ix)                                ; objH (height)
-;RAM:CCD6
-;RAM:CCD6             loc_CCD6:                                                       ; (objZ+H-thisZ)-(objH or thisH)
-;RAM:CCD6 92                          sub     d
+       movb @6(ix),d
+loc_CCD6:
+;RAM:CCD6 92                          sub     d                                       ; (objZ+H-thisZ)-(objH or thisH)
+       cb   a,d
 ;RAM:CCD7 C9                          ret                                             ; C flag set indicates intersection
-;RAM:CCD8             ; ---------------------------------------------------------------------------
-;RAM:CCD8
-;RAM:CCD8             loc_CCD8:                                                       ; thisH (height)
-;RAM:CCD8 FD 56 06                    ld      d, 6(iy)
+       rt
+* ---------------------------------------------------------------------------
+loc_CCD8:
+;RAM:CCD8 FD 56 06                    ld      d, 6(iy)                                ; thisH (height)
+       movb @6(iy),d
 ;RAM:CCDB 18 F9                       jr      loc_CCD6
-;RAM:CCDB             ; End of function do_objs_intersect_on_z
-;RAM:CCDB
-;RAM:CCDD
-;RAM:CCDD             ; =============== S U B R O U T I N E =======================================
-;RAM:CCDD
-;RAM:CCDD
+       jmp  loc_CCD6
+*
+* End of function do_objs_intersect_on_z
+*
+* =============== S U B R O U T I N E =======================================
+*
 ;RAM:CCDD             adj_dX_for_out_of_bounds:
 ;RAM:CCDD DD 7E 0C                    ld      a, 12(ix)                               ; flags12
 ;RAM:CCE0 E6 F0                       and     #0xF0 ; '�'                             ; entering room?
@@ -9684,7 +9776,7 @@ chkkey:
 
 * ---------------------------------------------------------------------------
 *
-* 1934 bytes free
+* 1580 bytes free
 *
 * ---------------------------------------------------------------------------
 *
