@@ -510,56 +510,1247 @@ panel_data:
        byte >87, >40, >00, >00
        byte >88, >40, >60, >04
 
-*********************************************************************
+       even
 *
-* Byte constants
+* =============== S U B R O U T I N E =======================================
 *
-b00h   byte >00
-b01h   byte >01
-b02h   byte >02
-b03h   byte >03
-b04h   byte >04
-b05h   byte >05
-b06h   byte >06
-b07h   byte >07
-b08h   byte >08
-b09h   byte >09
-b0ah   byte >0a
-b0ch   byte >0c
-b0dh   byte >0d
-b0eh   byte >0e
-b10h   byte >10
-b12h   byte >12
-b14h   byte >14
-b17h   byte >17
-b20h   byte >20
-b22h   byte >22
-b28h   byte >28
-b30h   byte >30
-b37h   byte >37
-b40h   byte >40
-b47h   byte >47
-b51h   byte >51
-b58h   byte >58
-b5ah   byte >5a
-b68h   byte >68
-b60h   byte >60
-b80h   byte >80
-b8ch   byte >8c
-ba0h   byte >a0
-baeh   byte >ae
-bb0h   byte >b0
-bb8h   byte >b8
-bbah   byte >ba
-bbbh   byte >bb
-bc0h   byte >c0
-bc8h   byte >c8
-bd0h   byte >d0
-be1h   byte >e1
-bf0h   byte >f0
-bf1h   byte >f1
-bfeh   byte >fe
-bffh   byte >ff
+add_HL_A:
+;RAM:D4F2 85                          add     a, l
+;RAM:D4F3 6F                          ld      l, a
+;RAM:D4F4 7C                          ld      a, h
+;RAM:D4F5 CE 00                       adc     a, #0
+;RAM:D4F7 67                          ld      h, a
+       clr  r0
+       movb a,@r0lb
+       a    r0,hl
+;RAM:D4F8 C9                          ret
+       rt
+*
+* End of function add_HL_A
+*
+;* =============== S U B R O U T I N E =======================================
+* Set HL = DE x A
+*
+HL_equals_DE_x_A:
+;RAM:D4F9 C5                          push    bc
+;RAM:D4FA 21 00 00                    ld      hl, #0
+;RAM:D4FD 06 08                       ld      b, #8
+;RAM:D4FF
+;RAM:D4FF             loc_D4FF:
+;RAM:D4FF 29                          add     hl, hl
+;RAM:D500 07                          rlca
+;RAM:D501 30 01                       jr      NC, loc_D504
+;RAM:D503 19                          add     hl, de
+;RAM:D504
+;RAM:D504             loc_D504:
+;RAM:D504 10 F9                       djnz    loc_D4FF
+;RAM:D506 C1                          pop     bc
+       clr  r0
+       movb a,@r0lb
+       mpy  de,r0
+       mov  r1,hl
+;RAM:D507 C9                          ret
+       rt
+*
+* End of function HL_equals_DE_x_A
+*
+* =============== S U B R O U T I N E =======================================
+*
+zero_DE:
+;RAM:D508 AF                          xor     a
+       clr  a
+fill_DE:
+;RAM:D509 12                          ld      (de), a
+;RAM:D50A 13                          inc     de
+       movb a,*de+
+;RAM:D50B 10 FC                       djnz    fill_DE
+       sb   one,b
+       jne  fill_DE
+;RAM:D50D C9                          ret
+       rt
+*
+* End of function zero_DE
+*
+* =============== S U B R O U T I N E =======================================
+*
+; TODO: optimize
+clr_mem:
+;RAM:D53A 1E 00                       ld      e, #0
+       clr  de
+clr_byte:
+;RAM:D53C 73                          ld      (hl), e                                 ; zero location
+;RAM:D53D 23                          inc     hl                                      ; next location
+       movb d,*hl+
+;RAM:D53E 0B                          dec     bc
+       dec  bc
+;RAM:D53F 78                          ld      a, b
+;RAM:D540 B1                          or      c                                       ; done?
+;RAM:D541 20 F9                       jr      NZ, clr_byte                            ; no, loop
+       jne  clr_byte
+;RAM:D543 C9                          ret
+       rt
+*
+* End of function clr_mem
+*
+* ---------------------------------------------------------------------------
+* START OF FUNCTION CHUNK FOR clr_bitmap_memory
+*
+clr_bitmap_memory:
+       mov  r11,*sp+
+;RAM:D544 21 00 40                    ld      hl, #zx_vram                            ; screen memory
+;RAM:D547 01 00 18                    ld      bc, #0x1800                             ; # bytes to clear
+;RAM:D54A 18 EE                       jr      clr_mem
+       li   r0,PTRNTB
+       clr  r1
+       li   r2,>1800
+       bl   @vdpwr
+* Return
+       dect sp
+       mov  *sp,r11
+       rt
+* END OF FUNCTION CHUNK FOR clr_bitmap_memory
+*
+* =============== S U B R O U T I N E =======================================
+*
+clr_attribute_memory:
+       mov  r11,*sp+
+;RAM:D54C 21 00 58                    ld      hl, #zx_aram                            ; colour data
+;RAM:D54F 01 00 03                    ld      bc, #0x300                              ; # bytes to clear
+;RAM:D552 1E 46                       ld      e, #0x46 ; 'F'                          ; bright yellow on black
+;RAM:D554 18 E6                       jr      clr_byte
+       li   r0,COLRTB
+       li   r1,>b100                  ; bright yellow on black
+       li   r2,>1800
+       bl   @vdpwr
+* Return
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function clr_attribute_memory
+*
+* =============== S U B R O U T I N E =======================================
+*
+fill_attr:
+       mov  r11,*sp+
+;RAM:D556 21 00 58                    ld      hl, #zx_aram                            ; colour data
+;RAM:D559 01 00 03                    ld      bc, #0x300                              ; # bytes to clear
+;RAM:D55C 5F                          ld      e, a                                    ; attribute to set
+;RAM:D55D 18 DD                       jr      clr_byte                                ; fill
+       bl   @ti_color
+       li   r0,COLRTB
+       movb af_,r1
+       li   r2,>1800
+       bl   @vdpwr
+*      Return
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function fill_attr
+*
+* =============== S U B R O U T I N E =======================================
+*
+clear_scrn:
+       mov  r11,*sp+
+;RAM:D55F
+;RAM:D55F AF                          xor     a                                       ; border colour BLACK, activate MIC
+;RAM:D560 D3 FE                       out     (0xFE), a                               ; ULA
+       li   r0,>0700
+       bl   @vwtr
+;RAM:D562 CD 4C D5                    call    clr_attribute_memory
+       bl   @clr_attribute_memory
+;RAM:D565 18 DD                       jr      clr_bitmap_memory
+       bl   @clr_bitmap_memory
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function clear_scrn
+*
+* =============== S U B R O U T I N E =======================================
+*
+clear_scrn_buffer:
+;RAM:D567 01 00 18                    ld      bc, #0x1800                             ; # bytes to clear
+       li   bc,>1800
+;RAM:D56A 21 F3 D8                    ld      hl, #vidbuf                             ; screen buffer
+       li   hl,vidbuf
+;RAM:D56D 18 CB                       jr      clr_mem
+       jmp  clr_mem
+;RAM:D56D             ; End of function clear_scrn_buffer
+*
+* =============== S U B R O U T I N E =======================================
+*
+* copies from screen buffer to video memory
+*
+update_screen:
+;RAM:D56F 21 F3 D8                    ld      hl, #vidbuf                             ; screen buffer
+;RAM:D572 11 E0 57                    ld      de, # zx_vram+0x17E0                    ; last line of attribute memory
+;RAM:D575 01 C0 20                    ld      bc, #0x20C0                             ; B=32 bytes, C=192 lines
+;RAM:D578
+;RAM:D578             loc_D578:
+;RAM:D578 C5                          push    bc
+;RAM:D579 D5                          push    de
+;RAM:D57A E5                          push    hl
+;RAM:D57B
+;RAM:D57B             loc_D57B:
+;RAM:D57B 7E                          ld      a, (hl)                                 ; source byte
+;RAM:D57C 12                          ld      (de), a                                 ; copy to destination
+;RAM:D57D 36 00                       ld      (hl), #0                                ; wipe source byte
+;RAM:D57F 23                          inc     hl                                      ; next source location
+;RAM:D580 1C                          inc     e                                       ; next destination location
+;RAM:D581 10 F8                       djnz    loc_D57B                                ; loop for a line
+;RAM:D583 E1                          pop     hl                                      ; source - start of line
+;RAM:D584 01 20 00                    ld      bc, #32
+;RAM:D587 09                          add     hl, bc                                  ; next line
+;RAM:D588 D1                          pop     de                                      ; last line of attribute memory
+;RAM:D589 15                          dec     d
+;RAM:D58A 7A                          ld      a, d
+;RAM:D58B 2F                          cpl
+;RAM:D58C E6 07                       and     #7
+;RAM:D58E 20 0A                       jr      NZ, loc_D59A
+;RAM:D590 7B                          ld      a, e
+;RAM:D591 D6 20                       sub     #32
+;RAM:D593 5F                          ld      e, a
+;RAM:D594 38 04                       jr      C, loc_D59A
+;RAM:D596 7A                          ld      a, d
+;RAM:D597 C6 08                       add     a, #8
+;RAM:D599 57                          ld      d, a                                    ; add 2K
+;RAM:D59A
+;RAM:D59A             loc_D59A:                                                       ; byte, line counter
+;RAM:D59A C1                          pop     bc
+;RAM:D59B 0D                          dec     c                                       ; dec line counter
+;RAM:D59C 20 DA                       jr      NZ, loc_D578                            ; loop through all lines
+       lwpi wrksp2
+       li   r0,PTRNTB
+       bl   @vwad
+       li   r0,VDPWD
+       li   r1,vidbuf+>1800-32
+       li   r2,24
+updscr1:
+       li   r3,32
+       mov  r1,r5
+       s    r3,r1
+       mov  r1,r6
+       s    r3,r1
+       mov  r1,r7
+       s    r3,r1
+       mov  r1,r8
+       s    r3,r1
+       mov  r1,r9
+       s    r3,r1
+       mov  r1,r10
+       s    r3,r1
+       mov  r1,r11
+       s    r3,r1
+       mov  r1,r12
+       s    r3,r1
+updscr2:
+       movb *r5+,*r0
+       movb *r6+,*r0
+       movb *r7+,*r0
+       movb *r8+,*r0
+       movb *r9+,*r0
+       movb *r10+,*r0
+       movb *r11+,*r0
+       movb *r12+,*r0
+       dec  r3
+       jne  updscr2
+       dec  r2
+       jne  updscr1
+       lwpi wrksp
+;RAM:D59E C9                          ret
+       rt
+*
+* End of function update_screen
+*
+* =============== S U B R O U T I N E =======================================
+*
+* Copy a section of the video buffer to the screen
+*
+* HL=source
+* DE=destination
+* B=lines
+* C=bytes/line
+*
+* Note that B and C are swapped compared to fill_window
+*
+blit_to_screen:
+;RAM:D67C C5                          push    bc
+;RAM:D67D D5                          push    de
+;RAM:D67E E5                          push    hl
+;RAM:D67F 06 00                       ld      b, #0
+;RAM:D681 ED B0                       ldir
+;RAM:D683 E1                          pop     hl
+;RAM:D684 11 20 00                    ld      de, #32
+;RAM:D687 19                          add     hl, de                                  ; next line
+;RAM:D688 D1                          pop     de
+;RAM:D689 15                          dec     d
+;RAM:D68A 7A                          ld      a, d
+;RAM:D68B 2F                          cpl
+;RAM:D68C E6 07                       and     #7
+;RAM:D68E 20 0A                       jr      NZ, loc_D69A
+;RAM:D690 7B                          ld      a, e
+;RAM:D691 D6 20                       sub     #0x20 ; ' '
+;RAM:D693 5F                          ld      e, a
+;RAM:D694 38 04                       jr      C, loc_D69A
+;RAM:D696 7A                          ld      a, d
+;RAM:D697 C6 08                       add     a, #8
+;RAM:D699 57                          ld      d, a
+;RAM:D69A             loc_D69A:                                                       ; done all lines?
+;RAM:D69A C1                          pop     bc
+;RAM:D69B 10 DF                       djnz    blit_to_screen                          ; no, loop
+;RAM:D69D C9                          ret
+
+       mov  de,@wrksp2                 ; Destination: de -> r0
+       mov  hl,@wrksp2+2               ; Source: hl -> r1
+       mov  bc,@wrksp2+4               ; Dimensions: bc -> r2
+       lwpi wrksp2
+
+;x1     equ  8
+;y1     equ  4
+;w1     equ  16
+;h1     equ  16
+;       li   r0,(y1+h1)*256-(256-7)+(x1*8)        ; Dest
+;       li   r1,vidbuf+>1800-32-(y1*8*32)+x1      ; Source
+;       li   r2,(h1*8*256)+w1                     ; Size (lines, bytes/line)
+
+       mov  r2,r3
+       andi r2,>ff00                   ; Lines
+       swpb r2
+       andi r3,>00ff                   ; Bytes/line
+
+       mov  r0,r4
+       andi r4,7                       ; Number of lines into character row (n)
+       ci   r4,7                       ; If n is 7 it's a full row
+       jeq  blit1                      ; and we can skip adding more lines
+       neg  r4                         ; -n
+       ai   r4,7                       ; 7 - n extra lines
+       a    r4,r2                      ; add extra lines
+       sla  r4,5
+       s    r4,r1                      ; Adjust source
+
+blit1:
+       andi r0,>FFF8                   ; Move dest to top of character row
+       mov  r3,r4                      ; Copy number of bytes/line
+       li   r15,vdpwd
+blit2:
+       bl   @vwad                      ; Set VDP write address
+       li   r3,32
+       mov  r1,r5
+       a    r3,r1
+       mov  r1,r6
+       a    r3,r1
+       mov  r1,r7
+       a    r3,r1
+       mov  r1,r8
+       a    r3,r1
+       mov  r1,r9
+       a    r3,r1
+       mov  r1,r10
+       a    r3,r1
+       mov  r1,r11
+       a    r3,r1
+       mov  r1,r12
+       a    r3,r1
+       mov  r4,r3                      ; Reset bytes/line counter
+blit3:
+       movb *r12+,*r15                 ; Output in reverse order
+       movb *r11+,*r15
+       movb *r10+,*r15
+       movb *r9+,*r15
+       movb *r8+,*r15
+       movb *r7+,*r15
+       movb *r6+,*r15
+       movb *r5+,*r15
+
+;       seto *r15
+;       seto *r15
+;       seto *r15
+;       seto *r15
+;       seto *r15
+;       seto *r15
+;       seto *r15
+;       seto *r15
+
+       dec  r3
+       jne  blit3
+       ai   r0,-256
+       ai   r2,-8
+       jgt  blit2
+       lwpi wrksp
+       rt
+*
+* End of function blit_to_screen
+*
+*=============== S U B R O U T I N E =======================================
+*
+build_lookup_tbls:
+*
+* Build a look-up table of values (0-255) shifted left 1-7 bits
+* $F200 - $FFFF
+* Each shifted byte is stored as a word.
+* $100 entries x 2 bytes/entry * 7 = $e00 bytes
+*
+;RAM:D69E 2E 00                       ld      l, #0
+;RAM:D6A0
+loc_D6A0:
+;RAM:D6A0 16 00                       ld      d, #0
+;RAM:D6A2 5D                          ld      e, l
+;RAM:D6A3 26 FF                       ld      h, #0xFF
+;RAM:D6A5 06 07                       ld      b, #7
+;RAM:D6A7
+loc_D6A7:
+;RAM:D6A7 CB 23                       sla     e
+;RAM:D6A9 CB 12                       rl      d
+;RAM:D6AB 7B                          ld      a, e
+;RAM:D6AC 2F                          cpl
+;RAM:D6AD 77                          ld      (hl), a
+;RAM:D6AE 25                          dec     h
+;RAM:D6AF 7A                          ld      a, d
+;RAM:D6B0 2F                          cpl
+;RAM:D6B1 77                          ld      (hl), a
+;RAM:D6B2 25                          dec     h
+;RAM:D6B3 10 F2                       djnz    loc_D6A7
+;RAM:D6B5 2C                          inc     l
+;RAM:D6B6 20 E8                       jr      NZ, loc_D6A0
+*
+* Build a look-up table of bit-reversed bytes (0-255)
+* $F100 - $F1FF
+* $100 entries x 1 byte/entry = $100 bytes
+*
+;RAM:D6B8 21 00 F1                    ld      hl, #0xF100
+       li   hl,reverse_bytes_lookup_table
+loc_D6BB:
+;RAM:D6BB 55                          ld      d, l                                    ; byte offset from $F100
+       movb @l,d
+;RAM:D6BC 06 08                       ld      b, #8                                   ; 8 bits
+       movb @b08h,b
+       movb @b00h,de_
+loc_D6BE:
+;RAM:D6BE CB 3A                       srl     d
+;RAM:D6C0 CB 13                       rl      e                                       ; reverse bits
+       srl  de_,1
+       sla  d,1
+       jnc  !
+       socb @b80h,de_
+;RAM:D6C2 10 FA                       djnz    loc_D6BE                                ; loop all bits
+!      sb   one,b
+       jne  loc_D6BE
+;RAM:D6C4 73                          ld      (hl), e                                 ; store
+       movb de_,*hl
+;RAM:D6C5 2C                          inc     l                                       ; next index/location
+       ab   one,@l
+;RAM:D6C6 20 F3                       jr      NZ, loc_D6BB                            ; loop 256 bytes
+       jne  loc_D6BB
+;RAM:D6C8 C9                          ret
+       rt
+*
+* End of function build_lookup_tbls
+*
+* =============== S U B R O U T I N E =======================================
+*
+* Calculate 2D coordinates from 3D coordinates
+*
+calc_pixel_XY:
+;RAM:D6C9 DD 7E 01                    ld      a, 1(ix)                                ; X
+       movb @1(ix),a
+;RAM:D6CC DD 86 02                    add     a, 2(ix)                                ; add Y
+       ab   @2(ix),a
+;RAM:D6CF D6 80                       sub     #128
+       sb   @b80h,a
+;RAM:D6D1 DD 86 12                    add     a, 18(ix)                               ; add pixel_x_adj
+       ab   @18(ix),a
+;RAM:D6D4 DD 77 1A                    ld      26(ix), a                               ; pixel X
+       movb a,@26(ix)
+;RAM:D6D7 DD 7E 02                    ld      a, 2(ix)                                ; Y
+       movb @2(ix),a
+;RAM:D6DA DD 96 01                    sub     1(ix)                                   ; subtract X
+       sb   @1(ix),a
+;RAM:D6DD C6 80                       add     a, #128
+       ab   @b80h,a
+;RAM:D6DF CB 3F                       srl     a
+       srl  a,1
+;RAM:D6E1 DD 86 03                    add     a, 3(ix)                                ; Z
+       ab   @3(ix),a
+;RAM:D6E4 D6 68                       sub     #104
+       sb   @b68h,a
+;RAM:D6E6 DD 86 13                    add     a, 19(ix)                               ; pixel_y_adj
+       ab   @19(ix),a
+;RAM:D6E9 DD 77 1B                    ld      27(ix), a                               ; pixel Y
+       movb a,@27(ix)
+;RAM:D6EC FE C0                       cp      #192                                    ; bottom line of screen?
+       cb   a,@bc0h ; This does not set carry on the TI if out of screen, but JHE should work
+;RAM:D6EE C9                          ret
+       rt
+* End of function calc_pixel_XY
+*
+* =============== S U B R O U T I N E =======================================
+*
+* Flips sprite data (H,V) if required in-place
+*
+flip_sprite:
+       mov  r11,*sp+
+;RAM:D6EF DD 6E 00                    ld      l, 0(ix)                                ; sprite index
+       movb *ix,@l
+;RAM:D6F2 26 00                       ld      h, #0
+       movb @b00h,h
+;RAM:D6F4 29                          add     hl, hl                                  ; word offset
+       a    hl,hl
+;RAM:D6F5 01 12 71                    ld      bc, #sprite_tbl
+       li   bc,sprite_tbl
+;RAM:D6F8 09                          add     hl, bc                                  ; sprite table entry
+       a    bc,hl
+;RAM:D6F9 5E                          ld      e, (hl)                                 ; little endian!
+;RAM:D6FA 23                          inc     hl
+;RAM:D6FB 56                          ld      d, (hl)                                 ; DE = sprite address
+       mov  *hl,de
+;RAM:D6FC 1A                          ld      a, (de)                                 ; width
+       movb *de,a
+;RAM:D6FD A7                          and     a                                       ; null sprite?
+;RAM:D6FE C2 65 D8                    jp      NZ, vflip_sprite_data                   ; no, skip
+       jeq  !
+       b    @vflip_sprite_data
+;RAM:D701 33                          inc     sp
+;RAM:D702 33                          inc     sp                                      ; exit from caller
+!      dect sp                                                                        ; do not return to print_sprite
+                                                                                      ; but to the caller of print_sprite
+;RAM:D703 C9                          ret
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function flip_sprite
+*
+* =============== S U B R O U T I N E =======================================
+*
+calc_pixel_XY_and_render:
+       mov  r11,*sp+
+;RAM:D704 DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
+       movb *ix,a
+;RAM:D707 FE 01                       cp      #1                                      ; flagged as ???
+       cb   a,one
+;RAM:D709 20 05                       jr      NZ, loc_D710                            ; no, continue
+       jne  loc_D710
+;RAM:D70B DD 36 00 00                 ld      0(ix), #0                               ; set to null
+       movb @b00h,*ix
+;RAM:D70F C9                          ret
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* ---------------------------------------------------------------------------
+*
+loc_D710:
+;RAM:D710 DD CB 07 A6                 res     4, 7(ix)                                ; flag don't draw
+       szcb @b10h,@7(ix)
+;RAM:D714 CD C9 D6                    call    calc_pixel_XY
+       bl   @calc_pixel_XY
+;RAM:D717 D0                          ret     NC                                      ; off bottom of screen, skip
+       jl   print_sprite_1            ; if y position lower than 192
+*      Else return
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function calc_pixel_XY_and_render
+*
+* ix: holds the object address
+*
+print_sprite:
+       mov  r11,*sp+
+;RAM:D718 CD EF D6                    call    flip_sprite
+print_sprite_1:
+       bl   @flip_sprite              ; now de holds the sprite address
+;RAM:D71B DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
+       movb @26(ix),a
+;RAM:D71E E6 07                       and     #7                                      ; bit offset?
+       andi a,>0700
+;RAM:D720 28 4D                       jr      Z, loc_D76F                             ; no, skip
+       jeq  loc_D76F
+*      Calculate bit shift lookup table address
+*      Not doing this on the TI, using shifts instead
+;RAM:D722 07                          rlca                                            ; 0x02, 0x04, ..., 0x0e
+;RAM:D723 E6 0E                       and     #0xE                                    ; necessary?
+;RAM:D725 F6 F0                       or      #0xF0 ; '�'                            ; 0xf2, 0xf4, ..., 0xfe
+;RAM:D727 67                          ld      h, a                                    ; hl = bit shift lookup table address
+;RAM:D728 1A                          ld      a, (de)                                 ; sprite width
+;RAM:D729 13                          inc     de
+*
+*      Setup shifts
+       movb @b08h,b                   ; 8
+       sb a,b                         ; 8 - offset
+       sla  b,4                       ; Move bit offset shift into place for SLA instruction
+       andi b,>f000
+       sla  a,4
+       andi a,>f000
+       movb @bf0h,h
+       szcb h,@shift_pattern_1+1
+       socb b,@shift_pattern_1+1
+       szcb h,@shift_mask_1+1
+       socb b,@shift_mask_1+1
+       szcb h,@shift_pattern_2+1
+       socb a,@shift_pattern_2+1
+       szcb h,@shift_mask_2+1
+       socb a,@shift_mask_2+1
+*
+       movb *de+,a
+;RAM:D72A E6 07                       and     #7
+       andi a,>0700
+;RAM:D72C 3C                          inc     a                                       ; width + 1
+       ab   one,a
+;RAM:D72D 47                          ld      b, a                                    ; keep width+1
+       movb a,b
+;RAM:D72E DD 77 18                    ld      24(ix), a                               ; store width_bytes
+       movb a,@24(ix)
+;RAM:D731 3D                          dec     a                                       ; width  (1, 2, 3, 4, 5)
+       sb   one,a
+;RAM:D732 E6 07                       and     #7                                      ; mod 8
+;RAM:D734 87                          add     a, a                                    ; multiply by 16
+;RAM:D735 87                          add     a, a
+;RAM:D736 87                          add     a, a
+;RAM:D737 87                          add     a, a                                    ; 16, 32, 48, 64, 80
+;RAM:D738 ED 44                       neg                                             ; -16, -32, -48, -64, -80
+;RAM:D73A C6 50                       add     a, #0x50 ; 'P'                          ; 64, 48, 32, 16, 0
+*      On the TI we use a loop
+       clr  r1
+       movb a,@r1lb                   ; width
+       mov  r1,r2                     ; width
+       clr  a
+loc_D73C:                                                                             ; self-modifying code
+;RAM:D73C 32 AD D7                    ld      (loc_D7AC+1), a                         ; set jump offset
+       movb a,@loc_D7AC+1
+;RAM:D73F 78                          ld      a, b                                    ; width (or width+1)
+       movb b,a
+;RAM:D740 2F                          cpl                                             ; -(width+1)
+       inv  a
+;RAM:D741 C6 22                       add     a, #0x22 ; '"'                          ; 34-(width+1)=33-width
+       ab   @b22h,a
+;RAM:D743 32 01 D8                    ld      (loc_D800+1), a                         ; self-modifying code
+       movb a,@loc_D800+3              ; patch LSB
+;RAM:D746 1A                          ld      a, (de)                                 ; get sprite height
+;RAM:D747 13                          inc     de
+       movb *de+,a
+;RAM:D748 DD 77 19                    ld      25(ix), a                               ; height_lines
+       movb a,@25(ix)
+;RAM:D74B DD 86 1B                    add     a, 27(ix)                               ; add Y
+       ab   @27(ix),a
+;RAM:D74E D6 C0                       sub     #192                                    ; off bottom of screen?
+       cb   a,@bc0h
+;RAM:D750 38 08                       jr      C, loc_D75A                             ; no, skip
+       jl   loc_D75A
+;RAM:D752 ED 44                       neg                                             ; -lines outside screen
+;RAM:D754 DD 86 19                    add     a, 25(ix)                               ; height-lines outside screen
+;RAM:D757 DD 77 19                    ld      25(ix), a                               ; store actual height_lines
+       sb   @bc0h,a
+       sb   a,@25(ix)
+;RAM:D75A
+loc_D75A:
+;RAM:D75A DD 4E 1A                    ld      c, 26(ix)                               ; pixel X
+       movb @26(ix),@c
+;RAM:D75D DD 46 1B                    ld      b, 27(ix)                               ; pixel Y
+       movb @27(ix),b
+;RAM:D760 CD 11 D8                    call    calc_vidbuf_addr                        ; bc = address
+       bl   @calc_vidbuf_addr
+;RAM:D763 ED 73 A9 5B                 ld      (tmp_SP), sp                            ; store stack pointer
+       mov  sp,@tmp_SP
+;RAM:D767 EB                          ex      de, hl
+;RAM:D768 F9                          ld      sp, hl                                  ; sp=source data address
+;RAM:D769 EB                          ex      de, hl
+       mov  de,sp
+;RAM:D76A DD 7E 19                    ld      a, 25(ix)                               ; height_lines
+       movb @25(ix),a
+;RAM:D76D 18 3B                       jr      loc_D7AA
+       jmp  loc_D7AA
+;RAM:D76F             ; ---------------------------------------------------------------------------
+* No pixel offset
+loc_D76F:
+;RAM:D76F 1A                          ld      a, (de)                                 ; sprite width
+       movb *de+,a
+;RAM:D770 13                          inc     de
+;RAM:D771 E6 0F                       and     #0xF                                    ; mod 16
+       andi a,>0f00
+;RAM:D773 DD 77 18                    ld      24(ix), a                               ; width_bytes
+       movb a,@24(ix)
+;RAM:D776 47                          ld      b, a                                    ; keep width
+       movb a,b
+;RAM:D777 87                          add     a, a                                    ; multiply by 8
+;RAM:D778 87                          add     a, a
+;RAM:D779 87                          add     a, a                                    ; 8, 16, 24, 32, 40
+       sla  a,3
+;RAM:D77A ED 44                       neg                                             ; -8, -16, -24, -32, -40
+       inv  a
+       ab   one,a
+;RAM:D77C D6 06                       sub     #6                                      ; -14, -20, -30, -38, -46
+       sb   @b0ah,a                    ; 10 on the TI
+* TMS9900 offsets are in words
+       sra  a,1
+;RAM:D77E 18 BC                       jr      loc_D73C                                ; to self modifying code
+       jmp  loc_D73C
+;RAM:D780             ; ---------------------------------------------------------------------------
+* For sprites with no bit offset, 8 bytes per routine
+* -- 1st byte --
+;RAM:D780 D1                          pop     de                                      ; get pattern d and mask e
+       mov  *sp+,de
+;RAM:D781 0A                          ld      a, (bc)                                 ; get existing byte
+;RAM:D782 2F                          cpl                                             ; invert
+;RAM:D783 B3                          or      e                                       ; apply mask
+;RAM:D784 2F                          cpl                                             ; invert
+       szcb d,*bc
+;RAM:D785 B2                          or      d                                       ; apply pattern
+;RAM:D786 02                          ld      (bc), a                                 ; store
+;RAM:D787 03                          inc     bc                                      ; next destination address
+       socb  @e,*bc+
+* -- 2nd byte --
+;RAM:D788 D1                          pop     de
+       mov  *sp+,de
+;RAM:D789 0A                          ld      a, (bc)
+;RAM:D78A 2F                          cpl
+;RAM:D78B B3                          or      e
+;RAM:D78C 2F                          cpl
+       szcb d,*bc
+;RAM:D78D B2                          or      d
+;RAM:D78E 02                          ld      (bc), a
+;RAM:D78F 03                          inc     bc
+       socb  @e,*bc+
+loc_D790:
+* -- 3rd byte --
+;RAM:D790 D1                          pop     de
+       mov  *sp+,de
+;RAM:D791 0A                          ld      a, (bc)
+;RAM:D792 2F                          cpl
+;RAM:D793 B3                          or      e
+;RAM:D794 2F                          cpl
+       szcb d,*bc
+;RAM:D795 B2                          or      d
+;RAM:D796 02                          ld      (bc), a
+;RAM:D797 03                          inc     bc
+       socb  @e,*bc+
+* -- 4th byte --
+;RAM:D798 D1                          pop     de
+       mov  *sp+,de
+;RAM:D799 0A                          ld      a, (bc)
+;RAM:D79A 2F                          cpl
+;RAM:D79B B3                          or      e
+;RAM:D79C 2F                          cpl
+       szcb d,*bc
+;RAM:D79D B2                          or      d
+;RAM:D79E 02                          ld      (bc), a
+;RAM:D79F 03                          inc     bc
+       socb  @e,*bc+
+* -- 5th byte --
+;RAM:D7A0 D1                          pop     de
+       mov  *sp+,de
+;RAM:D7A1 0A                          ld      a, (bc)
+;RAM:D7A2 2F                          cpl
+;RAM:D7A3 B3                          or      e
+;RAM:D7A4 2F                          cpl
+       szcb d,*bc
+;RAM:D7A5 B2                          or      d
+;RAM:D7A6 02                          ld      (bc), a
+       socb  @e,*bc
+* ---------------------------------------------------------------------------
+;RAM:D7A7 C3 FF D7                    jp      loc_D7FF
+       b    @loc_D7FF
+* ---------------------------------------------------------------------------
+loc_D7AA:
+;RAM:D7AA 08                          ex      af, af'                                 ; save height
+       mov  af,af_
+;RAM:D7AB 0A                          ld      a, (bc)                                 ; get screen byte
+       movb *bc,a
+;RAM:D7AC                                                                             ; only required for forward jumps
+loc_D7AC:
+;RAM:D7AC 18 E2                       jr      loc_D790                                ; patched jump (forwards/backwards)
+       jmp  loc_D790
+* ---------------------------------------------------------------------------
+* For sprites with bit offset
+       mov  r1,r2
+       clr  de
+       clr  hl
+plot_shifted_line:
+       movb *sp+,@e                    ; get pattern
+       movb *sp+,@l                    ; get mask
+shift_pattern_1:
+       sla  de,0                       ; Shift (8 - bit offset) pattern bits into MSB
+shift_mask_1:
+       sla  hl,0                       ; Actual shift values inserted by self-modiyfying code
+       szcb d,*bc
+       socb h,*bc+
+       dec  r2
+       jeq  plot_shifted_line_1
+shift_pattern_2:
+       sla  de,0                       ; Shift (bit offset) bits into MSB
+shift_mask_2:
+       sla  hl,0                       ; Actual shift values inserted by self-modiyfying code
+       jmp  plot_shifted_line
+plot_shifted_line_1:
+       swpb de
+       swpb hl
+       szcb d,*bc
+       socb h,*bc
+* 16 bytes per routine
+* -- 1st byte --
+;RAM:D7AE D1                          pop     de                                      ; get pattern d and mask e
+;RAM:D7AF 6B                          ld      l, e
+;RAM:D7B0 A6                          and     (hl)
+;RAM:D7B1 6A                          ld      l, d
+;RAM:D7B2 AE                          xor     (hl)
+;RAM:D7B3 2F                          cpl
+;RAM:D7B4 02                          ld      (bc), a
+;RAM:D7B5 03                          inc     bc
+;RAM:D7B6 24                          inc     h
+;RAM:D7B7 6B                          ld      l, e
+;RAM:D7B8 0A                          ld      a, (bc)
+;RAM:D7B9 A6                          and     (hl)
+;RAM:D7BA 6A                          ld      l, d
+;RAM:D7BB AE                          xor     (hl)
+;RAM:D7BC 2F                          cpl
+;RAM:D7BD 25                          dec     h
+* -- 2nd byte --
+;RAM:D7BE D1                          pop     de
+;RAM:D7BF 6B                          ld      l, e
+;RAM:D7C0 A6                          and     (hl)
+;RAM:D7C1 6A                          ld      l, d
+;RAM:D7C2 AE                          xor     (hl)
+;RAM:D7C3 2F                          cpl
+;RAM:D7C4 02                          ld      (bc), a
+;RAM:D7C5 03                          inc     bc
+;RAM:D7C6 24                          inc     h
+;RAM:D7C7 6B                          ld      l, e
+;RAM:D7C8 0A                          ld      a, (bc)
+;RAM:D7C9 A6                          and     (hl)
+;RAM:D7CA 6A                          ld      l, d
+;RAM:D7CB AE                          xor     (hl)
+;RAM:D7CC 2F                          cpl
+;RAM:D7CD 25                          dec     h
+* -- 3rd byte --
+;RAM:D7CE D1                          pop     de
+;RAM:D7CF 6B                          ld      l, e
+;RAM:D7D0 A6                          and     (hl)
+;RAM:D7D1 6A                          ld      l, d
+;RAM:D7D2 AE                          xor     (hl)
+;RAM:D7D3 2F                          cpl
+;RAM:D7D4 02                          ld      (bc), a
+;RAM:D7D5 03                          inc     bc
+;RAM:D7D6 24                          inc     h
+;RAM:D7D7 6B                          ld      l, e
+;RAM:D7D8 0A                          ld      a, (bc)
+;RAM:D7D9 A6                          and     (hl)
+;RAM:D7DA 6A                          ld      l, d
+;RAM:D7DB AE                          xor     (hl)
+;RAM:D7DC 2F                          cpl
+;RAM:D7DD 25                          dec     h
+* -- 4th byte --
+;RAM:D7DE D1                          pop     de
+;RAM:D7DF 6B                          ld      l, e
+;RAM:D7E0 A6                          and     (hl)
+;RAM:D7E1 6A                          ld      l, d
+;RAM:D7E2 AE                          xor     (hl)
+;RAM:D7E3 2F                          cpl
+;RAM:D7E4 02                          ld      (bc), a
+;RAM:D7E5 03                          inc     bc
+;RAM:D7E6 24                          inc     h
+;RAM:D7E7 6B                          ld      l, e
+;RAM:D7E8 0A                          ld      a, (bc)
+;RAM:D7E9 A6                          and     (hl)
+;RAM:D7EA 6A                          ld      l, d
+;RAM:D7EB AE                          xor     (hl)
+;RAM:D7EC 2F                          cpl
+;RAM:D7ED 25                          dec     h
+* -- 5th byte --
+;RAM:D7EE D1                          pop     de
+;RAM:D7EF 6B                          ld      l, e
+;RAM:D7F0 A6                          and     (hl)
+;RAM:D7F1 6A                          ld      l, d
+;RAM:D7F2 AE                          xor     (hl)
+;RAM:D7F3 2F                          cpl
+;RAM:D7F4 02                          ld      (bc), a
+;RAM:D7F5 03                          inc     bc
+;RAM:D7F6 24                          inc     h
+;RAM:D7F7 6B                          ld      l, e
+;RAM:D7F8 0A                          ld      a, (bc)
+;RAM:D7F9 A6                          and     (hl)
+;RAM:D7FA 6A                          ld      l, d
+;RAM:D7FB AE                          xor     (hl)
+;RAM:D7FC 2F                          cpl
+;RAM:D7FD 25                          dec     h
+* -- remaining bits --
+;RAM:D7FE 02                          ld      (bc), a
+;RAM:D7FF
+loc_D7FF:
+* Next line
+;RAM:D7FF 79                          ld      a, c
+       movb @c,a
+loc_D800:
+;RAM:D800 C6 1E                       add     a, #0x1E                                ; patched line increment
+;RAM:D802 4F                          ld      c, a
+;RAM:D803 78                          ld      a, b
+;RAM:D804 CE 00                       adc     a, #0                                   ; add carry
+;RAM:D806 47                          ld      b, a
+       ai   bc,>001e
+;RAM:D807 08                          ex      af, af'                                 ; restore height
+       mov  af_,af
+;RAM:D808 3D                          dec     a
+       sb   one,a
+;RAM:D809 C2 AA D7                    jp      NZ, loc_D7AA                            ; line loop
+       jne  loc_D7AA
+;RAM:D80C ED 7B A9 5B                 ld      sp, (tmp_SP)                            ; restore stack pointer
+       mov  @tmp_SP,sp
+;RAM:D810 C9                          ret
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* =============== S U B R O U T I N E =======================================
+*
+* b: pixel Y
+* c: pixel X
+*
+* Result in bc
+*
+calc_vidbuf_addr:
+;RAM:D811 E5                          push    hl
+;RAM:D812 CB 38                       srl     b                                       ; y >> 1, bit 0 to Carry
+;RAM:D814 CB 19                       rr      c                                       ; Carry to bit 7, x >> 1
+;RAM:D816 CB 38                       srl     b                                       ;
+;RAM:D818 CB 19                       rr      c                                       ;
+;RAM:D81A CB 38                       srl     b                                       ;
+;RAM:D81C CB 19                       rr      c                                       ;
+       srl  bc,3
+;RAM:D81E 21 F3 D8                    ld      hl, #vidbuf                             ; bitmap buffer
+;RAM:D821 09                          add     hl, bc                                  ; calculate bitmap memory address
+;RAM:D822 4D                          ld      c, l
+;RAM:D823 44                          ld      b, h                                    ; BC = bitmap memory address
+       ai   bc,vidbuf
+;RAM:D824 E1                          pop     hl
+;RAM:D825 C9                          ret
+       rt
+*
+* End of function calc_vidbuf_addr
+*
+* =============== S U B R O U T I N E =======================================
+*
+* b: pixel Y (0 is bottom line of screen)
+* c: pixel X
+*
+* Result in de
+*
+; Given a Y coordinate stored in an 8-bit register:
+;
+; Y Coordinate bit layout (MSB to LSB):
+; zzxx xnnn
+;
+; we can produce a 16-bit address in a register pair by placing these bits as follows:
+;
+; Register pair bit layout (R are the bits for the x-axis offset, 010 provides the base address $4000):
+; 010z znnn xxxR RRRR
+*
+calc_vram_addr:
+;RAM:D826 79                          ld      a, c
+;RAM:D827 0F                          rrca
+;RAM:D828 0F                          rrca
+;RAM:D829 0F                          rrca
+;RAM:D82A E6 1F                       and     #0x1F
+;RAM:D82C 5F                          ld      e, a        ; 000 RRRRR
+;RAM:D82D 78                          ld      a, b
+;RAM:D82E 2F                          cpl
+;RAM:D82F E6 07                       and     #7
+;RAM:D831 08                          ex      af, af'     ; 00000 ~nnn
+;RAM:D832 78                          ld      a, b
+;RAM:D833 2F                          cpl
+;RAM:D834 07                          rlca
+;RAM:D835 07                          rlca
+;RAM:D836 E6 E0                       and     #0xE0        ; ~xxx 00000
+;RAM:D838 B3                          or      e            ; ~xxx RRRRR
+;RAM:D839 5F                          ld      e, a
+;RAM:D83A 78                          ld      a, b         ; zzxxxnnn
+;RAM:D83B 2F                          cpl                  ; ~zzxxxnnn
+;RAM:D83C 0F                          rrca
+;RAM:D83D 0F                          rrca
+;RAM:D83E 0F                          rrca                 ; ~nnnzzxxx
+;RAM:D83F E6 18                       and     #0x18        ; 000 ~zz 000
+;RAM:D841 57                          ld      d, a
+;RAM:D842 08                          ex      af, af'      ; 00000 ~nnn
+;RAM:D843 B2                          or      d            ; 000 ~zz ~nnn
+;RAM:D844 C6 38                       add     a, #0x38     ; + 0011 1000 ?
+;RAM:D846 57                          ld      d, a
+;RAM:D847 C9                          ret
+*      Reverse y
+       li   r1,>bf00
+       sb   b,r1
+*      Calculate address E/A manual way
+       movb r1,@e                      ; ????????yyyyyyyy
+       sla  de,5                       ; ???yyyyyyyy00000
+       socb r1,@e                      ; ???yyyyy???yyyyy
+       andi de,>1f07                   ; 000yyyyy00000yyy
+       mov  @c,@r0lb                   ; yyyyyyyyxxxxxxxx
+       andi r0,7                       ; 0000000000000xxx
+       ab   @c,@e                      ; 000yyyyyxxxxx???
+       s    r0,de                      ; 000yyyyyxxxxxyyy
+       rt
+*
+* End of function calc_vram_addr
+*
+* =============== S U B R O U T I N E =======================================
+*
+* h: pixel Y (0 is bottom line)
+* l: pixel X
+*
+calc_attrib_addr:
+;RAM:D848 E5                          push    hl
+       mov  hl,*sp+
+;RAM:D849 7C                          ld      a, h                                    ; Y
+       movb h,a
+;RAM:D84A 2F                          cpl
+       inv  a
+;RAM:D84B 67                          ld      h, a
+       movb a,h
+;RAM:D84C CB 3C                       srl     h                                       ; divide Y by 8
+;RAM:D84E CB 3C                       srl     h
+;RAM:D850 CB 3C                       srl     h
+       movb h,r0
+       srl  r0,3
+       movb r0,h
+;RAM:D852 CB 3C                       srl     h                                       ; divide by 8
+;RAM:D854 CB 1D                       rr      l
+;RAM:D856 CB 3C                       srl     h
+;RAM:D858 CB 1D                       rr      l
+;RAM:D85A CB 3C                       srl     h
+;RAM:D85C CB 1D                       rr      l
+       srl  hl,3
+;RAM:D85E 11 00 57                    ld      de, # zx_vram+0x1700                    ; add base
+       li   de,zx_vram+>1700
+;RAM:D861 19                          add     hl, de
+;RAM:D862 EB                          ex      de, hl
+       a    hl,de
+;RAM:D863 E1                          pop     hl
+       dect sp
+       mov  *sp,hl
+;RAM:D864 C9                          ret
+       rt
+*
+* End of function calc_attrib_addr
+*
+* ---------------------------------------------------------------------------
+* DE = sprite data address
+* START OF FUNCTION CHUNK FOR flip_sprite
+*
+vflip_sprite_data:                                                                    ; sprite data address
+;RAM:D865 D5                          push    de
+       mov  de,*sp+
+;RAM:D866 1A                          ld      a, (de)                                 ; width
+       movb *de,a
+;RAM:D867 DD AE 07                    xor     7(ix)                                   ; same Vflip as stored?
+       movb @7(ix),r0
+       xor  r0,a
+;RAM:D86A E6 80                       and     #0x80 ; '�'
+       andi a,>8000
+;RAM:D86C 28 34                       jr      Z, loc_D8A2                             ; yes, skip
+       jeq  loc_D8A2
+;RAM:D86E 1A                          ld      a, (de)                                 ; width
+       movb *de,a
+;RAM:D86F EE 80                       xor     #0x80 ; '�'                             ; toggle Vflip
+       li   r0,>8000
+       xor  r0,a
+;RAM:D871 12                          ld      (de), a                                 ; store updated flag
+       movb a,*de
+;RAM:D872 07                          rlca                                            ; *2
+       sla  a,1
+;RAM:D873 E6 1E                       and     #0x1E
+       andi a,>1e00
+;RAM:D875 47                          ld      b, a                                    ; B = width x 2 (data+mask)
+       movb a,b
+;RAM:D876 13                          inc     de
+       inc  de
+;RAM:D877 1A                          ld      a, (de)                                 ; height
+       movb *de,a
+;RAM:D878 4F                          ld      c, a
+       movb a,@c
+;RAM:D879 13                          inc     de                                      ; sprite data
+       inc  de
+;RAM:D87A D5                          push    de
+       mov  de,*sp+
+;RAM:D87B 58                          ld      e, b
+       movb b,@e
+;RAM:D87C 16 00                       ld      d, #0                                   ; DE = width x 2
+       movb @b00h,d
+;RAM:D87E CD F9 D4                    call    HL_equals_DE_x_A                        ; HL = width x 2 x height
+       bl   @HL_equals_DE_x_A
+;RAM:D881 D1                          pop     de                                      ; sprite data
+       dect sp
+       movb *sp,de
+;RAM:D882 19                          add     hl, de                                  ; skip sprite data (including mask bytes)
+       a    de,hl
+;RAM:D883 EB                          ex      de, hl                                  ; DE=end of sprite data, HL=sprite data
+       bl   @ex_de_hl
+;RAM:D884 78                          ld      a, b                                    ; width x 2
+       movb b,a
+;RAM:D885 CD F2 D4                    call    add_HL_A                                ; HL=sprite data + width x 2
+       bl   @add_HL_A
+;RAM:D888 1B                          dec     de                                      ; last byte of sprite data
+       dec  de
+;RAM:D889 2B                          dec     hl                                      ; (height+1) x width x 2 - 1
+       dec  hl
+;RAM:D88A CB 39                       srl     c                                       ; height / 2
+       movb @c,r0
+       srl  r0,1
+       movb r0,@c
+loc_D88C:
+;RAM:D88C C5                          push    bc                                      ; B=widthx2, C=height/2
+       mov  bc,*sp+
+vflip_sprite_line_pair:
+;RAM:D88D 1A                          ld      a, (de)                                 ; sprite data byte from end
+       movb *de,a
+;RAM:D88E 4E                          ld      c, (hl)                                 ; sprite data from start
+       movb *hl,@c
+;RAM:D88F 77                          ld      (hl), a                                 ; store end data at start
+       movb a,*hl
+;RAM:D890 79                          ld      a, c
+       movb @c,a
+;RAM:D891 12                          ld      (de), a                                 ; store start data at end
+       movb a,*de
+;RAM:D892 2B                          dec     hl                                      ; next start byte
+       dec  hl
+;RAM:D893 1B                          dec     de                                      ; next end byte
+       dec  de
+;RAM:D894 10 F7                       djnz    vflip_sprite_line_pair                  ; flip sprite and mask data for line pair
+       sb   one,b
+       jne  vflip_sprite_line_pair
+;RAM:D896 C1                          pop     bc
+       dect sp
+       mov  *sp,bc
+;RAM:D897 78                          ld      a, b
+       movb b,a
+;RAM:D898 CD F2 D4                    call    add_HL_A
+       bl   @add_HL_A
+;RAM:D89B 78                          ld      a, b
+       movb b,a
+;RAM:D89C CD F2 D4                    call    add_HL_A                                ; next line
+       bl   @add_HL_A
+;RAM:D89F 0D                          dec     c                                       ; done all lines?
+       sb   one,@c
+;RAM:D8A0 20 EA                       jr      NZ, loc_D88C                            ; no, loop
+       jne  loc_D88C
+loc_D8A2:
+;RAM:D8A2 D1                          pop     de
+       dect sp
+       mov  *sp,de
+;RAM:D8A3 D5                          push    de                                      ; sprite data address
+       mov  de,*sp+
+;RAM:D8A4 1A                          ld      a, (de)                                 ; width (bytes)
+       movb *de,a
+;RAM:D8A5 DD AE 07                    xor     7(ix)                                   ; same Hflip as stored?
+       movb @7(ix),r0
+       xor  r0,a
+;RAM:D8A8 E6 40                       and     #0x40 ; '@'
+       andi a,>4000
+;RAM:D8AA 28 30                       jr      Z, loc_D8DC                             ; yes, skip
+       jeq  loc_D8DC
+;RAM:D8AC 1A                          ld      a, (de)                                 ; width
+       movb *de,a
+;RAM:D8AD EE 40                       xor     #0x40 ; '@'                             ; toggle Hflip flag
+       li   r0,>4000
+       xor  r0,a
+;RAM:D8AF 12                          ld      (de), a                                 ; store updated flag
+       movb a,*de
+;RAM:D8B0 E6 0F                       and     #0xF                                    ; width
+       andi a,>0f00
+;RAM:D8B2 47                          ld      b, a
+       movb a,b
+;RAM:D8B3 4F                          ld      c, a
+       movb a,@c
+;RAM:D8B4 13                          inc     de
+       inc  de
+;RAM:D8B5 1A                          ld      a, (de)                                 ; height
+       movb *de,a
+;RAM:D8B6 08                          ex      af, af'
+       mov  af,r0
+       mov  af_,af
+       mov r0,af_
+;RAM:D8B7 13                          inc     de                                      ; sprite data
+       inc  de
+;RAM:D8B8 EB                          ex      de, hl                                  ; HL=sprite data
+       bl   @ex_de_hl
+;RAM:D8B9 E5                          push    hl
+       mov  hl,*sp+
+;RAM:D8BA D9                          exx
+       bl   @exx
+;RAM:D8BB E1                          pop     hl                                      ; HL'=sprite data
+       dect sp
+       mov  *sp,hl
+;RAM:D8BC 06 F1                       ld      b, #0xF1 ; '�'
+       li   r0,reverse_bytes_lookup_table
+       movb r0,b
+;RAM:D8BE D9                          exx
+       bl   @exx
+loc_D8BF:
+;RAM:D8BF D9                          exx
+       bl   @exx
+;RAM:D8C0 4E                          ld      c, (hl)                                 ; sprite data byte
+       movb *hl+,@c
+;RAM:D8C1 0A                          ld      a, (bc)                                 ; mirrored byte
+       movb *bc,a
+;RAM:D8C2 5F                          ld      e, a                                    ; store in e
+       movb a,@e
+;RAM:D8C3 23                          inc     hl
+;      inc  hl                        ; already done
+;RAM:D8C4 4E                          ld      c, (hl)                                 ; mask byte
+       movb *hl+,@c
+;RAM:D8C5 0A                          ld      a, (bc)                                 ; mirrored mask byte
+       movb *bc,a
+;RAM:D8C6 57                          ld      d, a                                    ; store in d
+       movb a,d
+;RAM:D8C7 23                          inc     hl
+;      inc  hl                        ; already done
+;RAM:D8C8 D5                          push    de                                      ; push mirrored
+       mov  de,*sp+
+;RAM:D8C9 D9                          exx
+       bl   @exx
+;RAM:D8CA 10 F3                       djnz    loc_D8BF
+       sb   one,b
+       jne  loc_D8BF
+;RAM:D8CC 41                          ld      b, c
+       movb @c,b
+loc_D8CD:
+;RAM:D8CD D1                          pop     de                                      ; pop mirrored
+       dect sp
+       mov  *sp,de
+;RAM:D8CE 73                          ld      (hl), e                                 ; write date byte
+;RAM:D8CF 23                          inc     hl
+       movb @e,*hl+
+;RAM:D8D0 72                          ld      (hl), d                                 ; write mask
+;RAM:D8D1 23                          inc     hl
+       movb d,*hl+
+;RAM:D8D2 10 F9                       djnz    loc_D8CD
+       sb   one,b
+       jne  loc_D8CD
+;RAM:D8D4 08                          ex      af, af'
+       mov  af,r0
+       mov  af_,af
+       mov r0,af_
+;RAM:D8D5 3D                          dec     a
+       sb   one,a
+;RAM:D8D6 28 04                       jr      Z, loc_D8DC
+       jeq  loc_D8DC
+;RAM:D8D8 08                          ex      af, af'
+       mov  af,r0
+       mov  af_,af
+       mov r0,af_
+;RAM:D8D9 41                          ld      b, c
+       movb @c,b
+;RAM:D8DA 18 E3                       jr      loc_D8BF
+       jmp  loc_D8BF
+* ---------------------------------------------------------------------------
+loc_D8DC:
+;RAM:D8DC D1                          pop     de
+       dect sp
+       mov  *sp,de
+;RAM:D8DD C9                          ret
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* END OF FUNCTION CHUNK FOR vflip_sprite_data
 
 *********************************************************************************
 *
@@ -957,12 +2148,64 @@ chkkey:
        tb   0                          ; Test key, EQ if not pressed
        rt
 *// CHKKEY
+
+*********************************************************************
 *
+* Byte constants
+*
+b00h   byte >00
+b01h   byte >01
+b02h   byte >02
+b03h   byte >03
+b04h   byte >04
+b05h   byte >05
+b06h   byte >06
+b07h   byte >07
+b08h   byte >08
+b09h   byte >09
+b0ah   byte >0a
+b0ch   byte >0c
+b0dh   byte >0d
+b0eh   byte >0e
+b10h   byte >10
+b12h   byte >12
+b14h   byte >14
+b17h   byte >17
+b20h   byte >20
+b22h   byte >22
+b28h   byte >28
+b30h   byte >30
+b37h   byte >37
+b40h   byte >40
+b47h   byte >47
+b51h   byte >51
+b58h   byte >58
+b5ah   byte >5a
+b68h   byte >68
+b60h   byte >60
+b80h   byte >80
+b8ch   byte >8c
+ba0h   byte >a0
+baeh   byte >ae
+bb0h   byte >b0
+bb8h   byte >b8
+bbah   byte >ba
+bbbh   byte >bb
+bc0h   byte >c0
+bc8h   byte >c8
+bd0h   byte >d0
+be1h   byte >e1
+bf0h   byte >f0
+bf1h   byte >f1
+bfeh   byte >fe
+bffh   byte >ff
+
 * ---------------------------------------------------------------------------
 *
-* 1580 bytes free
+* 362 bytes free
 *
 * ---------------------------------------------------------------------------
+
 *
 * Reverse bytes lookup table
 *

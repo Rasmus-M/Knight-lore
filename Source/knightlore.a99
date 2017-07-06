@@ -93,7 +93,7 @@ hl_    equ  15
 
 * ===========================================================================
 *
-* Lower memory - primarily program code
+* Lower memory - game code
 *
        aorg >2000
        copy "lower_memory.a99"
@@ -126,7 +126,7 @@ vidbuf:
 *
 *===========================================================================
 *
-* Upper memory - primarily data
+* Upper memory - data and support routines
 *
        aorg >A000
        copy "upper_memory.a99"
