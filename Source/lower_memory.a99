@@ -2950,7 +2950,7 @@ toggle_day_night:
        li   r0,>0100
        xor  r0,a
 ;RAM:C404 DD 77 00                    ld      0(ix), a
-       mov  a,*ix
+       movb a,*ix
 ;RAM:C407 CD 0D D3                    call    colour_sun_moon
        bl   @colour_sun_moon
 ;RAM:C40A DD 36 1A B0                 ld      26(ix), #176                            ; pixel X

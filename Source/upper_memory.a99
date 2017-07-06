@@ -497,8 +497,8 @@ plyr_spr_init_data:
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
 * ---------------------------------------------------------------------------
 start_locations:
-;       byte >2F, >44, >B3, >8F         ; Standard
-        byte >6d,>27,>d0,>0a            ; Rooms with special objects
+        byte >2F, >44, >B3, >8F         ; Standard
+;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
 ;       byte >00,>01,>04,>08
 ;       byte 136,136,136,136            ; Cauldron room
 * ---------------------------------------------------------------------------
