@@ -99,6 +99,8 @@ jump_to_upd_object:
        movb *ix,@l
 ;RAM:AFD8 01 96 B0                    ld      bc, #upd_sprite_jmp_tbl
        li   bc,upd_sprite_jmp_tbl
+* ---------------------------------------------------------------------------
+* This jump table routine is used in many places
 jump_to_tbl_entry:
 ;RAM:AFDB 26 00                       ld      h, #0
        movb @b00h,h
@@ -113,7 +115,7 @@ jump_to_tbl_entry:
        mov  *hl,hl
 ;RAM:AFE3 E9                          jp      (hl)                                    ; go
        b    *hl
-*
+* ---------------------------------------------------------------------------
 * END OF FUNCTION CHUNK FOR main
 * ---------------------------------------------------------------------------
 *
@@ -196,7 +198,7 @@ loc_B000:
        jeq  no_delay
 game_delay:
 ;RAM:B035 21 00 05                    ld      hl, #0x500
-       li   hl,>500
+       li   hl,>800
 delay_loop:
 ;RAM:B038 2B                          dec     hl
        dec  hl
@@ -658,115 +660,167 @@ upd_54:
 ;RAM:B6EF DD 77 09                    ld      9(ix), a
 ;RAM:B6F2 DD 36 0B 01                 ld      11(ix), #1                              ; pre-load dZ=1 (no falling)
 ;RAM:B6F6 C3 AF B5                    jp      dec_dZ_wipe_and_draw
-;RAM:B6F9             ; ---------------------------------------------------------------------------
-;RAM:B6F9             ; guard and wizard (bottom half)
-;RAM:B6F9
+* ---------------------------------------------------------------------------
+* guard and wizard (bottom half)
 upd_144_to_149_152_to_157:
-       b    @no_update
 ;RAM:B6F9 CD DD C4                    call    adj_m6_m12
+       bl   @adj_m6_m12
 ;RAM:B6FC DD 7E 09                    ld      a, 9(ix)                                ; dX
+       movb @9(ix),a
 ;RAM:B6FF DD B6 0A                    or      10(ix)                                  ; dX & dY both 0?
+       socb @10(ix),a
 ;RAM:B702 C8                          ret     Z                                       ; yes, exit
+       jne  !
+       dect sp
+       mov  *sp,r11
+       rt
 ;RAM:B703 CD AD B4                    call    audio_guard_wizard
+!
 ;RAM:B706 DD 7E 09                    ld      a, 9(ix)                                ; dX
+       movb @9(ix),a
 ;RAM:B709 DD BE 0A                    cp      10(ix)                                  ; dX<dY?
+       cb   a,@10(ix)
 ;RAM:B70C 38 18                       jr      C, loc_B726                             ; yes, go
+       jl   loc_B726
 ;RAM:B70E CB 7F                       bit     7, a                                    ; dX<0?
+       movb a,a
 ;RAM:B710 20 0E                       jr      NZ, loc_B720                            ; yes, go
+       jlt  loc_B720
 ;RAM:B712 DD CB 00 DE                 set     3, 0(ix)                                ; graphic_no
-;RAM:B716
-;RAM:B716             loc_B716:                                                       ; clr hflip
-;RAM:B716 DD CB 07 B6                 res     6, 7(ix)
-;RAM:B71A
-;RAM:B71A             loc_B71A:
+       socb @b08h,*ix
+loc_B716:
+;RAM:B716 DD CB 07 B6                 res     6, 7(ix)                                ; clr hflip
+       szcb @b40h,@7(ix)
+loc_B71A:
 ;RAM:B71A CD 7F C9                    call    animate_human_legs
+       bl   @animate_human_legs
 ;RAM:B71D C3 92 C6                    jp      set_wipe_and_draw_flags
-;RAM:B720             ; ---------------------------------------------------------------------------
-;RAM:B720
-;RAM:B720             loc_B720:                                                       ; graphic_no
-;RAM:B720 DD CB 00 9E                 res     3, 0(ix)
+       b    @set_wipe_and_draw_flags
+* ---------------------------------------------------------------------------
+loc_B720:
+;RAM:B720 DD CB 00 9E                 res     3, 0(ix)                                ; graphic_no
+       szcb @b08h,*ix
 ;RAM:B724 18 F0                       jr      loc_B716
-;RAM:B726             ; ---------------------------------------------------------------------------
-;RAM:B726
-;RAM:B726             loc_B726:                                                       ; dY<0?
-;RAM:B726 DD CB 0A 7E                 bit     7, 10(ix)
+       jmp  loc_B716
+* ---------------------------------------------------------------------------
+loc_B726:
+;RAM:B726 DD CB 0A 7E                 bit     7, 10(ix)                               ; dY<0?
+       movb @10(ix),r0
+       andi r0,>8000
 ;RAM:B72A 28 0A                       jr      Z, loc_B736                             ; no, go
+       jeq  loc_B736
 ;RAM:B72C DD CB 00 DE                 set     3, 0(ix)                                ; graphic_no
-;RAM:B730
-;RAM:B730             loc_B730:                                                       ; set hflip
-;RAM:B730 DD CB 07 F6                 set     6, 7(ix)
+       socb @b08h,*ix
+loc_B730:
+;RAM:B730 DD CB 07 F6                 set     6, 7(ix)                                ; set hflip
+       socb @b40h,@7(ix)
 ;RAM:B734 18 E4                       jr      loc_B71A
-;RAM:B736             ; ---------------------------------------------------------------------------
-;RAM:B736
-;RAM:B736             loc_B736:                                                       ; graphic_no
-;RAM:B736 DD CB 00 9E                 res     3, 0(ix)
+       jmp  loc_B71A
+* ---------------------------------------------------------------------------
+loc_B736:
+;RAM:B736 DD CB 00 9E                 res     3, 0(ix)                                ; graphic_no
+       szcb @b08h,*ix
 ;RAM:B73A 18 F4                       jr      loc_B730
-;RAM:B73C             ; ---------------------------------------------------------------------------
+       jmp  loc_B730
+* ---------------------------------------------------------------------------
 ;RAM:B73C             ; guard (EW)
 ;RAM:B73C
 upd_150_151:
-       b    @no_update
 ;RAM:B73C CD 0B C5                    call    adj_p7_m12
+       bl   @adj_p7_m12
 ;RAM:B73F DD CB 0D 46                 bit     0, 13(ix)                               ; E or W?
+       movb @13(ix),r0
 ;RAM:B743 3E 02                       ld      a, #2
+       movb @b02h,a
 ;RAM:B745 20 02                       jr      NZ, loc_B749                            ; E, skip
+       andi r0,>0100
+       jne  loc_B749
 ;RAM:B747 ED 44                       neg
-;RAM:B749
-;RAM:B749             loc_B749:                                                       ; dX=+/-2
-;RAM:B749 DD 77 09                    ld      9(ix), a
+       inv  a
+       ab   one,a
+loc_B749:
+;RAM:B749 DD 77 09                    ld      9(ix), a                                ; dX=+/-2
+       movb a,@9(ix)
 ;RAM:B74C DD 77 29                    ld      0x29(ix), a                             ; and for botton half
+       movb a,@>29(ix)
 ;RAM:B74F CD 6C B7                    call    set_guard_wizard_sprite
+       bl   @set_guard_wizard_sprite
 ;RAM:B752 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:B755 DD CB 0C 46                 bit     0, 12(ix)                               ; X OOB?
+       movb @12(ix),r0
+       andi r0,>0100
 ;RAM:B759 28 08                       jr      Z, loc_B763                             ; no, skip
+       jeq  loc_B763
 ;RAM:B75B DD 7E 0D                    ld      a, 13(ix)
+       movb @13(ix),a
 ;RAM:B75E EE 01                       xor     #1                                      ; toggle direction
+       li   r0,>0100
+       xor  r0,a
 ;RAM:B760 DD 77 0D                    ld      13(ix), a
-;RAM:B763
-;RAM:B763             loc_B763:                                                       ; X
-;RAM:B763 DD 7E 01                    ld      a, 1(ix)
+       movb a,@13(ix)
+loc_B763:
+;RAM:B763 DD 7E 01                    ld      a, 1(ix)                                ; X
 ;RAM:B766 DD 77 21                    ld      0x21(ix), a                             ; copy to bottom half
+       movb @1(ix),@>21(ix)
 ;RAM:B769 C3 56 B8                    jp      set_deadly_wipe_and_draw_flags
-;RAM:B76C
-;RAM:B76C             ; =============== S U B R O U T I N E =======================================
-;RAM:B76C
-;RAM:B76C
-;RAM:B76C             set_guard_wizard_sprite:
+       b    @set_deadly_wipe_and_draw_flags
+*
+* =============== S U B R O U T I N E =======================================
+set_guard_wizard_sprite:
 ;RAM:B76C DD 7E 09                    ld      a, 9(ix)                                ; dX
+       movb @9(ix),a
 ;RAM:B76F DD B6 0A                    or      10(ix)                                  ; dY - both zero?
+       socb @10(ix),a
 ;RAM:B772 C8                          ret     Z                                       ; yes, exit
+       jne  !
+       rt
 ;RAM:B773 DD 7E 09                    ld      a, 9(ix)                                ; dX
+!      movb @9(ix),a
 ;RAM:B776 DD BE 0A                    cp      10(ix)                                  ; dX<dY?
+       cb   a,@10(ix)
 ;RAM:B779 38 13                       jr      C, loc_B78E                             ; yes, go
+       jl   loc_B78E
 ;RAM:B77B CB 7F                       bit     7, a                                    ; dX<0?
+       movb a,a
 ;RAM:B77D 20 09                       jr      NZ, loc_B788                            ; yes, go
+       jlt  loc_B788
 ;RAM:B77F DD CB 00 C6                 set     0, 0(ix)                                ; sprite 31/159
-;RAM:B783
-;RAM:B783             loc_B783:                                                       ; clear hflip
-;RAM:B783 DD CB 07 B6                 res     6, 7(ix)
+       socb one,*ix
+loc_B783:
+;RAM:B783 DD CB 07 B6                 res     6, 7(ix)                                ; clear hflip
+       szcb @b40h,@7(ix)
 ;RAM:B787 C9                          ret
-;RAM:B788             ; ---------------------------------------------------------------------------
-;RAM:B788
-;RAM:B788             loc_B788:                                                       ; sprite 30/158
-;RAM:B788 DD CB 00 86                 res     0, 0(ix)
+       rt
+* ---------------------------------------------------------------------------
+loc_B788:
+;RAM:B788 DD CB 00 86                 res     0, 0(ix)                                ; sprite 30/158
+       szcb one,*ix
 ;RAM:B78C 18 F5                       jr      loc_B783
-;RAM:B78E             ; ---------------------------------------------------------------------------
-;RAM:B78E
-;RAM:B78E             loc_B78E:                                                       ; dY<0?
-;RAM:B78E DD CB 0A 7E                 bit     7, 10(ix)
+       jmp  loc_B783
+* ---------------------------------------------------------------------------
+loc_B78E:
+;RAM:B78E DD CB 0A 7E                 bit     7, 10(ix)                               ; dY<0?
+       movb @10(ix),r0
+       andi r0,>8000
 ;RAM:B792 28 09                       jr      Z, loc_B79D                             ; no, go
+       jeq  loc_B79D
 ;RAM:B794 DD CB 00 C6                 set     0, 0(ix)                                ; sprite 31/139
-;RAM:B798
-;RAM:B798             loc_B798:                                                       ; set hflip
-;RAM:B798 DD CB 07 F6                 set     6, 7(ix)
+       socb one,*ix
+loc_B798:
+;RAM:B798 DD CB 07 F6                 set     6, 7(ix)                                ; set hflip
+       socb @b40h,@7(ix)
 ;RAM:B79C C9                          ret
-;RAM:B79D             ; ---------------------------------------------------------------------------
-;RAM:B79D
-;RAM:B79D             loc_B79D:                                                       ; sprite 30/158
-;RAM:B79D DD CB 00 86                 res     0, 0(ix)
+       rt
+* ---------------------------------------------------------------------------
+loc_B79D:
+;RAM:B79D DD CB 00 86                 res     0, 0(ix)                                ; sprite 30/158
+       szcb one,*ix
 ;RAM:B7A1 18 F5                       jr      loc_B798
-;RAM:B7A1             ; End of function set_guard_wizard_sprite
-;RAM:B7A1
+       jmp  loc_B798
+*
+* End of function set_guard_wizard_sprite
+*
 * ---------------------------------------------------------------------------
 * gargoyle
 *
@@ -883,10 +937,12 @@ upd_176_177:
 ;RAM:B84D DD AE 07                    xor     7(ix)                                   ; randomise hflip
 ;RAM:B850 DD 77 07                    ld      7(ix), a
 ;RAM:B853 CD 85 B9                    call    toggle_next_prev_sprite
-;RAM:B856
-;RAM:B856             set_deadly_wipe_and_draw_flags:
+* ---------------------------------------------------------------------------
+set_deadly_wipe_and_draw_flags:
 ;RAM:B856 CD 5C B8                    call    set_both_deadly_flags
+       bl   @set_both_deadly_flags
 ;RAM:B859 C3 92 C6                    jp      set_wipe_and_draw_flags
+       b    @set_wipe_and_draw_flags
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -1074,121 +1130,178 @@ upd_111:                                                        ; invalid
 ;RAM:B984             ; End of function move_towards_plyr
 ;RAM:B984
 ;RAM:B985
-;RAM:B985             ; =============== S U B R O U T I N E =======================================
-;RAM:B985
-;RAM:B985
-;RAM:B985             toggle_next_prev_sprite:
+* =============== S U B R O U T I N E =======================================
+*
+toggle_next_prev_sprite:
 ;RAM:B985 DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
+       movb *ix,a
 ;RAM:B988 EE 01                       xor     #1                                      ; toggle next/prev sprite
+       li   r0,>0100
+       xor  r0,a
 ;RAM:B98A 18 0C                       jr      save_graphic_no
-;RAM:B98C             ; ---------------------------------------------------------------------------
-;RAM:B98C
-;RAM:B98C             next_graphic_no_mod_4:                                          ; graphic no.
-;RAM:B98C DD 7E 00                    ld      a, 0(ix)
+       jmp  save_graphic_no
+* ---------------------------------------------------------------------------
+next_graphic_no_mod_4:
+;RAM:B98C DD 7E 00                    ld      a, 0(ix)                                 ; graphic no.
+       movb *ix,a
 ;RAM:B98F 4F                          ld      c, a
+       movb a,@c
 ;RAM:B990 E6 FC                       and     #0xFC ; '�'                             ; mask off low 2 bits
+       andi a,>fc00
 ;RAM:B992 47                          ld      b, a
+       movb a,b
 ;RAM:B993 79                          ld      a, c
+       movb @c,a
 ;RAM:B994 3C                          inc     a
+       ab   one,a
 ;RAM:B995 E6 03                       and     #3                                      ; inc low 2 bits
+       andi a,>0300
 ;RAM:B997 B0                          or      b                                       ; mask them back in
-;RAM:B998
-;RAM:B998             save_graphic_no:                                                ; store new graphic no
-;RAM:B998 DD 77 00                    ld      0(ix), a
+       socb b,a
+save_graphic_no:
+;RAM:B998 DD 77 00                    ld      0(ix), a                                ; store new graphic no
+       movb a,*ix
 ;RAM:B99B C9                          ret
-;RAM:B99B             ; End of function toggle_next_prev_sprite
-;RAM:B99B
-;RAM:B99C             ; ---------------------------------------------------------------------------
-;RAM:B99C             ; cauldron (bottom)
-;RAM:B99C
+       rt
+*
+* End of function toggle_next_prev_sprite
+*
+* ---------------------------------------------------------------------------
+* cauldron (bottom)
 upd_141:
-       b    @no_update
 ;RAM:B99C C3 06 C5                    jp      upd_88_to_90
-;RAM:B99F             ; ---------------------------------------------------------------------------
-;RAM:B99F             ; cauldron (top)
-;RAM:B99F
-upd_142:                                                        ; +12, -24
-       b    @no_update
-;RAM:B99F 21 E8 0C                    ld      hl, #0xCE8
+       b    @upd_88_to_90
+* ---------------------------------------------------------------------------
+* cauldron (top)
+upd_142:
+;RAM:B99F 21 E8 0C                    ld      hl, #0xCE8                              ; +12, -24
+       li   hl,>0ce8
 ;RAM:B9A2 C3 2B C7                    jp      set_pixel_adj
-;RAM:B9A5             ; ---------------------------------------------------------------------------
-;RAM:B9A5             ; guard and wizard (top half)
-;RAM:B9A5
+       b    @set_pixel_adj_1
+* ---------------------------------------------------------------------------
+* guard and wizard (top half)
 upd_30_31_158_159:
-       b    @no_update
 ;RAM:B9A5 CD 10 C5                    call    adj_p3_m12
+       bl   @adj_p3_m12
 ;RAM:B9A8 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:B9AB CD CC B9                    call    move_guard_wizard_NSEW
+       bl   @move_guard_wizard_NSEW
 ;RAM:B9AE DD 75 09                    ld      9(ix), l                                ; dX
+       movb @l,@9(ix)
 ;RAM:B9B1 DD 75 29                    ld      0x29(ix), l                             ; next obj dX
+       movb @l,@>29(ix)
 ;RAM:B9B4 DD 74 0A                    ld      10(ix), h                               ; dY
+       movb h,@10(ix)
 ;RAM:B9B7 DD 74 2A                    ld      0x2A(ix), h                             ; next obj dY
+       movb h,@>2A(ix)
 ;RAM:B9BA DD 7E 01                    ld      a, 1(ix)                                ; X
 ;RAM:B9BD DD 77 21                    ld      0x21(ix), a                             ; copy to next obj X
+       movb @1(ix),@>21(ix)
 ;RAM:B9C0 DD 7E 02                    ld      a, 2(ix)                                ; Y
 ;RAM:B9C3 DD 77 22                    ld      0x22(ix), a                             ; copy to next obj Y
+       movb @2(ix),@>22(ix)
 ;RAM:B9C6 CD 6C B7                    call    set_guard_wizard_sprite
+       bl   @set_guard_wizard_sprite
 ;RAM:B9C9 C3 56 B8                    jp      set_deadly_wipe_and_draw_flags
-;RAM:B9CC
-;RAM:B9CC             ; =============== S U B R O U T I N E =======================================
-;RAM:B9CC
-;RAM:B9CC
-;RAM:B9CC             move_guard_wizard_NSEW:
+       b    @set_deadly_wipe_and_draw_flags
+*
+* =============== S U B R O U T I N E =======================================
+*
+move_guard_wizard_NSEW:
 ;RAM:B9CC 01 D8 B9                    ld      bc, #guard_NSEW_tbl                     ; jump table
+       li   bc,guard_NSEW_tbl
 ;RAM:B9CF DD 7E 0D                    ld      a, 13(ix)
+       movb @13(ix),a
 ;RAM:B9D2 E6 03                       and     #3                                      ; direction (N/S/E/W)
+       andi a,>0300
 ;RAM:B9D4 6F                          ld      l, a
+       movb a,@l
 ;RAM:B9D5 C3 DB AF                    jp      jump_to_tbl_entry
-;RAM:B9D5             ; End of function move_guard_wizard_NSEW
-;RAM:B9D5
-;RAM:B9D5             ; ---------------------------------------------------------------------------
-;RAM:B9D8 E0 B9       guard_NSEW_tbl: .dw guard_W
-;RAM:B9DA FB B9                       .dw guard_N
-;RAM:B9DC 08 BA                       .dw guard_E
-;RAM:B9DE 15 BA                       .dw guard_S
-;RAM:B9E0             ; ---------------------------------------------------------------------------
-;RAM:B9E0
-;RAM:B9E0             guard_W:                                                        ; dY=0, dX=-2
-;RAM:B9E0 21 FE 00                    ld      hl, #0xFE ; '�'
+       b   @jump_to_tbl_entry
+*
+* End of function move_guard_wizard_NSEW
+* ---------------------------------------------------------------------------
+guard_NSEW_tbl:
+       data guard_W
+       data guard_N
+       data guard_E
+       data guard_S
+* ---------------------------------------------------------------------------
+guard_W:
+;RAM:B9E0 21 FE 00                    ld      hl, #0xFE ; '�'                        ; dY=0, dX=-2
+       li   hl,>00fe
 ;RAM:B9E3 DD CB 0C 46                 bit     0, 12(ix)                               ; X OOB?
+       movb @12(ix),r0
+       andi r0,>0100
 ;RAM:B9E7 C8                          ret     Z                                       ; no, exit
+       jne  !
+       rt
 ;RAM:B9E8 21 00 02                    ld      hl, #0x200                              ; dY=2, dX=0
-;RAM:B9EB
-;RAM:B9EB             next_guard_dir:                                                 ; direction
-;RAM:B9EB DD 7E 0D                    ld      a, 13(ix)
+!      swpb hl
+next_guard_dir:
+;RAM:B9EB DD 7E 0D                    ld      a, 13(ix)                               ; direction
+       movb @13(ix),a
 ;RAM:B9EE 4F                          ld      c, a
+       movb a,@c
 ;RAM:B9EF 3C                          inc     a
+       ab   one,a
 ;RAM:B9F0 E6 03                       and     #3                                      ; relevant bits
+       andi a,>0300
 ;RAM:B9F2 47                          ld      b, a
+       movb a,b
 ;RAM:B9F3 79                          ld      a, c
+       movb @c,a
 ;RAM:B9F4 E6 FC                       and     #0xFC ; '�'
+       andi a,>fc00
 ;RAM:B9F6 B0                          or      b                                       ; inc lowest 2 bits (mod 4)
+       socb b,a
 ;RAM:B9F7 DD 77 0D                    ld      13(ix), a
+       movb a,@12(ix)
 ;RAM:B9FA C9                          ret
-;RAM:B9FB             ; ---------------------------------------------------------------------------
-;RAM:B9FB
-;RAM:B9FB             guard_N:                                                        ; dY=+2, dX=0
+       rt
+* ---------------------------------------------------------------------------
+guard_N:                                                        ; dY=+2, dX=0
 ;RAM:B9FB 21 00 02                    ld      hl, #0x200
+       li   hl,>0200
 ;RAM:B9FE DD CB 0C 4E                 bit     1, 12(ix)                               ; Y OOB?
+       movb @12(ix),r0
+       andi r0,>0200
 ;RAM:BA02 C8                          ret     Z                                       ; no, exit
+       jne  !
+       rt
 ;RAM:BA03 21 02 00                    ld      hl, #2                                  ; dY=0, dX=+2
+!      swpb hl
 ;RAM:BA06 18 E3                       jr      next_guard_dir
-;RAM:BA08             ; ---------------------------------------------------------------------------
-;RAM:BA08
-;RAM:BA08             guard_E:                                                        ; dY=0, dX=+2
+       jmp  next_guard_dir
+* ---------------------------------------------------------------------------
+guard_E:                                                        ; dY=0, dX=+2
 ;RAM:BA08 21 02 00                    ld      hl, #2
+       li   hl,>0002
 ;RAM:BA0B DD CB 0C 46                 bit     0, 12(ix)                               ; X OOB?
+       movb @12(ix),r0
+       andi r0,>0100f
 ;RAM:BA0F C8                          ret     Z                                       ; no, exit
+       jne  !
+       rt
 ;RAM:BA10 21 00 FE                    ld      hl, #0xFE00                             ; dY=-2, dX=0
+!      swpb hl
 ;RAM:BA13 18 D6                       jr      next_guard_dir
-;RAM:BA15             ; ---------------------------------------------------------------------------
-;RAM:BA15
-;RAM:BA15             guard_S:                                                        ; dY=-2, dX=0
+       jmp  next_guard_dir
+* ---------------------------------------------------------------------------
+guard_S:                                                        ; dY=-2, dX=0
 ;RAM:BA15 21 00 FE                    ld      hl, #0xFE00
+       li   hl,>fe00
 ;RAM:BA18 DD CB 0C 4E                 bit     1, 12(ix)                               ; Y OOB?
+       movb @12(ix),r0
+       andi r0,>0200
 ;RAM:BA1C C8                          ret     Z                                       ; no, exit
+       jne  !
+       rt
 ;RAM:BA1D 21 FE 00                    ld      hl, #0xFE ; '�'                         ; dY=0, dX=-2
+!      swpb hl
 ;RAM:BA20 18 C9                       jr      next_guard_dir
+       jmp  next_guard_dir
 * ---------------------------------------------------------------------------
 *
 * START OF FUNCTION CHUNK FOR game_over
@@ -3225,6 +3338,7 @@ upd_88_to_90:
        jmp  jp_set_pixel_adj
 * =============== S U B R O U T I N E =======================================
 adj_p7_m12:
+       mov  r11,*sp+
 ;RAM:C50B 21 F4 07                    ld      hl, #0x7F4                              ; +7, -12
        li   hl,>07f4
 ;RAM:C50E 18 D0                       jr      jp_set_pixel_adj
@@ -3482,105 +3596,139 @@ loc_C5B7:
 *
 * End of function update_special_objs
 *
-;RAM:C5C8             ; ---------------------------------------------------------------------------
-;RAM:C5C8             ; ghost
-;RAM:C5C8
+* ---------------------------------------------------------------------------
+* ghost
 upd_80_to_83:
-       b    @no_update
 ;RAM:C5C8 CD DD C4                    call    adj_m6_m12
+       bl   @adj_m6_m12
 ;RAM:C5CB CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:C5CE DD 7E 09                    ld      a, 9(ix)                                ; dX
+       movb @9(ix),a
 ;RAM:C5D1 DD B6 0A                    or      10(ix)                                  ; moving X/Y?
+       socb @10(ix),a
 ;RAM:C5D4 28 07                       jr      Z, loc_C5DD                             ; no, skip
+       jeq  loc_C5DD
 ;RAM:C5D6 DD 7E 0C                    ld      a, 12(ix)
+       movb @12(ix),a
 ;RAM:C5D9 E6 03                       and     #3                                      ; OOB X/Y?
+       andi a,>0300
 ;RAM:C5DB 28 20                       jr      Z, loc_C5FD                             ; no, continue as-is
-;RAM:C5DD
-;RAM:C5DD             loc_C5DD:
+       jeq  loc_C5FD
+loc_C5DD:
 ;RAM:C5DD 3A A5 5B                    ld      a, (seed_3)
+       movb @seed_3,a
 ;RAM:C5E0 E6 03                       and     #3
+       andi a,>0300
 ;RAM:C5E2 C6 04                       add     a, #4                                   ; rnd(4-7)= +/-3or4
+       ab   @b04h,a
 ;RAM:C5E4 CD 45 C6                    call    get_delta_from_tbl
+       bl   @get_delta_from_tbl
 ;RAM:C5E7 DD 77 09                    ld      9(ix), a                                ; set dX
+       movb a,@9(ix)
 ;RAM:C5EA 3A A2 5B                    ld      a, (seed_2)
+       movb @seed_2,a
 ;RAM:C5ED E6 03                       and     #3
+       andi a,>0300
 ;RAM:C5EF C6 04                       add     a, #4                                   ; rnd(4-7)= +/-3or4
+       ab   @b04h,a
 ;RAM:C5F1 CD 45 C6                    call    get_delta_from_tbl
+       bl   @get_delta_from_tbl
 ;RAM:C5F4 DD 77 0A                    ld      10(ix), a                               ; dY
+       movb a,@10(ix)
 ;RAM:C5F7 CD 03 C6                    call    calc_ghost_sprite
+       bl   @calc_ghost_sprite
 ;RAM:C5FA CD 67 B4                    call    audio_B467
-;RAM:C5FD
-;RAM:C5FD             loc_C5FD:
+;      TODO
+loc_C5FD:
 ;RAM:C5FD CD 85 B9                    call    toggle_next_prev_sprite
+       bl   @toggle_next_prev_sprite
 ;RAM:C600 C3 56 B8                    jp      set_deadly_wipe_and_draw_flags
-;RAM:C603
-;RAM:C603             ; =============== S U B R O U T I N E =======================================
-;RAM:C603
-;RAM:C603
-;RAM:C603             calc_ghost_sprite:
+       b    @set_deadly_wipe_and_draw_flags
+*
+* =============== S U B R O U T I N E =======================================
+*
+calc_ghost_sprite:
 ;RAM:C603 DD 7E 09                    ld      a, 9(ix)                                ; dX
+       movb @9(ix),a
 ;RAM:C606 A7                          and     a
 ;RAM:C607 F2 0C C6                    jp      P, loc_C60C
 ;RAM:C60A ED 44                       neg                                             ; abs()
-;RAM:C60C
-;RAM:C60C             loc_C60C:                                                       ; c=abs(dX)
-;RAM:C60C 4F                          ld      c, a
+       abs  a
+loc_C60C:
+;RAM:C60C 4F                          ld      c, a                                    ; c=abs(dX)
+       movb a,@c
 ;RAM:C60D DD 7E 0A                    ld      a, 10(ix)                               ; dY
+       movb @10(ix),a
 ;RAM:C610 A7                          and     a
 ;RAM:C611 F2 16 C6                    jp      P, loc_C616
 ;RAM:C614 ED 44                       neg                                             ; abs()
-;RAM:C616
-;RAM:C616             loc_C616:                                                       ; abs(dX)<abs(dY)?
-;RAM:C616 B9                          cp      c
+       abs  a
+loc_C616:
+;RAM:C616 B9                          cp      c                                       ; abs(dX)<abs(dY)?
+       cb   a,@c
 ;RAM:C617 30 16                       jr      NC, loc_C62F                            ; yes, go
+       jhe  loc_C62F
 ;RAM:C619 DD 7E 09                    ld      a, 9(ix)                                ; dX
+       movb  @9(ix),a
 ;RAM:C61C A7                          and     a                                       ; negative?
 ;RAM:C61D FA 29 C6                    jp      M, loc_C629                             ; yes, skip
+       jlt  loc_C629
 ;RAM:C620 DD CB 00 8E                 res     1, 0(ix)                                ; sprite=80/81
-;RAM:C624
-;RAM:C624             set_ghost_hflip:                                                ; hflip
-;RAM:C624 DD CB 07 F6                 set     6, 7(ix)
+       szcb @b02h,*ix
+set_ghost_hflip:
+;RAM:C624 DD CB 07 F6                 set     6, 7(ix)                                ; hflip
+       socb @b40h,@7(ix)
 ;RAM:C628 C9                          ret
-;RAM:C629             ; ---------------------------------------------------------------------------
-;RAM:C629
-;RAM:C629             loc_C629:                                                       ; sprite=82/83
-;RAM:C629 DD CB 00 CE                 set     1, 0(ix)
+       rt
+* ---------------------------------------------------------------------------
+loc_C629:
+;RAM:C629 DD CB 00 CE                 set     1, 0(ix)                                ; sprite=82/83
+       socb @b02h,*ix
 ;RAM:C62D 18 F5                       jr      set_ghost_hflip
-;RAM:C62F             ; ---------------------------------------------------------------------------
-;RAM:C62F
-;RAM:C62F             loc_C62F:                                                       ; dY
-;RAM:C62F DD 7E 0A                    ld      a, 10(ix)
+       jmp  set_ghost_hflip
+* ---------------------------------------------------------------------------
+loc_C62F:
+;RAM:C62F DD 7E 0A                    ld      a, 10(ix)                               ; dY
+       movb @10(ix),a
 ;RAM:C632 A7                          and     a                                       ; negative?
 ;RAM:C633 FA 3F C6                    jp      M, loc_C63F                             ; yes, skip
+       jlt  loc_C63F
 ;RAM:C636 DD CB 00 CE                 set     1, 0(ix)                                ; sprite=82/83
-;RAM:C63A
-;RAM:C63A             clr_ghost_hflip:                                                ; hflip
-;RAM:C63A DD CB 07 B6                 res     6, 7(ix)
+       socb @b02h,*ix
+clr_ghost_hflip:
+;RAM:C63A DD CB 07 B6                 res     6, 7(ix)                                ; hflip
+       szcb @b40h,@7(ix)
 ;RAM:C63E C9                          ret
-;RAM:C63F             ; ---------------------------------------------------------------------------
-;RAM:C63F
-;RAM:C63F             loc_C63F:                                                       ; sprite=80/81
-;RAM:C63F DD CB 00 8E                 res     1, 0(ix)
+       rt
+* ---------------------------------------------------------------------------
+loc_C63F:
+;RAM:C63F DD CB 00 8E                 res     1, 0(ix)                                ; sprite=80/81
+       szcb @b02h,*ix
 ;RAM:C643 18 F5                       jr      clr_ghost_hflip
-;RAM:C643             ; End of function calc_ghost_sprite
-;RAM:C643
-;RAM:C645
-;RAM:C645             ; =============== S U B R O U T I N E =======================================
-;RAM:C645
-;RAM:C645
-;RAM:C645             get_delta_from_tbl:
+       jmp   clr_ghost_hflip
+*
+* End of function calc_ghost_sprite
+*
+* =============== S U B R O U T I N E =======================================
+get_delta_from_tbl:
 ;RAM:C645 01 4E C6                    ld      bc, #delta_tbl
+       li   bc,delta_tbl
 ;RAM:C648 6F                          ld      l, a
 ;RAM:C649 26 00                       ld      h, #0
+       clr  hl
+       movb a,@l
 ;RAM:C64B 09                          add     hl, bc                                  ; ptr entry
+       a    bc,hl
 ;RAM:C64C 7E                          ld      a, (hl)                                 ; get entry
+       movb *hl,a
 ;RAM:C64D C9                          ret
-;RAM:C64D             ; End of function get_delta_from_tbl
-;RAM:C64D
-;RAM:C64D             ; ---------------------------------------------------------------------------
-;RAM:C64E FF 01 FE 02+delta_tbl:      .db 0xFF, 1, 0xFE, 2, 0xFD, 3, 0xFC, 4, 0xFB, 5, 0xFA
-;RAM:C64E FD 03 FC 04+                .db 6, 0xF9, 7, 0xF8, 8
-;RAM:C65E             ; ---------------------------------------------------------------------------
+       rt
+* End of function get_delta_from_tbl
+* ---------------------------------------------------------------------------
+delta_tbl:
+       byte >FF, 1, >FE, 2, >FD, 3, >FC, 4, >FB, 5, >FA, 6, >F9, 7, >F8, 8
+* ---------------------------------------------------------------------------
 ;RAM:C65E             ; portcullis (static)
 ;RAM:C65E
 upd_8:
