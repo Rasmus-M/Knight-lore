@@ -4160,7 +4160,7 @@ handle_left_right:
 ;RAM:C8A5 28 4B                       jr      Z, left_right_rotational                ; keybd? yes, skip
        jeq  left_right_rotational
 ;RAM:C8A7 CB 5E                       bit     3, (hl)                                 ; directional?
-       movb @hl,r0
+       movb *hl,r0
        andi r0,>0800
 ;RAM:C8A9 28 47                       jr      Z, left_right_rotational
        jeq  left_right_rotational
@@ -4762,7 +4762,7 @@ screen_move_tbl:
        data screen_south
 * ---------------------------------------------------------------------------
 screen_west:
-;RAM:CA9A E1                          pop     hl
+;RAM:CA9A E1                          pop     hl                                      ; room sizes
        dect sp
        mov  *sp,hl
 ;RAM:CA9B 3E 80                       ld      a, #128
@@ -4870,7 +4870,7 @@ screen_east:
 ;RAM:CB0A 6F                          ld      l, a
        movb a,@l
 ;RAM:CB0B 3C                          inc     a                                       ; screen to the east
-       ab   @one,a
+       ab   one,a
 ;RAM:CB0C 18 A5                       jr      screen_e_w
        jmp  screen_e_w
 * ---------------------------------------------------------------------------
@@ -6044,7 +6044,7 @@ loc_CF3C:
 ;RAM:CF46 DD 96 04                    sub     4(ix)                                   ; sub W1
        sb   @4(ix),a
 ;RAM:CF49 95                          sub     l                                       ; X1-W1-(X2+W2)
-       cb   @a,@l                     ; TODO: is this correct?
+       cb   a,@l                     ; TODO: is this correct?
 ;RAM:CF4A 30 16                       jr      NC, loc_CF62                            ; no overlap (C+=0)
        jhe  loc_CF62
 ;RAM:CF4C DD 7E 01                    ld      a, 1(ix)                                ; X1
@@ -6881,7 +6881,7 @@ enter_arch_n:
 ;RAM:D364 CD 8C D3                    call    adjust_plyr_Z_for_arch
        bl   @adjust_plyr_Z_for_arch
 ;RAM:D367 7C                          ld      a, h                                    ; room_size_Y-2
-       movb @h,a
+       movb h,a
 ;RAM:D368 C6 80                       add     a, #128
        ab   @b80h,a
 ;RAM:D36A DD 86 05                    add     a, 5(ix)                                ; add depth
@@ -6935,7 +6935,7 @@ loc_D395:
 ;RAM:D395 FD 7E 00                    ld      a, 0(iy)                                ; graphic no.
        movb *iy,a
 ;RAM:D398 FE 06                       cp      #6                                      ; arch?
-       cb   @a,@b06h
+       cb   a,@b06h
 ;RAM:D39A D0                          ret     NC                                      ; no, return
        jl   !
        rt
