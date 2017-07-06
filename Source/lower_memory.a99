@@ -1,4 +1,6 @@
 *
+* Start of game
+*
 start:
 *      Init TI-99/4A
        bl   @ti_99_4a_init
@@ -333,6 +335,8 @@ loc_B090:
 * End of function do_any_objs_intersect
 *
 * =============== S U B R O U T I N E =======================================
+*
+* Sets zero flag if object is ignored
 *
 is_object_not_ignored:
 ;RAM:B538 FD 7E 00                    ld      a, 0(iy)                                ; graphic no.
@@ -3687,7 +3691,7 @@ dec_dZ_and_update_XYZ:
        sb   one,@11(ix)
 ;RAM:C703 CD 45 CB                    call    adj_for_out_of_bounds
        bl   @adj_for_out_of_bounds
-       jmp  add_dXYZ_1
+       jmp  add_dXYZ_1                ; Don't push return address again
 add_dXYZ:
        mov  r11,*sp+
 add_dXYZ_1
@@ -4345,8 +4349,8 @@ handle_jump:
 ;RAM:C950 C0                          ret     NZ                                      ; yes, exit
        jne  handle_jump_return
 ;RAM:C951 DD CB 0C 5E                 bit     3, 12(ix)                               ; already jumping?
-       movb @12(ix),a
-       andi a,>0800
+       movb @12(ix),r0
+       andi r0,>0800
 ;RAM:C955 C0                          ret     NZ                                      ; yes, exit
        jne  handle_jump_return
 ;RAM:C956 DD 7E 0B                    ld      a, 11(ix)                               ; dZ
@@ -4364,7 +4368,6 @@ handle_jump:
 ;RAM:C967 C1                          pop     bc
 ;      TODO
 ;RAM:C968 C9                          ret
-       rt
 handle_jump_return:
        rt
 *
@@ -4522,7 +4525,7 @@ loc_C9CD:
        jgt  clear_dX_dY
        jeq  clear_dX_dY
 ;RAM:C9EF DD CB 0C 9E                 res     3, 12(ix)                               ; clear jumping flag
-       szcb @b04h,@12(ix)
+       szcb @b08h,@12(ix)
 clear_dX_dY:
 ;RAM:C9F3 AF                          xor     a
        clr  a
@@ -4662,7 +4665,7 @@ loc_CA5E:
 ;RAM:CA62 BA                          cp      d                                       ; >= room height?
        cb   a,d
 ;RAM:CA63 D0                          ret     NC                                      ; yes, return
-       jl   adj_dZ_for_out_of_bounds_return
+       jhe  adj_dZ_for_out_of_bounds_return
 ;RAM:CA64 DD CB 0C D6                 set     2, 12(ix)
        socb @b04h,@12(ix)
 ;RAM:CA68 7C                          ld      a, h                                    ; Z+dZ
@@ -4725,7 +4728,6 @@ adj_d_for_out_of_bounds:
        jeq  adj_d_for_out_of_bounds_return
 ;RAM:CA8B F2 90 CA                    jp      P, loc_CA90                             ; skip if >0
        jgt  loc_CA90
-       jeq  loc_CA90
 ;RAM:CA8E 3C                          inc     a
 ;RAM:CA8F 3C                          inc     a
        ab   @b02h,a
@@ -4847,7 +4849,7 @@ screen_south:
 adj_for_out_of_bounds:
        mov  r11,*sp+
 ;RAM:CB45 DD CB 07 4E                 bit     1, 7(ix)                                ; ignore bit
-       mov  @7(ix),r0
+       movb @7(ix),r0
        andi r0,>0200
 ;RAM:CB49 C0                          ret     NZ
        jne  adj_for_out_of_bounds_return
@@ -4888,14 +4890,14 @@ dZ_ok:
 ;RAM:CB6F 28 0A                       jr      Z, loc_CB7B                             ; yes, skip
        jeq  loc_CB7B
 ;RAM:CB71 CD DD CC                    call    adj_dX_for_out_of_bounds
-;       bl   @adj_dX_for_out_of_bounds     ; TODO
+;       bl   @adj_dX_for_out_of_bounds
 ;RAM:CB74 79                          ld      a, c                                    ; new dX
        movb a,@c
 ;RAM:CB75 A7                          and     a                                       ; zero?
 ;RAM:CB76 28 03                       jr      Z, loc_CB7B                             ; yes, skip
        jeq  loc_CB7B
 ;RAM:CB78 CD 9A CB                    call    adj_dX_for_obj_intersect
-;       bl   @adj_dX_for_obj_intersect     ; TODO
+;       bl   @adj_dX_for_obj_intersect
 loc_CB7B:
 ;RAM:CB7B DD 7E 0A                    ld      a, 10(ix)                               ; dY
        movb @10(ix),a
@@ -4905,14 +4907,14 @@ loc_CB7B:
 ;RAM:CB80 28 0A                       jr      Z, loc_CB8C                             ; yes, skip
        jeq  loc_CB8C
 ;RAM:CB82 CD 08 CD                    call    adj_dY_for_out_of_bounds
-;       bl   @adj_dY_for_out_of_bounds     ; TODO
+;       bl   @adj_dY_for_out_of_bounds
 ;RAM:CB85 7D                          ld      a, l                                    ; new dY
        movb @l,a
 ;RAM:CB86 A7                          and     a                                       ; zero?
 ;RAM:CB87 28 03                       jr      Z, loc_CB8C                             ; yes, skip
        jeq  loc_CB8C
 ;RAM:CB89 CD E9 CB                    call    adj_dY_for_obj_intersect
-;       bl   @adj_dY_for_obj_intersect     ; TODO
+;       bl   @adj_dY_for_obj_intersect
 loc_CB8C:
 ;RAM:CB8C DD 71 09                    ld      9(ix), c                                ; new dX
        movb @c,@9(ix)
@@ -4931,8 +4933,10 @@ adj_for_out_of_bounds_return:
 * End of function adj_for_out_of_bounds
 *
 * =============== S U B R O U T I N E =======================================
-;RAM:CB9A             adj_dX_for_obj_intersect:
+*
+adj_dX_for_obj_intersect:
 ;RAM:CB9A FD 21 08 5C                 ld      iy, #graphic_objs_tbl
+
 ;RAM:CB9E 06 28                       ld      b, #40                                  ; max objects
 ;RAM:CBA0
 ;RAM:CBA0             loc_CBA0:
@@ -5516,7 +5520,7 @@ upd_player_top:
        movb @all_objs_in_cauldron,a
 ;RAM:CDE5 A7                          and     a
 ;RAM:CDE6 20 07                       jr      NZ, loc_CDEF
-       jeq  loc_CDEF
+       jne  loc_CDEF
 ;RAM:CDE8 DD CB 0D 76                 bit     6, 13(ix)
        movb @13(ix),r0
        andi r0,>4000
