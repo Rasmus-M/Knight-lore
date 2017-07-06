@@ -869,14 +869,14 @@ upd_63:
 ;RAM:B7E0 21 BF 5B                    ld      hl, #is_spike_ball_dropping
 ;RAM:B7E3 36 00                       ld      (hl), #0                                ; flag no spiked balls dropping
 ;RAM:B7E5 18 F2                       jr      draw_spiked_ball
-;RAM:B7E7             ; ---------------------------------------------------------------------------
-;RAM:B7E7             ; spikes
-;RAM:B7E7
+* ---------------------------------------------------------------------------
+* spikes
 upd_23:
-       b    @no_update
 ;RAM:B7E7 CD 5C B8                    call    set_both_deadly_flags
+       bl   @set_both_deadly_flags
 ;RAM:B7EA C3 E3 C4                    jp      upd_6_7
-;RAM:B7ED             ; ---------------------------------------------------------------------------
+       b    @upd_6_7
+* ---------------------------------------------------------------------------
 ;RAM:B7ED             ; fire (moving EW)
 ;RAM:B7ED
 upd_86_87:
