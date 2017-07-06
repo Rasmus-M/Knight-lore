@@ -4507,7 +4507,7 @@ loc_C9CD:
 ;RAM:C9D6 FC 51 B4                    call    M, audio_B451
 ;      TODO
 ;RAM:C9D9 CD 45 CB                    call    adj_for_out_of_bounds
-       bl   @adj_for_out_of_bounds    ; TODO
+       bl   @adj_for_out_of_bounds
 ;RAM:C9DC CD 70 CA                    call    handle_exit_screen
        bl   @handle_exit_screen       ; TODO
 ;RAM:C9DF CD 06 C7                    call    add_dXYZ
@@ -4853,14 +4853,14 @@ adj_for_out_of_bounds:
        andi r0,>0200
 ;RAM:CB49 C0                          ret     NZ
        jne  adj_for_out_of_bounds_return
-;RAM:CB4A DD CB 07 CE                 set     1, 7(ix)
+;RAM:CB4A DD CB 07 CE                 set     1, 7(ix)                                ; set ignore bit
        socb @b02h,@7(ix)
 ;RAM:CB4E DD 7E 0C                    ld      a, 12(ix)
        movb @12(ix),a
 ;RAM:CB51 E6 F8                       and     #0xF8 ; '�'                             ; clear X,Y,Z OOB
        andi a,>f800
 ;RAM:CB53 DD 77 0C                    ld      12(ix), a
-       movb a,@23(ix)
+       movb a,@12(ix)
 ;RAM:CB56 2E 00                       ld      l, #0
        movb @b00h,@l
 ;RAM:CB58 4D                          ld      c, l
@@ -4890,14 +4890,14 @@ dZ_ok:
 ;RAM:CB6F 28 0A                       jr      Z, loc_CB7B                             ; yes, skip
        jeq  loc_CB7B
 ;RAM:CB71 CD DD CC                    call    adj_dX_for_out_of_bounds
-;       bl   @adj_dX_for_out_of_bounds
+       bl   @adj_dX_for_out_of_bounds
 ;RAM:CB74 79                          ld      a, c                                    ; new dX
-       movb a,@c
+       movb @c,a
 ;RAM:CB75 A7                          and     a                                       ; zero?
 ;RAM:CB76 28 03                       jr      Z, loc_CB7B                             ; yes, skip
        jeq  loc_CB7B
 ;RAM:CB78 CD 9A CB                    call    adj_dX_for_obj_intersect
-;       bl   @adj_dX_for_obj_intersect
+       bl   @adj_dX_for_obj_intersect
 loc_CB7B:
 ;RAM:CB7B DD 7E 0A                    ld      a, 10(ix)                               ; dY
        movb @10(ix),a
@@ -4907,14 +4907,14 @@ loc_CB7B:
 ;RAM:CB80 28 0A                       jr      Z, loc_CB8C                             ; yes, skip
        jeq  loc_CB8C
 ;RAM:CB82 CD 08 CD                    call    adj_dY_for_out_of_bounds
-;       bl   @adj_dY_for_out_of_bounds
+       bl   @adj_dY_for_out_of_bounds
 ;RAM:CB85 7D                          ld      a, l                                    ; new dY
        movb @l,a
 ;RAM:CB86 A7                          and     a                                       ; zero?
 ;RAM:CB87 28 03                       jr      Z, loc_CB8C                             ; yes, skip
        jeq  loc_CB8C
 ;RAM:CB89 CD E9 CB                    call    adj_dY_for_obj_intersect
-;       bl   @adj_dY_for_obj_intersect
+       bl   @adj_dY_for_obj_intersect
 loc_CB8C:
 ;RAM:CB8C DD 71 09                    ld      9(ix), c                                ; new dX
        movb @c,@9(ix)
@@ -4922,7 +4922,7 @@ loc_CB8C:
        movb @l,@10(ix)
 ;RAM:CB92 DD 74 0B                    ld      11(ix), h                               ; new dZ
        movb h,@11(ix)
-;RAM:CB95 DD CB 07 8E                 res     1, 7(ix)
+;RAM:CB95 DD CB 07 8E                 res     1, 7(ix)                                ; clear ignore bit
        szcb @b02h,@7(ix)
 ;RAM:CB99 C9                          ret
 adj_for_out_of_bounds_return:
@@ -4935,100 +4935,166 @@ adj_for_out_of_bounds_return:
 * =============== S U B R O U T I N E =======================================
 *
 adj_dX_for_obj_intersect:
+       mov  r11,*sp+
 ;RAM:CB9A FD 21 08 5C                 ld      iy, #graphic_objs_tbl
-
+       li   iy,graphic_objs_tbl
 ;RAM:CB9E 06 28                       ld      b, #40                                  ; max objects
-;RAM:CBA0
-;RAM:CBA0             loc_CBA0:
+       movb @b28h,b
+loc_CBA0:
 ;RAM:CBA0 CD 38 B5                    call    is_object_not_ignored
+       bl   @is_object_not_ignored
 ;RAM:CBA3 28 3C                       jr      Z, loc_CBE1                             ; ignored, skip
+       jeq  loc_CBE1
 ;RAM:CBA5 CD B2 CC                    call    do_objs_intersect_on_y
+       bl   @do_objs_intersect_on_y
 ;RAM:CBA8 30 37                       jr      NC, loc_CBE1
+       jhe  loc_CBE1
 ;RAM:CBAA CD C7 CC                    call    do_objs_intersect_on_z
+       bl   @do_objs_intersect_on_z
 ;RAM:CBAD 30 32                       jr      NC, loc_CBE1
-;RAM:CBAF
-;RAM:CBAF             loc_CBAF:
+       jne  loc_CBE1
+loc_CBAF:
 ;RAM:CBAF CD 9D CC                    call    do_objs_intersect_on_x
+       bl   @do_objs_intersect_on_x
 ;RAM:CBB2 30 2D                       jr      NC, loc_CBE1
+       jhe  loc_CBE1
 ;RAM:CBB4 DD CB 0C C6                 set     0, 12(ix)                               ; set X OOB
+       socb @b01h,@12(ix)
 ;RAM:CBB8 DD 7E 0D                    ld      a, 13(ix)
+       movb @13(ix),a
 ;RAM:CBBB 0F                          rrca
+       srl  a,1
 ;RAM:CBBC E6 40                       and     #0x40 ; '@'                             ; bit 7->6
+       andi a,>4000
 ;RAM:CBBE FD B6 0D                    or      13(iy)                                  ; obj2 destroyed?
+       socb @13(iy),a
 ;RAM:CBC1 FD 77 0D                    ld      13(iy), a
+       movb a,@13(iy)
 ;RAM:CBC4 07                          rlca
+       sla  a,1
 ;RAM:CBC5 E6 40                       and     #0x40 ; '@'                             ; bit 5->6
+       andi a,>4000
 ;RAM:CBC7 DD B6 0D                    or      13(ix)                                  ; obj1 destroyed?
+       socb @13(ix),a
 ;RAM:CBCA DD 77 0D                    ld      13(ix), a
+       movb a,@13(ix)
 ;RAM:CBCD FD CB 07 56                 bit     2, 7(iy)                                ; moveable?
+       movb @7(iy),r0
+       andi r0,>0400
 ;RAM:CBD1 28 06                       jr      Z, loc_CBD9                             ; no, skip
+       jeq  loc_CBD9
 ;RAM:CBD3 DD 7E 09                    ld      a, 9(ix)
 ;RAM:CBD6 FD 77 09                    ld      9(iy), a                                ; copy dX
-;RAM:CBD9
-;RAM:CBD9             loc_CBD9:
+       movb @9(ix),@9(iy)
+loc_CBD9:
 ;RAM:CBD9 79                          ld      a, c
+       movb @c,a
 ;RAM:CBDA CD 89 CA                    call    adj_d_for_out_of_bounds
+       bl   @adj_d_for_out_of_bounds
 ;RAM:CBDD 4F                          ld      c, a
+       movb a,@c
 ;RAM:CBDE C8                          ret     Z
+       jeq  adj_dX_for_obj_intersect_return
 ;RAM:CBDF 18 CE                       jr      loc_CBAF
-;RAM:CBE1             ; ---------------------------------------------------------------------------
-;RAM:CBE1
-;RAM:CBE1             loc_CBE1:                                                       ; entry size
-;RAM:CBE1 11 20 00                    ld      de, #32
+       jmp  loc_CBAF
+* ---------------------------------------------------------------------------
+loc_CBE1:
+;RAM:CBE1 11 20 00                    ld      de, #32                                 ; entry size
+       li   de,32
 ;RAM:CBE4 FD 19                       add     iy, de                                  ; next entry
+       a    de,iy
 ;RAM:CBE6 10 B8                       djnz    loc_CBA0
+       sb   one,b
+       jne  loc_CBA0
 ;RAM:CBE8 C9                          ret
-;RAM:CBE8             ; End of function adj_dX_for_obj_intersect
-;RAM:CBE8
-;RAM:CBE9
-;RAM:CBE9             ; =============== S U B R O U T I N E =======================================
-;RAM:CBE9
-;RAM:CBE9
-;RAM:CBE9             adj_dY_for_obj_intersect:
+adj_dX_for_obj_intersect_return:
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function adj_dX_for_obj_intersect
+*
+* =============== S U B R O U T I N E =======================================
+*
+adj_dY_for_obj_intersect:
+       mov  r11,*sp+
 ;RAM:CBE9 FD 21 08 5C                 ld      iy, #graphic_objs_tbl
+       li   iy,graphic_objs_tbl
 ;RAM:CBED 06 28                       ld      b, #40                                  ; max objects
-;RAM:CBEF
-;RAM:CBEF             loc_CBEF:
+       movb @b28h,b
+loc_CBEF:
 ;RAM:CBEF CD 38 B5                    call    is_object_not_ignored
+       bl   @is_object_not_ignored
 ;RAM:CBF2 28 3C                       jr      Z, loc_CC30                             ; next entry
+       jeq  loc_CC30
 ;RAM:CBF4 CD 9D CC                    call    do_objs_intersect_on_x
+       bl   @do_objs_intersect_on_x
 ;RAM:CBF7 30 37                       jr      NC, loc_CC30                            ; next entry
+       jhe  loc_CC30
 ;RAM:CBF9 CD C7 CC                    call    do_objs_intersect_on_z
+       bl   @do_objs_intersect_on_z
 ;RAM:CBFC 30 32                       jr      NC, loc_CC30                            ; next entry
-;RAM:CBFE
-;RAM:CBFE             loc_CBFE:
+       jhe  loc_CC30
+loc_CBFE:
 ;RAM:CBFE CD B2 CC                    call    do_objs_intersect_on_y
+       bl   @do_objs_intersect_on_y
 ;RAM:CC01 30 2D                       jr      NC, loc_CC30                            ; next entry
+       jhe  loc_CC30
 ;RAM:CC03 DD CB 0C CE                 set     1, 12(ix)                               ; set Y OOB
+       socb @b01h,@12(ix)
 ;RAM:CC07 DD 7E 0D                    ld      a, 13(ix)
+       movb @13(ix),a
 ;RAM:CC0A 0F                          rrca
+       srl  a,1
 ;RAM:CC0B E6 40                       and     #0x40 ; '@'                             ; bit 7->6
+       andi a,>4000
 ;RAM:CC0D FD B6 0D                    or      13(iy)                                  ; obj2 destroyed?
+       soc  @13(iy),a
 ;RAM:CC10 FD 77 0D                    ld      13(iy), a
+       movb a,@13(iy)
 ;RAM:CC13 07                          rlca
+       sla  a,1
 ;RAM:CC14 E6 40                       and     #0x40 ; '@'                             ; bit 5->6
+       andi a,>4000
 ;RAM:CC16 DD B6 0D                    or      13(ix)                                  ; obj1 destroyed?
+       socb @13(ix),a
 ;RAM:CC19 DD 77 0D                    ld      13(ix), a
+       movb a,@13(ix)
 ;RAM:CC1C FD CB 07 56                 bit     2, 7(iy)                                ; moveable?
+       movb @7(iy),r0
+       andi r0,>0400
 ;RAM:CC20 28 06                       jr      Z, loc_CC28                             ; no, skip
+       jeq  loc_CC28
 ;RAM:CC22 DD 7E 0A                    ld      a, 10(ix)
 ;RAM:CC25 FD 77 0A                    ld      10(iy), a                               ; copy dY
-;RAM:CC28
-;RAM:CC28             loc_CC28:
+       movb @10(ix),@10(iy)
+loc_CC28:
 ;RAM:CC28 7D                          ld      a, l
+       movb @l,a
 ;RAM:CC29 CD 89 CA                    call    adj_d_for_out_of_bounds
+       bl   @adj_d_for_out_of_bounds
 ;RAM:CC2C 6F                          ld      l, a
+       movb a,@l
 ;RAM:CC2D C8                          ret     Z
+       jeq  adj_dY_for_obj_intersect_return
 ;RAM:CC2E 18 CE                       jr      loc_CBFE
-;RAM:CC30             ; ---------------------------------------------------------------------------
-;RAM:CC30
-;RAM:CC30             loc_CC30:                                                       ; entry size
-;RAM:CC30 11 20 00                    ld      de, #32
+       jmp  loc_CBFE
+* ---------------------------------------------------------------------------
+loc_CC30:
+;RAM:CC30 11 20 00                    ld      de, #32                                 ; entry size
+       li   de,32
 ;RAM:CC33 FD 19                       add     iy, de                                  ; next entry
+       a    de,iy
 ;RAM:CC35 10 B8                       djnz    loc_CBEF                                ; loop through table
+       sb   one,b
+       jne  loc_CBEF
 ;RAM:CC37 C9                          ret
-;RAM:CC37             ; End of function adj_dY_for_obj_intersect
-;RAM:CC37
+adj_dY_for_obj_intersect_return:
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function adj_dY_for_obj_intersect
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -5050,7 +5116,7 @@ loc_CC3E:
 ;RAM:CC48 CD B2 CC                    call    do_objs_intersect_on_y
        bl   @do_objs_intersect_on_y
 ;RAM:CC4B 30 48                       jr      NC, loc_CC95                            ; next entry
-       jne  loc_CC95
+       jhe  loc_CC95
 loc_CC4D:
 ;RAM:CC4D CD C7 CC                    call    do_objs_intersect_on_z
        bl   @do_objs_intersect_on_z
@@ -5216,70 +5282,123 @@ loc_CCD8:
 *
 * =============== S U B R O U T I N E =======================================
 *
-;RAM:CCDD             adj_dX_for_out_of_bounds:
+adj_dX_for_out_of_bounds:
+       mov  r11,*sp+
 ;RAM:CCDD DD 7E 0C                    ld      a, 12(ix)                               ; flags12
+       movb @12(ix),a
 ;RAM:CCE0 E6 F0                       and     #0xF0 ; '�'                             ; entering room?
+       andi a,>f000
 ;RAM:CCE2 C0                          ret     NZ                                      ; yes, exit
+       jne  adj_dX_for_out_of_bounds_return
 ;RAM:CCE3 DD CB 07 46                 bit     0, 7(ix)                                ; near an arch?
+       movb @7(ix),r0
+       andi r0,>0100
 ;RAM:CCE7 C0                          ret     NZ                                      ; yes, exit
+       jne  adj_dX_for_out_of_bounds_return
 ;RAM:CCE8 3A AB 5B                    ld      a, (room_size_X)
+       movb @room_size_x,a
 ;RAM:CCEB 47                          ld      b, a
-;RAM:CCEC
-;RAM:CCEC             loc_CCEC:                                                       ; X
-;RAM:CCEC DD 7E 01                    ld      a, 1(ix)
+       movb a,b
+loc_CCEC:
+;RAM:CCEC DD 7E 01                    ld      a, 1(ix)                                ; X
+       movb @1(ix),a
 ;RAM:CCEF 81                          add     a, c                                    ; +dX
+       ab   @c,a
 ;RAM:CCF0 D6 80                       sub     #128
 ;RAM:CCF2 30 02                       jr      NC, loc_CCF6
 ;RAM:CCF4 ED 44                       neg
-;RAM:CCF6
-;RAM:CCF6             loc_CCF6:                                                       ; X+dX+width
-;RAM:CCF6 DD 86 04                    add     a, 4(ix)
+       cb   a,@b80h
+       jhe  !
+       sb   @b80h,a
+       inv  a
+       ab   one,a
+       jmp  loc_CCF6
+!      sb   @b80h,a
+loc_CCF6:
+;RAM:CCF6 DD 86 04                    add     a, 4(ix)                                ; X+dX+width
+       ab   @4(ix),a
 ;RAM:CCF9 B8                          cp      b                                       ; < room width?
+       cb   a,b
 ;RAM:CCFA 38 0B                       jr      C, dX_ok                                ; yes, skip
+       jl   dX_ok
 ;RAM:CCFC DD CB 0C C6                 set     0, 12(ix)                               ; set X OOB
+       socb @b01h,@12(ix)
 ;RAM:CD00 79                          ld      a, c                                    ; dX
+       movb @c,a
 ;RAM:CD01 CD 89 CA                    call    adj_d_for_out_of_bounds
+       bl   @adj_d_for_out_of_bounds
 ;RAM:CD04 4F                          ld      c, a                                    ; new dX
+       movb a,@c
 ;RAM:CD05 20 E5                       jr      NZ, loc_CCEC                            ; check again
-;RAM:CD07
-;RAM:CD07             dX_ok:
+       jne  loc_CCEC
+dX_ok:
 ;RAM:CD07 C9                          ret
-;RAM:CD07             ; End of function adj_dX_for_out_of_bounds
-;RAM:CD07
-;RAM:CD08
-;RAM:CD08             ; =============== S U B R O U T I N E =======================================
-;RAM:CD08
-;RAM:CD08
-;RAM:CD08             adj_dY_for_out_of_bounds:
+adj_dX_for_out_of_bounds_return:
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function adj_dX_for_out_of_bounds
+*
+* =============== S U B R O U T I N E =======================================
+*
+adj_dY_for_out_of_bounds:
+       mov  r11,*sp+
 ;RAM:CD08 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
+       movb @12(ix),a
 ;RAM:CD0B E6 F0                       and     #0xF0 ; '�'                             ; entering room?
+       andi a,>f000
 ;RAM:CD0D C0                          ret     NZ                                      ; yes, exit
+       jne  adj_dY_for_out_of_bounds_return
 ;RAM:CD0E DD CB 07 46                 bit     0, 7(ix)                                ; near and arch?
+       movb @7(ix),r0
+       andi r0,>0100
 ;RAM:CD12 C0                          ret     NZ                                      ; yes, exit
+       jne  adj_dY_for_out_of_bounds_return
 ;RAM:CD13 3A AC 5B                    ld      a, (room_size_Y)
+       movb @room_size_Y,a
 ;RAM:CD16 47                          ld      b, a
-;RAM:CD17
-;RAM:CD17             loc_CD17:                                                       ; Y
-;RAM:CD17 DD 7E 02                    ld      a, 2(ix)
+       movb a,b
+loc_CD17:
+;RAM:CD17 DD 7E 02                    ld      a, 2(ix)                                ; Y
+       movb @2(ix),a
 ;RAM:CD1A 85                          add     a, l                                    ; +dY
+       ab   @l,a
 ;RAM:CD1B D6 80                       sub     #128
 ;RAM:CD1D 30 02                       jr      NC, loc_CD21
 ;RAM:CD1F ED 44                       neg
-;RAM:CD21
-;RAM:CD21             loc_CD21:                                                       ; Y+dY+depth
-;RAM:CD21 DD 86 05                    add     a, 5(ix)
+       cb   a,@b80h
+       jhe  !
+       sb   @b80h,a
+       inv  a
+       ab   one,a
+       jmp  loc_CD21
+!      sb   @b80h,a
+loc_CD21:
+;RAM:CD21 DD 86 05                    add     a, 5(ix)                                ; Y+dY+depth
+       ab   @5(ix),a
 ;RAM:CD24 B8                          cp      b                                       ; < room depth?
+       cb   a,b
 ;RAM:CD25 38 0B                       jr      C, dY_ok                                ; yes, skip
+       jl   dY_ok
 ;RAM:CD27 DD CB 0C CE                 set     1, 12(ix)                               ; set Y OOB
+       socb @b01h,@12(ix)
 ;RAM:CD2B 7D                          ld      a, l                                    ; dY
+       movb @l,a
 ;RAM:CD2C CD 89 CA                    call    adj_d_for_out_of_bounds
+       bl   @adj_d_for_out_of_bounds
 ;RAM:CD2F 6F                          ld      l, a                                    ; new dY
+       movb a,@l
 ;RAM:CD30 20 E5                       jr      NZ, loc_CD17                            ; check again
-;RAM:CD32
-;RAM:CD32             dY_ok:
+       jne  loc_CD17
+dY_ok:
 ;RAM:CD32 C9                          ret
-;RAM:CD32             ; End of function adj_dY_for_out_of_bounds
-;RAM:CD32
+adj_dY_for_out_of_bounds_return:
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function adj_dY_for_out_of_bounds
 *
 * =============== S U B R O U T I N E =======================================
 *
