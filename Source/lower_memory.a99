@@ -3911,7 +3911,7 @@ chk_plyr_spec_near_arch:
 ;RAM:C7DF 11 20 00                    ld      de, #32                                 ; entry size
        li   de,32
 ;RAM:C7E2 06 04                       ld      b, #4                                   ; player and special objects only
-       movb @b04h,a
+       movb @b04h,b
 loc_C7E4:
 ;RAM:C7E4 FD 7E 00                    ld      a, 0(iy)                                ; graphic no
        movb *iy,a
@@ -3928,6 +3928,7 @@ loc_C7E4:
 ;RAM:C7F3 30 04                       jr      NC, loc_C7F9                            ; no, skip
        jhe  loc_C7F9
 ;RAM:C7F5 FD CB 07 C6                 set     0, 7(iy)                                ; flag near arch
+       socb @b01h,@7(iy)
 loc_C7F9:
 ;RAM:C7F9 FD 19                       add     iy, de                                  ; next entry
        a    de,iy
@@ -3956,45 +3957,61 @@ is_near_to:
 ;RAM:C7FE DD 7E 09                    ld      a, 9(ix)                                ; centre_x
        movb @9(ix),a
 ;RAM:C801 FD 96 01                    sub     1(iy)                                   ; sub X
-       sb   @1(iy),a
 ;RAM:C804 30 02                       jr      NC, loc_C808
-       jgt  loc_C808
 ;RAM:C806 ED 44                       neg
-       inv  a
-       ab   one,a
+       sb   @1(iy),a
+       abs  a
+;       cb   a,@1(iy)
+;       jhe  !
+;       sb   @1(iy),a
+;       inv  a
+;       ab   one,a
+;       jmp  loc_C808
+;!      sb   @1(iy),a
 loc_C808:
 ;RAM:C808 BD                          cp      l
        cb   a,@l
 ;RAM:C809 D0                          ret     NC
-       jhe  !
+       jhe  is_near_to_return
 ;RAM:C80A DD 7E 0A                    ld      a, 10(ix)                               ; centre_y
        movb @10(ix),a
 ;RAM:C80D FD 96 02                    sub     2(iy)                                   ; sub Y
-       sb   @2(iy),a
 ;RAM:C810 30 02                       jr      NC, loc_C814
-       jgt  loc_C814
 ;RAM:C812 ED 44                       neg
-       inv  a
-       ab   one,a
+       sb   @2(iy),a
+       abs  a
+;       cb   a,@2(iy)
+;       jhe  !
+;       sb   @2(iy),a
+;       inv  a
+;       ab   one,a
+;       jmp  loc_C814
+;!      sb   @2(iy),a
 loc_C814:
 ;RAM:C814 BC                          cp      h
        cb   a,h
 ;RAM:C815 D0                          ret     NC
-       jhe  !
+       jhe  is_near_to_return
 ;RAM:C816 DD 7E 0B                    ld      a, 11(ix)                               ; centre_z
        movb @11(ix),a
 ;RAM:C819 FD 96 03                    sub     3(iy)                                   ; sub Z
-       sb   @3(iy),a
 ;RAM:C81C 30 02                       jr      NC, loc_C820
-       jgt  loc_C820
 ;RAM:C81E ED 44                       neg
-       inv  a
-       ab   one,a
+       sb   @3(iy),a
+       abs  a
+;       cb   a,@3(iy)
+;       jhe  !
+;       sb   @3(iy),a
+;       inv  a
+;       ab   one,a
+;       jmp  loc_C820
+;!      sb   @3(iy),a
 loc_C820:
 ;RAM:C820 FE 04                       cp      #4
        cb   a,@b04h
 ;RAM:C822 C9                          ret
-!      b    *r11
+is_near_to_return:
+       b    *r11
 *
 * End of function is_near_to
 *
@@ -4509,7 +4526,7 @@ loc_C9CD:
 ;RAM:C9D9 CD 45 CB                    call    adj_for_out_of_bounds
        bl   @adj_for_out_of_bounds
 ;RAM:C9DC CD 70 CA                    call    handle_exit_screen
-       bl   @handle_exit_screen       ; TODO
+       bl   @handle_exit_screen
 ;RAM:C9DF CD 06 C7                    call    add_dXYZ
        bl   @add_DXYZ
 ;RAM:C9E2 DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB?
@@ -4685,39 +4702,6 @@ adj_dZ_for_out_of_bounds_return:
 *
 * =============== S U B R O U T I N E =======================================
 *
-handle_exit_screen:
-       mov  r11,*sp+
-;RAM:CA70 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
-       movb @12(ix),a
-;RAM:CA73 E6 F0                       and     #0xF0 ; '�'                            ; entering room?
-       andi a,>f000
-;RAM:CA75 C0                          ret     NZ                                      ; yes, exit
-       jne  handle_exit_screen_return
-;RAM:CA76 DD CB 07 46                 bit     0, 7(ix)                                ; near an arch?
-       movb @7(ix),r0
-       andi r0,>8000
-;RAM:CA7A C8                          ret     Z                                       ; no, return
-       jeq  handle_exit_screen_return
-;RAM:CA7B DD CB 07 86                 res     0, 7(ix)                                ; reset flag
-       szcb @b80h,@7(ix)
-;RAM:CA7F 01 92 CA                    ld      bc, #screen_move_tbl
-       li   bc,screen_move_tbl
-;RAM:CA82 2A AB 5B                    ld      hl, (room_size_X)
-       movb @room_size_X,@l
-       movb @room_size_Y,h
-;RAM:CA85 E5                          push    hl
-       mov  hl,*sp+
-;RAM:CA86 C3 17 CA                    jp      lookup_plyr_dXY
-       b    @lookup_plyr_dXY
-handle_exit_screen_return:
-       dect sp
-       mov  *sp,r11
-       rt
-*
-* End of function handle_exit_screen
-*
-* =============== S U B R O U T I N E =======================================
-*
 * adjust dX/dY/dZ when out of bounds
 * A = dX/dY/dZ
 *
@@ -4740,6 +4724,36 @@ adj_d_for_out_of_bounds_return:
 *
 * End of function adj_d_for_out_of_bounds
 *
+* =============== S U B R O U T I N E =======================================
+*
+handle_exit_screen:
+       mov  r11,*sp+
+;RAM:CA70 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
+       movb @12(ix),a
+;RAM:CA73 E6 F0                       and     #0xF0 ; '�'                            ; entering room?
+       andi a,>f000
+;RAM:CA75 C0                          ret     NZ                                      ; yes, exit
+       jne  handle_exit_screen_return
+;RAM:CA76 DD CB 07 46                 bit     0, 7(ix)                                ; near an arch?
+       movb @7(ix),r0
+       andi r0,>0100
+;RAM:CA7A C8                          ret     Z                                       ; no, return
+       jeq  handle_exit_screen_return
+;RAM:CA7B DD CB 07 86                 res     0, 7(ix)                                ; reset flag
+       szcb @b01h,@7(ix)
+;RAM:CA7F 01 92 CA                    ld      bc, #screen_move_tbl
+       li   bc,screen_move_tbl
+;RAM:CA82 2A AB 5B                    ld      hl, (room_size_X)
+       movb @room_size_X,@l
+       movb @room_size_Y,h
+;RAM:CA85 E5                          push    hl
+       mov  hl,*sp+
+;RAM:CA86 C3 17 CA                    jp      lookup_plyr_dXY
+       b    @lookup_plyr_dXY
+handle_exit_screen_return:
+       dect sp
+       mov  *sp,r11
+       rt
 * ---------------------------------------------------------------------------
 screen_move_tbl:
        data screen_west
@@ -4749,101 +4763,176 @@ screen_move_tbl:
 * ---------------------------------------------------------------------------
 screen_west:
 ;RAM:CA9A E1                          pop     hl
+       dect sp
+       mov  *sp,hl
 ;RAM:CA9B 3E 80                       ld      a, #128
+       movb @b80h,a
 ;RAM:CA9D 95                          sub     l                                       ; room_size_X
+       sb   @l,a
 ;RAM:CA9E 6F                          ld      l, a
+       movb a,@l
 ;RAM:CA9F DD 7E 01                    ld      a, 1(ix)                                ; X
+       movb @1(ix),a
 ;RAM:CAA2 DD 86 09                    add     a, 9(ix)                                ; +dX
+       ab   @9(ix),a
 ;RAM:CAA5 DD 86 04                    add     a, 4(ix)                                ; +width
+       ab   @4(ix),a
 ;RAM:CAA8 BD                          cp      l
+       cb   a,@l
 ;RAM:CAA9 D0                          ret     NC
+       jhe  handle_exit_screen_return
 ;RAM:CAAA DD 36 01 00                 ld      1(ix), #0                               ; X
+       movb @b00h,@1(ix)
 ;RAM:CAAE DD 7E 08                    ld      a, 8(ix)                                ; screen
+       movb @8(ix),a
 ;RAM:CAB1 6F                          ld      l, a
+       movb a,@l
 ;RAM:CAB2 3D                          dec     a                                       ; screen to the west
+       sb   one,a
 screen_e_w:
 ;RAM:CAB3 E6 0F                       and     #0xF                                    ; low nibble
+       andi a,>0f00
 ;RAM:CAB5 67                          ld      h, a
+       movb a,h
 ;RAM:CAB6 7D                          ld      a, l
+       movb @l,a
 ;RAM:CAB7 E6 F0                       and     #0xF0 ; '�'                            ; high nibble - don't change row
+       andi a,>f000
 ;RAM:CAB9 B4                          or      h                                       ; same row - wraps???
+       socb h,a
 * ---------------------------------------------------------------------------
 exit_screen:
 ;RAM:CABA DD 77 08                    ld      8(ix), a                                ; store new screen
+       movb a,@8(ix)
 ;RAM:CABD DD 7E 0C                    ld      a, 12(ix)                               ; flags12
 ;RAM:CAC0 F6 30                       or      #0x30 ; '0'                             ; init enter room counter
 ;RAM:CAC2 DD 77 0C                    ld      12(ix), a                               ; save
+       socb @b30h,@12(ix)
 ;RAM:CAC5 DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
+       movb *ix,a
 ;RAM:CAC8 D6 10                       sub     #0x10
+       sb   @b10h,a
 ;RAM:CACA FE 40                       cp      #0x40 ; '@'                             ; wulf?
+       cb   a,@b40h
 ;RAM:CACC D0                          ret     NC                                      ; WHY is wulf handled differently???
+       jhe  handle_exit_screen_return
 ;RAM:CACD 33                          inc     sp
 ;RAM:CACE 33                          inc     sp
 ;RAM:CACF 33                          inc     sp
 ;RAM:CAD0 33                          inc     sp
+       ai   sp,-6                     ; We seem to have pushed one less item on the TI
 ;RAM:CAD1 DD E5                       push    ix
 ;RAM:CAD3 E1                          pop     hl
+       mov  ix,hl
 ;RAM:CAD4 11 61 D1                    ld      de, #plyr_spr_1_scratchpad
+       li   de,plyr_spr_1_scratchpad
 ;RAM:CAD7 01 40 00                    ld      bc, #64
+       li   bc,64
 ;RAM:CADA ED B0                       ldir
+       bl   @ldir
 ;RAM:CADC 3A 61 D1                    ld      a, (plyr_spr_1_scratchpad)              ; graphic no.
 ;RAM:CADF 32 71 D1                    ld      (byte_D171), a
+       movb @plyr_spr_1_scratchpad,@byte_D171
 ;RAM:CAE2 3A 81 D1                    ld      a, (plyr_spr_2_scratchpad)              ; graphic no.
 ;RAM:CAE5 32 91 D1                    ld      (byte_D191), a
+       movb @plyr_spr_2_scratchpad,@byte_D191
 ;RAM:CAE8 3E 78                       ld      a, #120                                 ; sparkly transform #1
+       movb @b78h,a
 ;RAM:CAEA 32 61 D1                    ld      (plyr_spr_1_scratchpad), a              ; graphic no.
+       movb a,@plyr_spr_1_scratchpad
 ;RAM:CAED 32 81 D1                    ld      (plyr_spr_2_scratchpad), a              ; graphic no.
+       movb a,@plyr_spr_2_scratchpad
 ;RAM:CAF0 C3 BA AF                    jp      game_loop
        b    @game_loop
 * ---------------------------------------------------------------------------
 screen_east:
 ;RAM:CAF3 E1                          pop     hl
+       dect sp
+       mov  *sp,hl
 ;RAM:CAF4 7D                          ld      a, l
 ;RAM:CAF5 C6 80                       add     a, #128
 ;RAM:CAF7 6F                          ld      l, a                                    ; room_size_X + 128
+       ab   @b80h,@l
 ;RAM:CAF8 DD 7E 01                    ld      a, 1(ix)                                ; X
+       movb @1(ix),a
 ;RAM:CAFB DD 86 09                    add     a, 9(ix)                                ; +dX
+       ab   @9(ix),a
 ;RAM:CAFE DD 96 04                    sub     4(ix)                                   ; -width
+       sb   @4(ix),a
 ;RAM:CB01 BD                          cp      l
+       cb   a,@l
 ;RAM:CB02 D8                          ret     C
+       jl   handle_exit_screen_return
 ;RAM:CB03 DD 36 01 FF                 ld      1(ix), #0xFF                            ; X
+       movb @bffh,@1(ix)
 ;RAM:CB07 DD 7E 08                    ld      a, 8(ix)                                ; screen
+       movb @8(ix),a
 ;RAM:CB0A 6F                          ld      l, a
+       movb a,@l
 ;RAM:CB0B 3C                          inc     a                                       ; screen to the east
+       ab   @one,a
 ;RAM:CB0C 18 A5                       jr      screen_e_w
        jmp  screen_e_w
 * ---------------------------------------------------------------------------
 screen_north:
 ;RAM:CB0E E1                          pop     hl
+       dect sp
+       mov  *sp,hl
 ;RAM:CB0F 7C                          ld      a, h                                    ; room_size_Y
 ;RAM:CB10 C6 80                       add     a, #128
 ;RAM:CB12 67                          ld      h, a
+       ab   @b80h,h
 ;RAM:CB13 DD 7E 02                    ld      a, 2(ix)                                ; Y
+       movb @2(ix),a
 ;RAM:CB16 DD 86 0A                    add     a, 10(ix)                               ; +dY
+       ab   @10(ix),a
 ;RAM:CB19 DD 96 05                    sub     5(ix)                                   ; -depth
+       sb   @5(ix),a
 ;RAM:CB1C BC                          cp      h
+       cb   a,h
 ;RAM:CB1D D8                          ret     C
+       jl   handle_exit_screen_return
 ;RAM:CB1E DD 36 02 FF                 ld      2(ix), #0xFF                            ; Y
+       movb @bffh,@2(ix)
 ;RAM:CB22 DD 7E 08                    ld      a, 8(ix)                                ; screen
+       movb @8(ix),a
 ;RAM:CB25 C6 10                       add     a, #16                                  ; screen to the north
+       ab   @b10h,a
 ;RAM:CB27 18 91                       jr      exit_screen
        jmp  exit_screen
 * ---------------------------------------------------------------------------
 screen_south:
 ;RAM:CB29 E1                          pop     hl
+       dect sp
+       mov  *sp,hl
 ;RAM:CB2A 3E 80                       ld      a, #128
+       movb @b80h,a
 ;RAM:CB2C 94                          sub     h                                       ; room_size_Y
+       sb   h,a
 ;RAM:CB2D 67                          ld      h, a
+       movb a,h
 ;RAM:CB2E DD 7E 02                    ld      a, 2(ix)                                ; Y
+       movb @2(ix),a
 ;RAM:CB31 DD 86 0A                    add     a, 10(ix)                               ; +dY
+       ab   @10(ix),a
 ;RAM:CB34 DD 86 05                    add     a, 5(ix)                                ; +depth
+       ab   @5(ix),a
 ;RAM:CB37 BC                          cp      h
+       cb   a,h
 ;RAM:CB38 D0                          ret     NC
+       jl   !
+       b    @handle_exit_screen_return
 ;RAM:CB39 DD 36 02 00                 ld      2(ix), #0                               ; Y
+!      movb @b00h,@2(ix)
 ;RAM:CB3D DD 7E 08                    ld      a, 8(ix)                                ; screen
+       movb @8(ix),a
 ;RAM:CB40 D6 10                       sub     #16                                     ; screen to the south
+       sb   @b10h,a
 ;RAM:CB42 C3 BA CA                    jp      exit_screen
        jmp  exit_screen
+*
+* End of function handle_exit_screen
+*
 * =============== S U B R O U T I N E =======================================
 *
 adj_for_out_of_bounds:
@@ -5307,13 +5396,15 @@ loc_CCEC:
 ;RAM:CCF0 D6 80                       sub     #128
 ;RAM:CCF2 30 02                       jr      NC, loc_CCF6
 ;RAM:CCF4 ED 44                       neg
-       cb   a,@b80h
-       jhe  !
        sb   @b80h,a
-       inv  a
-       ab   one,a
-       jmp  loc_CCF6
-!      sb   @b80h,a
+       abs  a
+;       cb   a,@b80h
+;       jhe  !
+;       sb   @b80h,a
+;       inv  a
+;       ab   one,a
+;       jmp  loc_CCF6
+;!      sb   @b80h,a
 loc_CCF6:
 ;RAM:CCF6 DD 86 04                    add     a, 4(ix)                                ; X+dX+width
        ab   @4(ix),a
@@ -5367,13 +5458,15 @@ loc_CD17:
 ;RAM:CD1B D6 80                       sub     #128
 ;RAM:CD1D 30 02                       jr      NC, loc_CD21
 ;RAM:CD1F ED 44                       neg
-       cb   a,@b80h
-       jhe  !
        sb   @b80h,a
-       inv  a
-       ab   one,a
-       jmp  loc_CD21
-!      sb   @b80h,a
+       abs  a
+;       cb   a,@b80h
+;       jhe  !
+;       sb   @b80h,a
+;       inv  a
+;       ab   one,a
+;       jmp  loc_CD21
+;!      sb   @b80h,a
 loc_CD21:
 ;RAM:CD21 DD 86 05                    add     a, 5(ix)                                ; Y+dY+depth
        ab   @5(ix),a

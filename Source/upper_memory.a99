@@ -2183,6 +2183,7 @@ b58h   byte >58
 b5ah   byte >5a
 b68h   byte >68
 b60h   byte >60
+b78h   byte >78
 b80h   byte >80
 b8ch   byte >8c
 ba0h   byte >a0
