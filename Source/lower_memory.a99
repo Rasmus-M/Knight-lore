@@ -3354,7 +3354,7 @@ loc_C530:
        movb *hl+,a
 ;RAM:C55E 12                          ld      (de), a                                 ; store in objs_here
 ;RAM:C55F 13                          inc     de
-       movb *de+,a
+       movb a,*de+
 ;RAM:C560 06 07                       ld      b, #7
        movb @b07h,b
 ;RAM:C562 CD 08 D5                    call    zero_DE
@@ -3399,9 +3399,9 @@ loc_C583:
 ;RAM:C587 ED 52                       sbc     hl, de                                  ; past end of table (max=2)
        c    hl,de
 ;RAM:C589 C8                          ret     Z                                       ; yes, exit
-       jhe  !
+       jeq  !
 ;RAM:C58A 06 20                       ld      b, #32
-       movb @b20h,@b
+       movb @b20h,b
 ;RAM:C58C CD 08 D5                    call    zero_DE                                 ; zero next entry
        bl   @zero_DE
 ;RAM:C58F 18 F2                       jr      loc_C583                                ; next entry
@@ -5633,7 +5633,7 @@ test_overlap_obj:
        movb @7(iy),r0
        andi r0,>1000
 ;RAM:CDA5 20 1B                       jr      NZ, next_overlap_obj                    ; yes, skip
-       jeq  next_overlap_obj
+       jne  next_overlap_obj
 ;RAM:CDA7 FD 7E 1A                    ld      a, 26(iy)                               ; pixel X
        movb @26(iy),a
 ;RAM:CDAA 0F                          rrca
