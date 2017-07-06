@@ -4123,7 +4123,7 @@ loc_C891:
        ab   one,a
 loc_C89D:
 ;RAM:C89D BC                          cp      h                                       ; set/clr carry
-       cb   @a,h
+       cb   a,h
 chk_plyr_OOB_return:
 ;RAM:C89E C9                          ret
        rt
