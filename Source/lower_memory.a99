@@ -4725,7 +4725,7 @@ loc_CBA0:
 ;RAM:CBAA CD C7 CC                    call    do_objs_intersect_on_z
        bl   @do_objs_intersect_on_z
 ;RAM:CBAD 30 32                       jr      NC, loc_CBE1
-       jne  loc_CBE1
+       jhe  loc_CBE1
 loc_CBAF:
 ;RAM:CBAF CD 9D CC                    call    do_objs_intersect_on_x
        bl   @do_objs_intersect_on_x
@@ -4983,10 +4983,8 @@ do_objs_intersect_on_x:
 ;RAM:CCA8 FD 96 01                    sub     1(iy)                                   ; objX + newdX - thisX
        sb   @1(iy),a
 ;RAM:CCAB F2 B0 CC                    jp      P, loc_CCB0
-       jgt  loc_CCB0
 ;RAM:CCAE ED 44                       neg                                             ; abs()
-       inv  a
-       ab   one,a
+       abs  a
 loc_CCB0:
 ;RAM:CCB0 92                          sub     d                                       ; abs(objX+newdX-thisX)-(objW+thisW)
        cb   a,d
@@ -5011,10 +5009,8 @@ do_objs_intersect_on_y:
 ;RAM:CCBD FD 96 02                    sub     2(iy)                                   ; (objY+new dY-thisY)
        sb   @2(iy),a
 ;RAM:CCC0 F2 C5 CC                    jp      P, loc_CCC5
-       jgt  loc_CCC5
 ;RAM:CCC3 ED 44                       neg                                             ; abs()
-       inv  a
-       ab   one,a
+       abs  a
 loc_CCC5:
 ;RAM:CCC5 92                          sub     d                                       ; (objY+l+thisY)-(objD+thisD)
        cb   a,d
@@ -5034,9 +5030,9 @@ do_objs_intersect_on_z:
        sb   @3(iy),a
 ;RAM:CCCE F2 D8 CC                    jp      P, loc_CCD8
        jgt  loc_CCD8
+       jeq  loc_CCD8
 ;RAM:CCD1 ED 44                       neg                                             ; abs()
-       inv  a
-       ab   one,a
+       abs  a
 ;RAM:CCD3 DD 56 06                    ld      d, 6(ix)                                ; objH (height)
        movb @6(ix),d
 loc_CCD6:
