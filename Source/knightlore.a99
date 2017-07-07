@@ -124,13 +124,18 @@ lower_memory_end:
 vidbuf:
        equ >6000
 *
-* Remaining 2 KiB
+* Last 2 KiB
 *
        aorg >7800
+       copy "variables.a99"
        copy "start-menu.a99"
        copy "game-over.a99"
        copy "sound.a99"
 *
+* Reverse bytes lookup table, >100 bytes
+*
+reverse_bytes_lookup_table equ >7F00
+
 cartridge_memory_end:
        data -1
 *

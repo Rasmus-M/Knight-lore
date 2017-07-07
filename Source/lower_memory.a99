@@ -5,9 +5,9 @@ start:
 *      Init TI-99/4A
        bl   @ti_99_4a_init
 ;RAM:AF6C 21 A0 5B                    ld      hl, #seed_1                             ; location to clear
-       li   hl,seed_1
+       li   hl,static_variables_start
 ;RAM:AF6F 01 68 05                    ld      bc, #0x568                              ; # bytes to clear
-       li   bc,>568
+       li   bc,variables_end-static_variables_start
 ;RAM:AF72 3A 78 5C                    ld      a, (0x5C78)                             ; FRAMES system variable (LSB)
        movb @RNDSD,a
 ;      clr  a
@@ -27,9 +27,9 @@ start:
 *
 start_menu:                                                                           ; location to clear
 ;RAM:AF7F 21 A8 5B                    ld      hl, #objs_wiped_cnt
-       li   hl,tmp_SP                  ; Swapped tmp_SP and objs_wiped_cnt
+       li   hl,volatile_variables_start
 ;RAM:AF82 01 60 05                    ld      bc, #0x560                              ; # bytes to clear
-       li   bc,>560
+       li   bc,variables_end-volatile_variables_start
 ;RAM:AF85 CD 3A D5                    call    clr_mem
        bl   @clr_mem
 main:                                                                                 ; for bit reversal & shifting
@@ -133,7 +133,7 @@ ret_from_tbl_jp:
 ;RAM:AFF5 E1                          pop     hl
        mov  ix,hl
 ;RAM:AFF6 01 08 61                    ld      bc, #font                               ; end of table
-       li   bc,font
+       li   bc,graphic_objs_tbl_end
 ;RAM:AFF9 A7                          and     a
 *      Clear carry flag
 ;RAM:AFFA ED 42                       sbc     hl, bc                                  ; past end of table?
@@ -1459,6 +1459,15 @@ display_day:
        mov  hl,*sp+
 ;RAM:BCE4 C3 4C BE                    jp      print_text
        b    @print_text
+* ---------------------------------------------------------------------------
+day_txt:
+       byte >00, >00, >01, >02, >83
+       byte >00 ; Added one byte for word alignment
+day_font:
+       byte >06, >07, >06, >06, >06, >06, >06, >0F
+       byte >00, >01, >82, >C6, >64, >6C, >6D, >C6
+       byte >C8, >C6, >E1, >60, >60, >E0, >64, >63
+       byte >60, >60, >60, >E0, >60, >40, >C0, >80
 *
 * End of function display_day
 *
@@ -1621,50 +1630,6 @@ loc_BE91:
        rt
 *
 * End of function print_8x8
-*
-* =============== S U B R O U T I N E =======================================
-*
-multiple_print_sprite:
-       mov  r11,*sp+
-multiple_print_sprite_loop:
-;RAM:BEE4 C5                          push    bc
-       mov  bc,*sp+
-;RAM:BEE5 D5                          push    de
-       mov  de,*sp+
-;RAM:BEE6 E5                          push    hl
-       mov  hl,*sp+
-;RAM:BEE7 CD 18 D7                    call    print_sprite
-       bl   @print_sprite
-;RAM:BEEA E1                          pop     hl
-       dect sp
-       mov  *sp,hl
-;RAM:BEEB D1                          pop     de
-       dect sp
-       mov  *sp,de
-;RAM:BEEC C1                          pop     bc
-       dect sp
-       mov  *sp,bc
-;RAM:BEED DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
-       movb @26(ix),a
-;RAM:BEF0 83                          add     a, e                                    ; add offset
-       ab   @e,a
-;RAM:BEF1 DD 77 1A                    ld      26(ix), a                               ; store new pixel X
-       movb a,@26(ix)
-;RAM:BEF4 DD 7E 1B                    ld      a, 27(ix)                               ; pixel Y
-       movb @27(ix),a
-;RAM:BEF7 82                          add     a, d                                    ; add offset
-       ab   d,a
-;RAM:BEF8 DD 77 1B                    ld      27(ix), a                               ; store new pixel Y
-       movb a,@27(ix)
-;RAM:BEFB 10 E7                       djnz    multiple_print_sprite                   ; loop though all sprites
-       sb   one,b
-       jne  multiple_print_sprite_loop
-;RAM:BEFD C9                          ret
-       dect sp
-       mov  *sp,r11
-       rt
-*
-* End of function multiple_print_sprite
 *
 * ---------------------------------------------------------------------------
 *
@@ -1920,6 +1885,11 @@ loc_BF91:
        dect sp
        mov  *sp,r11
        rt
+* ---------------------------------------------------------------------------
+* diamond, poison, boot, challice, cup, bottle, globe, idol
+* red, magenta, green, cyan, yellow, white, red, white
+object_attributes:
+       byte >42, >43, >44, >45, >46, >47, >42, >47
 *
 * End of function display_objects
 *
@@ -2670,7 +2640,9 @@ display_sun_moon_frame_return:
        dect sp
        mov  *sp,r11
        rt
-*
+sun_moon_yoff:
+       byte 5, 6, 7, 8, 9, 10, 10, 9, 8, 7, 6, 5, 5
+       byte 0 ; Added one extra byte for alignment*
 * ---------------------------------------------------------------------------
 *
 toggle_day_night:
@@ -2816,7 +2788,7 @@ init_obj_loop:
        dect sp
        mov  *sp,de
 ;RAM:C4A7 38 E0                       jr      C, init_obj_loop                        ; no, loop
-       ci   hl,sprite_tbl
+       ci   hl,special_objs_tbl_end
        jl   init_obj_loop
 ;RAM:C4A9 C9                          ret
        dect sp
@@ -5301,43 +5273,6 @@ adj_dY_for_out_of_bounds_return:
 *
 * =============== S U B R O U T I N E =======================================
 *
-calc_2d_info:
-       mov  r11,*sp+
-;RAM:CD33 CD C9 D6                    call    calc_pixel_XY
-       bl   @calc_pixel_XY
-;RAM:CD36 CD EF D6                    call    flip_sprite
-       bl   @flip_sprite
-;RAM:CD39 DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
-       movb @26(ix),a
-;RAM:CD3C E6 07                       and     #7                                      ; bit offset
-       andi a,>0700
-       movb a,r0                      ; preserve flags
-;RAM:CD3E 1A                          ld      a, (de)                                 ; ptr sprite data (width)
-;RAM:CD3F 13                          inc     de                                      ; ptr height
-       movb *de+,a
-;RAM:CD40 28 01                       jr      Z, loc_CD43
-       movb r0,r0
-       jeq  loc_CD43
-;RAM:CD42 3C                          inc     a
-       ab   one,a
-loc_CD43:
-;RAM:CD43 E6 0F                       and     #0xF
-       andi a,>0f00
-;RAM:CD45 DD 77 18                    ld      24(ix), a                               ; sprite data width (bytes)
-       movb a,@24(ix)
-;RAM:CD48 1A                          ld      a, (de)
-       movb *de,a
-;RAM:CD49 DD 77 19                    ld      25(ix), a                               ; sprite data height
-       movb a,@25(ix)
-;RAM:CD4C C9                          ret
-       dect sp
-       mov  *sp,r11
-       b    *r11
-*
-* End of function calc_2d_info
-*
-* =============== S U B R O U T I N E =======================================
-*
 set_draw_objs_overlapped:
        mov  r11,*sp+
 ;RAM:CD4D FD 21 08 5C                 ld      iy, #graphic_objs_tbl
@@ -5883,6 +5818,35 @@ loc_CF62:
 ;RAM:CF66 C3 DB AF                    jp      jump_to_tbl_entry
        b    @jump_to_tbl_entry
 * ---------------------------------------------------------------------------
+calc_display_order_and_render_jmp_tbl:
+       data continue_1
+       data continue_1
+       data continue_1
+       data d_3467121516
+       data d_3467121516
+       data continue_1
+       data d_3467121516
+       data d_3467121516
+       data continue_1
+       data continue_1
+       data continue_2
+       data continue_2
+       data d_3467121516
+       data objs_coincide
+       data continue_2
+       data d_3467121516
+       data d_3467121516
+       data continue_1
+       data continue_1
+       data continue_2
+       data continue_2
+       data continue_1
+       data continue_2
+       data continue_2
+       data continue_1
+       data continue_1
+       data continue_1
+* ---------------------------------------------------------------------------
 continue_1:
 ;RAM:CF9F C3 DB CE                    jp      loc_CEDB
        b    @loc_CEDB
@@ -6131,6 +6095,17 @@ init_start_location:
        dect sp
        mov  *sp,r11
        rt
+* ---------------------------------------------------------------------------
+plyr_spr_init_data:
+       byte >78, >80, >80, >80, >05, >05, >17, >1C
+       byte >78, >80, >80, >8C, >05, >05, >00, >1E
+* ---------------------------------------------------------------------------
+start_locations:
+       byte >2F, >44, >B3, >8F         ; Standard
+;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
+;       byte >01,>01,>01,>01
+;        byte 136,136,136,136            ; Cauldron room
+* ---------------------------------------------------------------------------
 *
 * End of function init_start_location
 *
@@ -6220,146 +6195,6 @@ flag_room_visited:
 ;RAM:D236             ; ---------------------------------------------------------------------------
 ;RAM:D236 C9                          ret
        rt
-*
-* =============== S U B R O U T I N E =======================================
-*
-transfer_sprite:
-;RAM:D237 7E                          ld      a, (hl)                                 ; sprite index
-;RAM:D238 23                          inc     hl
-       movb *hl+,a
-;RAM:D239 DD 77 00                    ld      0(ix), a                                ; store sprite index
-       movb a,*ix
-;RAM:D23C 7E                          ld      a, (hl)                                 ; flags
-;RAM:D23D 23                          inc     hl
-       movb *hl+,a
-;RAM:D23E DD 77 07                    ld      7(ix), a                                ; store flags
-       movb a,@7(ix)
-;RAM:D241 7E                          ld      a, (hl)                                 ; X
-;RAM:D242 23                          inc     hl
-       movb *hl+,a
-;RAM:D243 DD 77 1A                    ld      26(ix), a                               ; pixel X
-       movb a,@26(ix)
-;RAM:D246 7E                          ld      a, (hl)                                 ; Y
-;RAM:D247 23                          inc     hl
-       movb *hl+,a
-;RAM:D248 DD 77 1B                    ld      27(ix), a                               ; pixel Y
-       movb a,@27(ix)
-;RAM:D24B C9                          ret
-       rt
-*
-* End of function transfer_sprite
-*
-* =============== S U B R O U T I N E =======================================
-*
-transfer_sprite_and_print:
-       mov  r11,*sp+
-;RAM:D24C CD 37 D2                    call    transfer_sprite                         ; copy to scratchpad
-transfer_sprite_and_print_1:
-       bl   @transfer_sprite
-;RAM:D24F E5                          push    hl
-       mov  hl,*sp+
-;RAM:D250 CD 18 D7                    call    print_sprite
-       bl   @print_sprite
-;RAM:D253 E1                          pop     hl
-       dect sp
-       mov  *sp,hl
-;RAM:D254 C9                          ret
-       dect sp
-       mov  *sp,r11
-       rt
-*
-* End of function transfer_sprite_and_print
-*
-* =============== S U B R O U T I N E =======================================
-*
-display_panel:
-       mov  r11,*sp+
-;RAM:D255 DD 21 DB BF                 ld      ix, #sprite_scratchpad
-       li   ix,sprite_scratchpad
-;RAM:D259 21 7E D2                    ld      hl, #panel_data
-       li   hl,panel_data
-;RAM:D25C CD 37 D2                    call    transfer_sprite
-       bl   @transfer_sprite
-;RAM:D25F 11 10 F8                    ld      de, #0xF810                             ; x+=16,y-=8
-       li   de,>F810
-;RAM:D262 06 05                       ld      b, #5                                   ; 5 sprites
-       movb @b05h,b
-;RAM:D264 CD E4 BE                    call    multiple_print_sprite
-       bl   @multiple_print_sprite
-;RAM:D267 CD 4C D2                    call    transfer_sprite_and_print
-       bl   @transfer_sprite_and_print
-;RAM:D26A CD 4C D2                    call    transfer_sprite_and_print
-       bl   @transfer_sprite_and_print
-;RAM:D26D CD 37 D2                    call    transfer_sprite
-       bl   @transfer_sprite
-;RAM:D270 11 10 08                    ld      de, #0x810                              ; x+=16,y+=8
-       li   de,>0810
-;RAM:D273 06 05                       ld      b, #5                                   ; 5 sprites
-       movb @b05h,b
-;RAM:D275 CD E4 BE                    call    multiple_print_sprite
-       bl   @multiple_print_sprite
-;RAM:D278 CD 4C D2                    call    transfer_sprite_and_print
-       bl   @transfer_sprite_and_print
-;RAM:D27B C3 4C D2                    jp      transfer_sprite_and_print
-       b    @transfer_sprite_and_print_1
-*
-* End of function display_panel
-*
-*
-* =============== S U B R O U T I N E =======================================
-*
-colour_panel:
-       mov  r11,*sp+
-;RAM:D2EF AF                          xor     a
-       clr  a
-;RAM:D2F0 21 B6 5A                    ld      hl, # zx_aram+0x2B6
-       li   hl,zx_aram+>02B6
-;RAM:D2F3 01 03 01                    ld      bc, #0x103                              ; 1 bytes, 3 lines
-       li   bc,>0103
-;RAM:D2F6 CD 15 C5                    call    fill_window
-       bl   @fill_color_window
-;RAM:D2F9 21 BD 5A                    ld      hl, # zx_aram+0x2BD
-       li   hl,zx_aram+>02BD
-;RAM:D2FC 01 03 01                    ld      bc, #0x103                              ; 1 byte, 3 lines
-       li   bc,>0103
-;RAM:D2FF CD 15 C5                    call    fill_window
-       bl   @fill_color_window
-;RAM:D302 3E 42                       ld      a, #0x42 ; 'B'
-       li   a,>4200
-;RAM:D304 21 97 5A                    ld      hl, # zx_aram+0x297
-       li   hl,zx_aram+>0297
-;RAM:D307 01 04 06                    ld      bc, #0x604                              ; 6 bytes, 4 lines
-       li   bc,>0604
-;RAM:D30A C3 15 C5                    jp      fill_window
-       dect sp
-       mov  *sp,r11
-       b    @fill_color_window
-*
-* End of function colour_panel
-*
-* =============== S U B R O U T I N E =======================================
-*
-colour_sun_moon:
-       li   a,>4600
-;RAM:D30D 3A 4D C4                    ld      a, (sun_moon_scratchpad)                ; graphic_no
-       movb @sun_moon_scratchpad,b
-;RAM:D310 E6 01                       and     #1                                      ; sun?
-       andi b,>0100
-;RAM:D312 3E 46                       ld      a, #0x46 ; 'F'                          ; attribute
-;RAM:D314 28 01                       jr      Z, loc_D317                             ; yes, skip
-       jeq  loc_D317
-;RAM:D316 3C                          inc     a
-       ab   one,a
-loc_D317:                                                                             ; attribute memory
-;RAM:D317 21 B8 5A                    ld      hl, # zx_aram+0x2B8
-       li   hl,zx_aram+>02B8
-;RAM:D31A 01 02 04                    ld      bc, #0x402                              ; 4 bytes, 2 lines
-       li   bc,>0402
-;RAM:D31D C3 15 C5                    jp      fill_window
-       b    @fill_color_window
-*
-* End of function colour_sun_moon
-*
 * =============== S U B R O U T I N E =======================================
 *
 adjust_plyr_xyz_for_room_size:
@@ -6588,7 +6423,7 @@ find_screen:                                                                    
 ;RAM:D3E2
 zero_end_of_graphic_objs_tbl:
 ;RAM:D3E2 21 08 61                    ld      hl, #font                               ; start of program data
-       li   hl,font
+       li   hl,graphic_objs_tbl_end
 ;RAM:D3E5 A7                          and     a
 *      Clear carry flag
 ;RAM:D3E6 ED 52                       sbc     hl, de                                  ; done?

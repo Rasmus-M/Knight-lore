@@ -44,4 +44,4 @@ special_objs_tbl:
        byte 0, >80, >80, >80, >40, 0, 0, 0, 0
        byte 0, >68, >78, >B0, >38, 0, 0, 0, 0
        byte 0, >48, >B8, >98, >F0, 0, 0, 0, 0
-
+special_objs_tbl_end

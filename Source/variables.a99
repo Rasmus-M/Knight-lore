@@ -1,0 +1,195 @@
+*
+* Variables from here are zeroed at start of game
+*
+static_variables_start
+*
+seed_1:
+       data 0
+seed_2:
+       data 0
+* bit   3 : directional
+* bit 2-1 : 00=keybd, 01=kempston, 10=cursor, 11=i/f-ii
+user_input_method:
+       byte 0
+seed_3:
+       byte 0
+old_input_method:
+       data 0
+*
+* Variables from here are zeroed each game
+*
+volatile_variables_start
+*
+tmp_SP:                                ; Swapped tmp_SP and objs_wiped_cnt
+       data 0
+objs_wiped_cnt:
+       byte 0
+room_size_X:
+       byte 0
+room_size_Y:
+       byte 0
+curr_room_attrib:
+       byte 0
+room_size_Z:
+       byte 0
+portcullis_moving:
+       byte 0
+portcullis_move_cnt:
+       byte 0
+transform_flag_graphic:
+       byte 0
+not_1st_screen:
+       byte 0
+pickup_drop_pressed:
+       byte 0
+objects_carried_changed:
+       byte 0
+* b5=???
+* b4=pickup/drop
+* b3=jump
+* b2=forward
+* b1=right
+* b0=left
+user_input:
+       byte 0
+tmp_attrib:
+       byte 0
+render_status_info:
+       byte 0
+suppress_border:
+       byte 0
+days:
+       byte 0
+lives:
+       byte 0
+objects_put_in_cauldron:
+       byte 0
+fire_seed:
+       byte 0
+ball_bounce_height:
+       byte 0
+rendered_objs_cnt:
+       byte 0
+is_spike_ball_dropping:
+       byte 0
+disable_spike_ball_drop:
+       byte 0
+tmp_dZ:
+       byte 0
+tmp_bouncing_ball_dZ:
+       byte 0
+all_objs_in_cauldron:
+       byte 0
+obj_dropping_into_cauldron:
+       byte 0
+rising_blocks_z:
+       byte 0
+num_scrns_visited:
+       byte 0
+audio_played:                          ; Moved from after render_obj_2
+       byte 0
+gfxbase_8x8:
+       data 0
+percent_msw:
+       byte 0
+percent_lsw:
+       byte 0
+tmp_objects_to_draw:
+       data 0
+render_obj_1:
+       data 0
+render_obj_2:
+       data 0
+debounce_5:
+       byte 0
+cant_drop:
+       bss 5
+inventory:
+       bss 4
+objects_carried:
+       bss 7
+unk_5BE3:
+       bss 1
+object_carried_2:
+       bss 3
+end_of_objects_carried:
+       bss 1
+*
+* table of bits (flags) denoting room has been visited
+* - used only in ratings calculations
+*
+scrn_visited:
+       bss 32
+**
+* Table of objects (40 max)
+*
+* - 00,01 player sprites (00=bottom, 01=top)
+* - 02,03 special object sprites
+* - 04-39 background, then foreground
+*
+* +0 graphic_no.
+* +1 x (center)
+* +2 y (center)
+* +3 z (bottom)
+* +4 width (X radius)
+* +5 depth (Y radius)
+* +6 height
+* +7 flags
+*    - 7=vflip sprite
+*    - 6=hflip sprite
+*    - 5=wipe
+*    - 4=draw
+*    - 3=auto-adjust near arches (player only)
+*    - 2=moveable
+*    - 1=ignore in 3D calculations
+*    - 0=is near arch (player only)
+* +8 screen
+* +9 dX
+* +10 dY
+* +11 dZ
+* +12 counter and flags
+*     - 7-4=counter when entering screen
+*     - 3=jumping
+*     - 2=Z out-of-bounds
+*     - 1=Y out-of-bounds
+*     - 0=X out-of-bounds
+* +13 per-object info/flags
+*     - direction and counters for looking, turning
+*     - 7=deadly if object hits player
+*     - 6=dead
+*     - 5=deadly if player hits object
+*     - 4=(not used)
+*     - 3=triggered (dropping, collapsing blocks)
+*     - 2=up (bouncing ball), dropping (spiked ball)
+*     - 1=north (NS fire)
+*     - 0=east (WE fire, EW guard), just dropped (spec objs)
+* +14 d_x_adj
+* +15 d_y_adj
+* +16-17 ptr object table entry or tmp player graphic_no
+* +18 pixel X adjustment
+* +19 pixel Y adjustment
+* +20-23 unused
+* +24 sprite data width (bytes)
+* +25 sprite data height (lines)
+* +26 pixel X
+* +27 pixel Y
+* +28 old sprite data width (bytes)
+* +29 old sprite data height (lines)
+* +30 old pixel X
+* +31 old pixel Y
+*
+graphic_objs_tbl:
+       bss 32                          ; 00,01 player sprites (00=bottom, 01=top)
+       bss 32
+special_objs_here:
+       bss 32                          ; 02,03 special object sprites
+special_objs_here_1:
+       bss 32
+other_objs_here:
+       bss 32                          ; 04-39 background, then foreground
+       bss 1120
+graphic_objs_tbl_end
+
+variables_end
+
+

@@ -1,472 +1,19 @@
-*
-* Variables from here are zeroed at start of game
-*
-seed_1:
-       data 0
-seed_2:
-       data 0
-* bit   3 : directional
-* bit 2-1 : 00=keybd, 01=kempston, 10=cursor, 11=i/f-ii
-user_input_method:
-       byte 0
-seed_3:
-       byte 0
-old_input_method:
-       data 0
-*
-* Variables from here are zeroed each game
-*
-tmp_SP:                                ; Swapped tmp_SP and objs_wiped_cnt
-       data 0
-objs_wiped_cnt:
-       byte 0
-room_size_X:
-       byte 0
-room_size_Y:
-       byte 0
-curr_room_attrib:
-       byte 0
-room_size_Z:
-       byte 0
-portcullis_moving:
-       byte 0
-portcullis_move_cnt:
-       byte 0
-transform_flag_graphic:
-       byte 0
-not_1st_screen:
-       byte 0
-pickup_drop_pressed:
-       byte 0
-objects_carried_changed:
-       byte 0
-* b5=???
-* b4=pickup/drop
-* b3=jump
-* b2=forward
-* b1=right
-* b0=left
-user_input:
-       byte 0
-tmp_attrib:
-       byte 0
-render_status_info:
-       byte 0
-suppress_border:
-       byte 0
-days:
-       byte 0
-lives:
-       byte 0
-objects_put_in_cauldron:
-       byte 0
-fire_seed:
-       byte 0
-ball_bounce_height:
-       byte 0
-rendered_objs_cnt:
-       byte 0
-is_spike_ball_dropping:
-       byte 0
-disable_spike_ball_drop:
-       byte 0
-tmp_dZ:
-       byte 0
-tmp_bouncing_ball_dZ:
-       byte 0
-all_objs_in_cauldron:
-       byte 0
-obj_dropping_into_cauldron:
-       byte 0
-rising_blocks_z:
-       byte 0
-num_scrns_visited:
-       byte 0
-audio_played:                          ; Moved from after render_obj_2
-       byte 0
-gfxbase_8x8:
-       data 0
-percent_msw:
-       byte 0
-percent_lsw:
-       byte 0
-tmp_objects_to_draw:
-       data 0
-render_obj_1:
-       data 0
-render_obj_2:
-       data 0
-debounce_5:
-       byte 0
-cant_drop:
-       bss 5
-inventory:
-       bss 4
-objects_carried:
-       bss 7
-unk_5BE3:
-       bss 1
-object_carried_2:
-       bss 3
-end_of_objects_carried:
-       bss 1
-*
-* table of bits (flags) denoting room has been visited
-* - used only in ratings calculations
-*
-scrn_visited:
-       bss 32
-**
-* Table of objects (40 max)
-*
-* - 00,01 player sprites (00=bottom, 01=top)
-* - 02,03 special object sprites
-* - 04-39 background, then foreground
-*
-* +0 graphic_no.
-* +1 x (center)
-* +2 y (center)
-* +3 z (bottom)
-* +4 width (X radius)
-* +5 depth (Y radius)
-* +6 height
-* +7 flags
-*    - 7=vflip sprite
-*    - 6=hflip sprite
-*    - 5=wipe
-*    - 4=draw
-*    - 3=auto-adjust near arches (player only)
-*    - 2=moveable
-*    - 1=ignore in 3D calculations
-*    - 0=is near arch (player only)
-* +8 screen
-* +9 dX
-* +10 dY
-* +11 dZ
-* +12 counter and flags
-*     - 7-4=counter when entering screen
-*     - 3=jumping
-*     - 2=Z out-of-bounds
-*     - 1=Y out-of-bounds
-*     - 0=X out-of-bounds
-* +13 per-object info/flags
-*     - direction and counters for looking, turning
-*     - 7=deadly if object hits player
-*     - 6=dead
-*     - 5=deadly if player hits object
-*     - 4=(not used)
-*     - 3=triggered (dropping, collapsing blocks)
-*     - 2=up (bouncing ball), dropping (spiked ball)
-*     - 1=north (NS fire)
-*     - 0=east (WE fire, EW guard), just dropped (spec objs)
-* +14 d_x_adj
-* +15 d_y_adj
-* +16-17 ptr object table entry or tmp player graphic_no
-* +18 pixel X adjustment
-* +19 pixel Y adjustment
-* +20-23 unused
-* +24 sprite data width (bytes)
-* +25 sprite data height (lines)
-* +26 pixel X
-* +27 pixel Y
-* +28 old sprite data width (bytes)
-* +29 old sprite data height (lines)
-* +30 old pixel X
-* +31 old pixel Y
-*
-graphic_objs_tbl:
-       bss 32                          ; 00,01 player sprites (00=bottom, 01=top)
-       bss 32
-special_objs_here:
-       bss 32                          ; 02,03 special object sprites
-special_objs_here_1:
-       bss 32
-other_objs_here:
-       bss 32                          ; 04-39 background, then foreground
-       bss 1120
+* ---------------------------------------------------------------------------
 
-* End of 'SCRATCH'
-* ===========================================================================
-*
-* Segment type: Regular
-* .org 0x6108
-*
-       copy "font.a99"                 ; Must follow object table
+       copy "font.a99"
        copy "locations.a99"
        copy "block-types.a99"
        copy "background-types.a99"
        copy "special-objects.a99"
+
+*      Sprites are flipped and mirrored on the fly
        copy "sprites.a99"
 
-* ---------------------------------------------------------------------------
-*
 * Update sprite jump table
-*
-upd_sprite_jmp_tbl:
-       data no_update
-       data no_update                                   ; (unused)
-       data upd_2_4                                     ; stone arch (near side)
-       data upd_3_5                                     ; stone arch (far side)
-       data upd_2_4                                     ; tree arch (near side)
-       data upd_3_5                                     ; tree arch (far side)
-       data upd_6_7                                     ; rock
-       data upd_6_7                                     ; block
-       data upd_8                                       ; portcullis (stationary)
-       data upd_9                                       ; portcullis (moving)
-       data upd_10                                      ; bricks
-       data upd_11                                      ; more bricks
-       data upd_12_to_15                                ; even more bricks
-       data upd_12_to_15                                ;   "
-       data upd_12_to_15                                ;   "
-       data upd_12_to_15                                ;   "
-       data upd_16_to_21_24_to_29                       ; human legs
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_22                                      ; gargoyle
-       data upd_23                                      ; spikes
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_16_to_21_24_to_29
-       data upd_30_31_158_159                           ; guard (moving NSEW) (top half)
-       data upd_30_31_158_159                           ;   "
-       data upd_32_to_47                                ; player (top half)
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_32_to_47
-       data upd_48_to_53_56_to_61                       ;   wulf legs
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_54                                      ; block (moving EW)
-       data upd_55                                      ; block (moving NS)
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_48_to_53_56_to_61
-       data upd_62                                      ; another block
-       data upd_63                                      ; spiked ball
-       data upd_64_to_79                                ; player (wulf top half)
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_64_to_79
-       data upd_80_to_83                                ; ghost
-       data upd_80_to_83                                ;   "
-       data upd_80_to_83                                ;   "
-       data upd_80_to_83                                ;   "
-       data upd_84                                      ; table
-       data upd_85                                      ; chest
-       data upd_86_87                                   ; fire (EW)
-       data upd_86_87                                   ; fire (EW)
-       data upd_88_to_90                                ; sun
-       data upd_88_to_90                                ; moon
-       data upd_88_to_90                                ; frame (left)
-       data upd_91                                      ; block (dropping)
-       data upd_92_to_95                                ; human/wulf transform
-       data upd_92_to_95
-       data upd_92_to_95
-       data upd_92_to_95
-       data upd_96_to_102                               ; diamond
-       data upd_96_to_102                               ; poison
-       data upd_96_to_102                               ; boot
-       data upd_96_to_102                               ; chalice
-       data upd_96_to_102                               ; cup
-       data upd_96_to_102                               ; bottle
-       data upd_96_to_102                               ; crystal ball
-       data upd_103                                     ; extra life
-       data upd_104_to_110                              ; special object (diamond)
-       data upd_104_to_110                              ;   " (poison)
-       data upd_104_to_110                              ;   " (boot)
-       data upd_104_to_110                              ;   " (chalice)
-       data upd_104_to_110                              ;   " (cup)
-       data upd_104_to_110                              ;   " (bottle)
-       data upd_104_to_110                              ;   " (crytsal ball)
-       data upd_111                                     ; final sparkles in cauldron
-       data upd_112_to_118_184                          ; death sparkles
-       data upd_112_to_118_184                          ;   "
-       data upd_112_to_118_184                          ;   "
-       data upd_112_to_118_184                          ;   "
-       data upd_112_to_118_184                          ;   "
-       data upd_112_to_118_184                          ;   "
-       data upd_112_to_118_184                          ;   "
-       data upd_119                                     ; last death sparkle
-       data upd_120_to_126                              ; player appears sparkles
-       data upd_120_to_126                              ;   "
-       data upd_120_to_126                              ;   "
-       data upd_120_to_126                              ;   "
-       data upd_120_to_126                              ;   "
-       data upd_120_to_126                              ;   "
-       data upd_120_to_126                              ;   "
-       data upd_127                                     ; last player appears sparkle
-       data upd_128_to_130                              ; tree wall
-       data upd_128_to_130                              ;   "
-       data upd_128_to_130                              ;   "
-       data upd_131_to_133                              ; sparkles in the cauldron room at end of game
-       data upd_131_to_133                              ;   "
-       data upd_131_to_133                              ;   "
-       data no_update
-       data no_update
-       data no_update
-       data no_update
-       data no_update
-       data no_update
-       data no_update
-       data upd_141                                     ; cauldron (bottom)
-       data upd_142                                     ; cauldron (top)
-       data upd_143                                     ; block (collapsing)
-       data upd_144_to_149_152_to_157                   ; guard & wizard (bottom half)
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_150_151                                 ; guard (EW) (top half)
-       data upd_150_151                                 ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_144_to_149_152_to_157                   ;   "
-       data upd_30_31_158_159                           ; wizard (top half)
-       data upd_30_31_158_159                           ;   "
-       data upd_160_to_163                              ; cauldron bubbles
-       data upd_160_to_163                              ;   "
-       data upd_160_to_163                              ;   "
-       data upd_160_to_163                              ;   "
-       data upd_164_to_167                              ; repel spell
-       data upd_164_to_167                              ;   "
-       data upd_164_to_167                              ;   "
-       data upd_164_to_167                              ;   "
-       data upd_168_to_175                              ; diamond
-       data upd_168_to_175                              ; poison
-       data upd_168_to_175                              ; boot
-       data upd_168_to_175                              ; chalice
-       data upd_168_to_175                              ; cup
-       data upd_168_to_175                              ; bottle
-       data upd_168_to_175                              ; crystal ball
-       data upd_168_to_175                              ; extra life
-       data upd_176_177                                 ; fire (stationary) (not used)
-       data upd_176_177                                 ; fire (stationary) (not used)
-       data upd_178_179                                 ; ball up/down
-       data upd_178_179                                 ; ball up/down
-       data upd_180_181                                 ; fire (NS)
-       data upd_180_181                                 ; fire (NS)
-       data upd_182_183                                 ; ball (bouncing around)
-       data upd_182_183                                 ;   "
-       data upd_112_to_118_184                          ; death sparkles
-       data upd_185_187                                 ; last obj in cauldron sparkle
-       data no_update
-       data upd_185_187                                 ; last obj in cauldron sparkle
-* ---------------------------------------------------------------------------
-calc_display_order_and_render_jmp_tbl:
-       data continue_1
-       data continue_1
-       data continue_1
-       data d_3467121516
-       data d_3467121516
-       data continue_1
-       data d_3467121516
-       data d_3467121516
-       data continue_1
-       data continue_1
-       data continue_2
-       data continue_2
-       data d_3467121516
-       data objs_coincide
-       data continue_2
-       data d_3467121516
-       data d_3467121516
-       data continue_1
-       data continue_1
-       data continue_2
-       data continue_2
-       data continue_1
-       data continue_2
-       data continue_2
-       data continue_1
-       data continue_1
-       data continue_1
-* ---------------------------------------------------------------------------
-day_txt:
-       byte >00, >00, >01, >02, >83
-day_font:
-       byte >06, >07, >06, >06, >06, >06, >06, >0F
-       byte >00, >01, >82, >C6, >64, >6C, >6D, >C6
-       byte >C8, >C6, >E1, >60, >60, >E0, >64, >63
-       byte >60, >60, >60, >E0, >60, >40, >C0, >80
+       copy "update-sprite-jump-table.a99"
 
 * ---------------------------------------------------------------------------
-* diamond, poison, boot, challice, cup, bottle, globe, idol
-* red, magenta, green, cyan, yellow, white, red, white
-object_attributes:
-       byte >42, >43, >44, >45, >46, >47, >42, >47
 *
-sprite_scratchpad:
-       byte >8A, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00
-       byte >00, >00, >00, >00, >00, >00, >00, >00, >03, >01, >E8, >A0, >00, >00, >00, >00
-
-* ---------------------------------------------------------------------------
-objects_required:
-       byte 0, 1, 2, 3, 4, 5, 6, 3
-       byte 5, 0, 6, 1, 2, 4
-* ---------------------------------------------------------------------------
-sun_moon_yoff:
-       byte 5, 6, 7, 8, 9, 10, 10, 9, 8, 7, 6, 5, 5
-       byte 0 ; Added one extra byte for alignment
-sun_moon_scratchpad:
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-* ---------------------------------------------------------------------------
-objects_to_draw:
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-* ---------------------------------------------------------------------------
-render_list:
-       byte >FF
-       byte >FF
-       byte >FF
-       byte >FF
-       byte >FF
-       byte >FF
-       byte >FF
-       byte >FF
-*
-* ---------------------------------------------------------------------------
 * scratchpad for player sprites/objects
 *
 plyr_spr_1_scratchpad:
@@ -483,15 +30,71 @@ start_loc_2:
        byte 0, 0, 0, 0, 0, 0, 0, 0
 byte_D191:
        byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-plyr_spr_init_data:
-       byte >78, >80, >80, >80, >05, >05, >17, >1C
-       byte >78, >80, >80, >8C, >05, >05, >00, >1E
 * ---------------------------------------------------------------------------
-start_locations:
-       byte >2F, >44, >B3, >8F         ; Standard
-;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
-;       byte >01,>01,>01,>01
-;        byte 136,136,136,136            ; Cauldron room
+sun_moon_scratchpad:
+       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+* ---------------------------------------------------------------------------
+objects_to_draw:
+       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+* ---------------------------------------------------------------------------
+sprite_scratchpad:
+       byte >8A, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00
+       byte >00, >00, >00, >00, >00, >00, >00, >00, >03, >01, >E8, >A0, >00, >00, >00, >00
+* ---------------------------------------------------------------------------
+objects_required:
+       byte 0, 1, 2, 3, 4, 5, 6, 3
+       byte 5, 0, 6, 1, 2, 4
+* ---------------------------------------------------------------------------
+render_list:
+       byte >FF
+       byte >FF
+       byte >FF
+       byte >FF
+       byte >FF
+       byte >FF
+       byte >FF
+       byte >FF
+
+* ---------------------------------------------------------------------------
+       even
+* ---------------------------------------------------------------------------
+
+
+* =============== S U B R O U T I N E =======================================
+*
+display_panel:
+       mov  r11,*sp+
+;RAM:D255 DD 21 DB BF                 ld      ix, #sprite_scratchpad
+       li   ix,sprite_scratchpad
+;RAM:D259 21 7E D2                    ld      hl, #panel_data
+       li   hl,panel_data
+;RAM:D25C CD 37 D2                    call    transfer_sprite
+       bl   @transfer_sprite
+;RAM:D25F 11 10 F8                    ld      de, #0xF810                             ; x+=16,y-=8
+       li   de,>F810
+;RAM:D262 06 05                       ld      b, #5                                   ; 5 sprites
+       movb @b05h,b
+;RAM:D264 CD E4 BE                    call    multiple_print_sprite
+       bl   @multiple_print_sprite
+;RAM:D267 CD 4C D2                    call    transfer_sprite_and_print
+       bl   @transfer_sprite_and_print
+;RAM:D26A CD 4C D2                    call    transfer_sprite_and_print
+       bl   @transfer_sprite_and_print
+;RAM:D26D CD 37 D2                    call    transfer_sprite
+       bl   @transfer_sprite
+;RAM:D270 11 10 08                    ld      de, #0x810                              ; x+=16,y+=8
+       li   de,>0810
+;RAM:D273 06 05                       ld      b, #5                                   ; 5 sprites
+       movb @b05h,b
+;RAM:D275 CD E4 BE                    call    multiple_print_sprite
+       bl   @multiple_print_sprite
+;RAM:D278 CD 4C D2                    call    transfer_sprite_and_print
+       bl   @transfer_sprite_and_print
+;RAM:D27B C3 4C D2                    jp      transfer_sprite_and_print
+       b    @transfer_sprite_and_print_1
 * ---------------------------------------------------------------------------
 panel_data:
        byte >86, >00, >10, >34
@@ -500,9 +103,62 @@ panel_data:
        byte >86, >40, >A0, >14
        byte >87, >40, >00, >00
        byte >88, >40, >60, >04
-
-       even
-
+*
+* End of function display_panel
+*
+* =============== S U B R O U T I N E =======================================
+*
+colour_panel:
+       mov  r11,*sp+
+;RAM:D2EF AF                          xor     a
+       clr  a
+;RAM:D2F0 21 B6 5A                    ld      hl, # zx_aram+0x2B6
+       li   hl,zx_aram+>02B6
+;RAM:D2F3 01 03 01                    ld      bc, #0x103                              ; 1 bytes, 3 lines
+       li   bc,>0103
+;RAM:D2F6 CD 15 C5                    call    fill_window
+       bl   @fill_color_window
+;RAM:D2F9 21 BD 5A                    ld      hl, # zx_aram+0x2BD
+       li   hl,zx_aram+>02BD
+;RAM:D2FC 01 03 01                    ld      bc, #0x103                              ; 1 byte, 3 lines
+       li   bc,>0103
+;RAM:D2FF CD 15 C5                    call    fill_window
+       bl   @fill_color_window
+;RAM:D302 3E 42                       ld      a, #0x42 ; 'B'
+       li   a,>4200
+;RAM:D304 21 97 5A                    ld      hl, # zx_aram+0x297
+       li   hl,zx_aram+>0297
+;RAM:D307 01 04 06                    ld      bc, #0x604                              ; 6 bytes, 4 lines
+       li   bc,>0604
+;RAM:D30A C3 15 C5                    jp      fill_window
+       dect sp
+       mov  *sp,r11
+       b    @fill_color_window
+*
+* End of function colour_panel
+*
+* =============== S U B R O U T I N E =======================================
+*
+colour_sun_moon:
+       li   a,>4600
+;RAM:D30D 3A 4D C4                    ld      a, (sun_moon_scratchpad)                ; graphic_no
+       movb @sun_moon_scratchpad,b
+;RAM:D310 E6 01                       and     #1                                      ; sun?
+       andi b,>0100
+;RAM:D312 3E 46                       ld      a, #0x46 ; 'F'                          ; attribute
+;RAM:D314 28 01                       jr      Z, loc_D317                             ; yes, skip
+       jeq  loc_D317
+;RAM:D316 3C                          inc     a
+       ab   one,a
+loc_D317:                                                                             ; attribute memory
+;RAM:D317 21 B8 5A                    ld      hl, # zx_aram+0x2B8
+       li   hl,zx_aram+>02B8
+;RAM:D31A 01 02 04                    ld      bc, #0x402                              ; 4 bytes, 2 lines
+       li   bc,>0402
+;RAM:D31D C3 15 C5                    jp      fill_window
+       b    @fill_color_window
+*
+* End of function colour_sun_moon
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -1216,6 +872,43 @@ loc_D6BE:
 *
 * =============== S U B R O U T I N E =======================================
 *
+calc_2d_info:
+       mov  r11,*sp+
+;RAM:CD33 CD C9 D6                    call    calc_pixel_XY
+       bl   @calc_pixel_XY
+;RAM:CD36 CD EF D6                    call    flip_sprite
+       bl   @flip_sprite
+;RAM:CD39 DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
+       movb @26(ix),a
+;RAM:CD3C E6 07                       and     #7                                      ; bit offset
+       andi a,>0700
+       movb a,r0                      ; preserve flags
+;RAM:CD3E 1A                          ld      a, (de)                                 ; ptr sprite data (width)
+;RAM:CD3F 13                          inc     de                                      ; ptr height
+       movb *de+,a
+;RAM:CD40 28 01                       jr      Z, loc_CD43
+       movb r0,r0
+       jeq  loc_CD43
+;RAM:CD42 3C                          inc     a
+       ab   one,a
+loc_CD43:
+;RAM:CD43 E6 0F                       and     #0xF
+       andi a,>0f00
+;RAM:CD45 DD 77 18                    ld      24(ix), a                               ; sprite data width (bytes)
+       movb a,@24(ix)
+;RAM:CD48 1A                          ld      a, (de)
+       movb *de,a
+;RAM:CD49 DD 77 19                    ld      25(ix), a                               ; sprite data height
+       movb a,@25(ix)
+;RAM:CD4C C9                          ret
+       dect sp
+       mov  *sp,r11
+       b    *r11
+*
+* End of function calc_2d_info
+*
+* =============== S U B R O U T I N E =======================================
+*
 * Calculate 2D coordinates from 3D coordinates
 *
 calc_pixel_XY:
@@ -1287,6 +980,99 @@ flip_sprite:
        rt
 *
 * End of function flip_sprite
+*
+* =============== S U B R O U T I N E =======================================
+*
+multiple_print_sprite:
+       mov  r11,*sp+
+multiple_print_sprite_loop:
+;RAM:BEE4 C5                          push    bc
+       mov  bc,*sp+
+;RAM:BEE5 D5                          push    de
+       mov  de,*sp+
+;RAM:BEE6 E5                          push    hl
+       mov  hl,*sp+
+;RAM:BEE7 CD 18 D7                    call    print_sprite
+       bl   @print_sprite
+;RAM:BEEA E1                          pop     hl
+       dect sp
+       mov  *sp,hl
+;RAM:BEEB D1                          pop     de
+       dect sp
+       mov  *sp,de
+;RAM:BEEC C1                          pop     bc
+       dect sp
+       mov  *sp,bc
+;RAM:BEED DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
+       movb @26(ix),a
+;RAM:BEF0 83                          add     a, e                                    ; add offset
+       ab   @e,a
+;RAM:BEF1 DD 77 1A                    ld      26(ix), a                               ; store new pixel X
+       movb a,@26(ix)
+;RAM:BEF4 DD 7E 1B                    ld      a, 27(ix)                               ; pixel Y
+       movb @27(ix),a
+;RAM:BEF7 82                          add     a, d                                    ; add offset
+       ab   d,a
+;RAM:BEF8 DD 77 1B                    ld      27(ix), a                               ; store new pixel Y
+       movb a,@27(ix)
+;RAM:BEFB 10 E7                       djnz    multiple_print_sprite                   ; loop though all sprites
+       sb   one,b
+       jne  multiple_print_sprite_loop
+;RAM:BEFD C9                          ret
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function multiple_print_sprite
+*
+* =============== S U B R O U T I N E =======================================
+*
+transfer_sprite_and_print:
+       mov  r11,*sp+
+;RAM:D24C CD 37 D2                    call    transfer_sprite                         ; copy to scratchpad
+transfer_sprite_and_print_1:
+       bl   @transfer_sprite
+;RAM:D24F E5                          push    hl
+       mov  hl,*sp+
+;RAM:D250 CD 18 D7                    call    print_sprite
+       bl   @print_sprite
+;RAM:D253 E1                          pop     hl
+       dect sp
+       mov  *sp,hl
+;RAM:D254 C9                          ret
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function transfer_sprite_and_print
+*
+* =============== S U B R O U T I N E =======================================
+*
+transfer_sprite:
+;RAM:D237 7E                          ld      a, (hl)                                 ; sprite index
+;RAM:D238 23                          inc     hl
+       movb *hl+,a
+;RAM:D239 DD 77 00                    ld      0(ix), a                                ; store sprite index
+       movb a,*ix
+;RAM:D23C 7E                          ld      a, (hl)                                 ; flags
+;RAM:D23D 23                          inc     hl
+       movb *hl+,a
+;RAM:D23E DD 77 07                    ld      7(ix), a                                ; store flags
+       movb a,@7(ix)
+;RAM:D241 7E                          ld      a, (hl)                                 ; X
+;RAM:D242 23                          inc     hl
+       movb *hl+,a
+;RAM:D243 DD 77 1A                    ld      26(ix), a                               ; pixel X
+       movb a,@26(ix)
+;RAM:D246 7E                          ld      a, (hl)                                 ; Y
+;RAM:D247 23                          inc     hl
+       movb *hl+,a
+;RAM:D248 DD 77 1B                    ld      27(ix), a                               ; pixel Y
+       movb a,@27(ix)
+;RAM:D24B C9                          ret
+       rt
+*
+* End of function transfer_sprite
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -2469,17 +2255,6 @@ bf0h   byte >f0
 bf1h   byte >f1
 bfeh   byte >fe
 bffh   byte >ff
-
-* ---------------------------------------------------------------------------
-*
-* 194 bytes free
-*
-* ---------------------------------------------------------------------------
-
-*
-* Reverse bytes lookup table
-*
-reverse_bytes_lookup_table equ >FF00
 
 *
 * End of upper memory
