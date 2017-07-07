@@ -3363,7 +3363,7 @@ upd_8:
 ;RAM:C66A DD BE 03                    cp      3(ix)                                   ; objZ = room height?
        cb   a,@3(ix)
 ;RAM:C66D 28 3E                       jr      Z, init_portcullis_up                   ; yes, skip
-       jne  init_portcullis_up
+       jeq  init_portcullis_up
 ;RAM:C66F C6 1F                       add     a, #31
        ab   @b1fh,a
 ;RAM:C671 DD BE 03                    cp      3(ix)                                   ; objZ <= room height+31?
