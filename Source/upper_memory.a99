@@ -1,6 +1,5 @@
 *
 * Variables from here are zeroed at start of game
-* Stack grows down from here on ZX Specturm
 *
 seed_1:
        data 0
@@ -497,9 +496,9 @@ plyr_spr_init_data:
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
 * ---------------------------------------------------------------------------
 start_locations:
-;        byte >2F, >44, >B3, >8F         ; Standard
+        byte >2F, >44, >B3, >8F         ; Standard
 ;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
-       byte >01,>01,>01,>01
+;       byte >01,>01,>01,>01
 ;       byte 136,136,136,136            ; Cauldron room
 * ---------------------------------------------------------------------------
 panel_data:
@@ -2211,6 +2210,7 @@ bffh   byte >ff
 * Reverse bytes lookup table
 *
 reverse_bytes_lookup_table equ >FF00
+
 *
 * End of upper memory
 *

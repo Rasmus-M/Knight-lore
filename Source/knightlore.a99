@@ -15,6 +15,9 @@
 * |    - by tcdev (msmcdoug@gmail.com)               |
 * +--------------------------------------------------+
 *
+* Processor       : z80 []
+* Target assembler: ASxxxx by Alan R. Baldwin v1.5
+*
 * ZX Spectrum Memory Map:
 *
 * $4000-$57FF - spectrum video memory
@@ -25,9 +28,6 @@
 * $D8F3-$F0F2 - video buffer
 * $F100-$FFFF - bit-shift & bit-reverse lookup tables
 *             - (built at run-time)
-*
-* Processor       : z80 []
-* Target assembler: ASxxxx by Alan R. Baldwin v1.5
 *
 ********************************************************************************
 
@@ -41,7 +41,9 @@ VDPRD  EQU  >8800                      ; VDP read data
 VDPSTA EQU  >8802                      ; VDP status
 SOUND  EQU  >8400
 
+**
 * VDP memory map
+*
 PTRNTB EQU  >0000                      ; Pattern table base
 SPRPTB EQU  >1800                      ; Sprite pattern table base
 COLRTB EQU  >2000                      ; Color table base
@@ -91,38 +93,45 @@ bc_    equ  13
 de_    equ  14
 hl_    equ  15
 
-* ===========================================================================
-*
-* Lower memory - game code
-*
-       aorg >2000
-       copy "lower_memory.a99"
-*
-low_memory_end:
-       data -1
-*
-* ===========================================================================
-*
+**
 * ZX Spectrum video memory
 *
 zx_vram:
      equ    >4000
-*
-* ===========================================================================
-*
+
+**
 * ZX Spectrum attribute memory
 *
 zx_aram:
        equ  >5800
+
+* ===========================================================================
+*
+* Lower memory
+*
+       aorg >2000
+       copy "lower_memory.a99"
+*
+lower_memory_end:
+       data -1
 *
 *===========================================================================
+*
+* Cartridge memory - requires Supercart
 *
 * Linear video memory buffer, length >1800
 *
 vidbuf:
        equ >6000
 *
-* 2048 bytes free after this.
+* Remaining 2 KiB
+*
+       aorg >7800
+       copy "start-menu.a99"
+       copy "game-over.a99"
+*
+cartridge_memory_end:
+       data -1
 *
 *===========================================================================
 *
@@ -134,7 +143,7 @@ vidbuf:
 upper_memory_end:
        data -1
 *
-*===========================================================================
+* ===========================================================================
 *
 * End of file
 *

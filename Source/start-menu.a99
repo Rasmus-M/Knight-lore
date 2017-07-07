@@ -1,0 +1,186 @@
+*
+* =============== S U B R O U T I N E =======================================
+*
+do_menu_selection:
+;RAM:BD0C AF                          xor     a
+;RAM:BD0D 32 B8 5B                    ld      (suppress_border), a
+;RAM:BD10 21 A2 BD                    ld      hl, #menu_colours
+;RAM:BD13 06 08                       ld      b, #8                                   ; # menu entries
+;RAM:BD15
+;RAM:BD15             loc_BD15:                                                       ; reset flashing attribute
+;RAM:BD15 CB BE                       res     7, (hl)
+;RAM:BD17 23                          inc     hl                                      ; next menu colour entry
+;RAM:BD18 10 FB                       djnz    loc_BD15                                ; loop until done
+;RAM:BD1A CD 67 D5                    call    clear_scrn_buffer
+;RAM:BD1D CD B3 BE                    call    display_menu
+;RAM:BD20 CD 89 BD                    call    flash_menu
+;RAM:BD23
+;RAM:BD23             menu_loop:
+;RAM:BD23 CD B3 BE                    call    display_menu
+;RAM:BD26 11 53 B2                    ld      de, #menu_tune
+;RAM:BD29 CD B6 B2                    call    play_audio_wait_key
+;RAM:BD2C 3E F7                       ld      a, #0xF7 ; '�'                          ; 1,2,3,4,5
+;RAM:BD2E CD F7 B5                    call    read_port
+;RAM:BD31 5F                          ld      e, a                                    ; store keybd status
+;RAM:BD32 3A A4 5B                    ld      a, (user_input_method)
+;RAM:BD35 32 A6 5B                    ld      (old_input_method), a
+;RAM:BD38 CB 43                       bit     0, e                                    ; '1' (keyboard)?
+;RAM:BD3A 28 02                       jr      Z, check_for_kempston_joystick          ; no, skip
+;RAM:BD3C E6 F9                       and     #0xF9 ; '�'                             ; mask off (bits 2,1)
+;RAM:BD3E
+;RAM:BD3E             check_for_kempston_joystick:                                    ; '2' (Kempston Joystick)?
+;RAM:BD3E CB 4B                       bit     1, e
+;RAM:BD40 28 04                       jr      Z, check_for_cursor_joystick            ; no, skip
+;RAM:BD42 E6 F9                       and     #0xF9 ; '�'                             ; mask off (bits 2,1)
+;RAM:BD44 F6 02                       or      #2                                      ; set bit 1
+;RAM:BD46
+;RAM:BD46             check_for_cursor_joystick:                                      ; '3' (Cursor Joystick)?
+;RAM:BD46 CB 53                       bit     2, e
+;RAM:BD48 28 04                       jr      Z, check_for_interface_ii               ; no, skip
+;RAM:BD4A E6 F9                       and     #0xF9 ; '�'                             ; mask off (bits 2,1)
+;RAM:BD4C F6 04                       or      #4                                      ; set bit 2
+;RAM:BD4E
+;RAM:BD4E             check_for_interface_ii:                                         ; '4' (Interface II)?
+;RAM:BD4E CB 5B                       bit     3, e
+;RAM:BD50 28 02                       jr      Z, check_for_directional_control        ; no, skip
+;RAM:BD52 F6 06                       or      #6                                      ; set bits 1,2
+;RAM:BD54
+;RAM:BD54             check_for_directional_control:                                  ; store
+;RAM:BD54 32 A4 5B                    ld      (user_input_method), a
+;RAM:BD57 21 D2 5B                    ld      hl, #debounce_5
+;RAM:BD5A CB 63                       bit     4, e                                    ; '5' (directional control)?
+;RAM:BD5C 28 27                       jr      Z, clr_debounce                         ; no, skip
+;RAM:BD5E CB 46                       bit     0, (hl)                                 ; was pressed last time?
+;RAM:BD60 20 0A                       jr      NZ, check_for_start_game                ; yes, skip
+;RAM:BD62 CB C6                       set     0, (hl)                                 ; set debounce
+;RAM:BD64 3A A4 5B                    ld      a, (user_input_method)
+;RAM:BD67 EE 08                       xor     #8                                      ; toggle directional
+;RAM:BD69 32 A4 5B                    ld      (user_input_method), a
+;RAM:BD6C
+;RAM:BD6C             check_for_start_game:
+;RAM:BD6C 21 A6 5B                    ld      hl, #old_input_method
+;RAM:BD6F BE                          cp      (hl)                                    ; changed input method?
+;RAM:BD70 C4 A3 B4                    call    NZ, toggle_audio_hw_x16                 ; yes
+;RAM:BD73 3E EF                       ld      a, #0xEF ; '�'                          ; 0,9,8,7,6
+;RAM:BD75 CD F7 B5                    call    read_port
+;RAM:BD78 CB 47                       bit     0, a                                    ; '0' (Start Game)?
+;RAM:BD7A C0                          ret     NZ                                      ; yes, exit
+;RAM:BD7B 21 A0 5B                    ld      hl, #seed_1
+;RAM:BD7E 34                          inc     (hl)                                    ; remember when BASIC games did this?
+;RAM:BD7F CD 89 BD                    call    flash_menu
+;RAM:BD82 C3 23 BD                    jp      menu_loop
+;RAM:BD85             ; ---------------------------------------------------------------------------
+;RAM:BD85
+;RAM:BD85             clr_debounce:
+;RAM:BD85 CB 86                       res     0, (hl)
+;RAM:BD87 18 E3                       jr      check_for_start_game                    ; continue
+       movb  @b02h,@user_input_method
+       rt
+*
+* End of function do_menu_selection
+*
+;RAM:BD89
+;RAM:BD89             ; =============== S U B R O U T I N E =======================================
+;RAM:BD89
+;RAM:BD89
+;RAM:BD89             flash_menu:
+;RAM:BD89 21 A3 BD                    ld      hl, # menu_colours+1
+;RAM:BD8C 3A A4 5B                    ld      a, (user_input_method)
+;RAM:BD8F 0F                          rrca
+;RAM:BD90 E6 03                       and     #3                                      ; keybd/joystick bits only
+;RAM:BD92 06 04                       ld      b, #4
+;RAM:BD94 CD A3 BE                    call    toggle_selected
+;RAM:BD97 CB BE                       res     7, (hl)
+;RAM:BD99 3A A4 5B                    ld      a, (user_input_method)
+;RAM:BD9C E6 08                       and     #8                                      ; directional only
+;RAM:BD9E C8                          ret     Z
+;RAM:BD9F CB FE                       set     7, (hl)
+;RAM:BDA1 C9                          ret
+;RAM:BDA1             ; End of function flash_menu
+;RAM:BDA1
+;RAM:BDA1             ; ---------------------------------------------------------------------------
+;RAM:BDA2             ; colours
+;RAM:BDA2 43 C4 44 44+menu_colours:   .db 0x43, 0xC4, 0x44, 0x44, 0x44, 0x45, 0x47, 0x47
+;RAM:BDAA             ; XY positions
+;RAM:BDAA 58 9F 30 8F+menu_xy:        .db 88, 159, 48, 143, 48, 127, 48, 111, 48, 95, 48, 79
+;RAM:BDAA 30 7F 30 6F+                .db 48, 63, 80, 39
+;RAM:BDBA             ; "KNIGHT LORE"
+;RAM:BDBA 14 17 12 10+menu_text:      .db 0x14, 0x17, 0x12, 0x10, 0x11, 0x1D, 0x26, 0x15, 0x18
+;RAM:BDBA 11 1D 26 15+                .db 0x1B, 0x8E
+;RAM:BDC5             ; "1 KEYBOARD"
+;RAM:BDC5 01 26 14 0E+                .db 1, 0x26, 0x14, 0xE, 0x22, 0xB, 0x18, 0xA, 0x1B, 0x8D
+;RAM:BDCF             ; "2 KEMPSTON JOYSTICK"
+;RAM:BDCF 02 26 14 0E+                .db 2, 0x26, 0x14, 0xE, 0x16, 0x19, 0x1C, 0x1D, 0x18, 0x17
+;RAM:BDCF 16 19 1C 1D+                .db 0x26, 0x13, 0x18, 0x22, 0x1C, 0x1D, 0x12, 0xC, 0x94
+;RAM:BDE2             ; "3 CURSOR   JOYSTICK"
+;RAM:BDE2 03 26 0C 1E+                .db 3, 0x26, 0xC, 0x1E, 0x1B, 0x1C, 0x18, 0x1B, 0x26, 0x26
+;RAM:BDE2 1B 1C 18 1B+                .db 0x26, 0x13, 0x18, 0x22, 0x1C, 0x1D, 0x12, 0xC, 0x94
+;RAM:BDF5             ; "4 INTERFACE II"
+;RAM:BDF5 04 26 12 17+                .db 4, 0x26, 0x12, 0x17, 0x1D, 0xE, 0x1B, 0xF, 0xA, 0xC
+;RAM:BDF5 1D 0E 1B 0F+                .db 0xE, 0x26, 0x12, 0x92
+;RAM:BE03             ; "5 DIRECTIONAL CONTROL"
+;RAM:BE03 05 26 0D 12+                .db 5, 0x26, 0xD, 0x12, 0x1B, 0xE, 0xC, 0x1D, 0x12, 0x18
+;RAM:BE03 1B 0E 0C 1D+                .db 0x17, 0xA, 0x15, 0x26, 0xC, 0x18, 0x17, 0x1D, 0x1B
+;RAM:BE03 12 18 17 0A+                .db 0x18, 0x95
+;RAM:BE18             ; "0 START GAME"
+;RAM:BE18 00 26 1C 1D+                .db 0, 0x26, 0x1C, 0x1D, 0xA, 0x1B, 0x1D, 0x26, 0x10, 0xA
+;RAM:BE18 0A 1B 1D 26+                .db 0x16, 0x8E
+;RAM:BE24             ; "(c) 1984 A.C.G."
+;RAM:BE24 25 26 01 09+                .db 0x25, 0x26, 1, 9, 8, 4, 0x26, 0xA, 0x24, 0xC, 0x24
+;RAM:BE24 08 04 26 0A+                .db 0x10, 0xA4
+;RAM:BE31
+;RAM:BE31             ; =============== S U B R O U T I N E =======================================
+;RAM:BE31
+;RAM:BE31
+;RAM:BE31             print_text_single_colour:
+;RAM:BE31 E5                          push    hl                                      ; save Y,X
+;RAM:BE32 21 08 61                    ld      hl, #font
+;RAM:BE35 22 C7 5B                    ld      (gfxbase_8x8), hl
+;RAM:BE38 C1                          pop     bc                                      ; BC = Y,X
+;RAM:BE39 C5                          push    bc
+;RAM:BE3A CD 11 D8                    call    calc_vidbuf_addr
+;RAM:BE3D 69                          ld      l, c
+;RAM:BE3E 60                          ld      h, b                                    ; HL = bitmap buffer address
+;RAM:BE3F 3A B6 5B                    ld      a, (tmp_attrib)
+;RAM:BE42 08                          ex      af, af'
+;RAM:BE43 18 11                       jr      loc_BE56
+;RAM:BE43             ; End of function print_text_single_colour
+;RAM:BE43
+;RAM:BEA3             ; =============== S U B R O U T I N E =======================================
+;RAM:BEA3
+;RAM:BEA3
+;RAM:BEA3             toggle_selected:
+;RAM:BEA3 A7                          and     a
+;RAM:BEA4 20 07                       jr      NZ, loc_BEAD
+;RAM:BEA6
+;RAM:BEA6             loc_BEA6:
+;RAM:BEA6 CB FE                       set     7, (hl)
+;RAM:BEA8 18 05                       jr      loc_BEAF
+;RAM:BEAA             ; ---------------------------------------------------------------------------
+;RAM:BEAA
+;RAM:BEAA             loc_BEAA:
+;RAM:BEAA 3D                          dec     a
+;RAM:BEAB 28 F9                       jr      Z, loc_BEA6
+;RAM:BEAD
+;RAM:BEAD             loc_BEAD:
+;RAM:BEAD CB BE                       res     7, (hl)
+;RAM:BEAF
+;RAM:BEAF             loc_BEAF:
+;RAM:BEAF 23                          inc     hl
+;RAM:BEB0 10 F8                       djnz    loc_BEAA
+;RAM:BEB2 C9                          ret
+;RAM:BEB2             ; End of function toggle_selected
+;RAM:BEB2
+;RAM:BEB3
+;RAM:BEB3             ; =============== S U B R O U T I N E =======================================
+;RAM:BEB3
+;RAM:BEB3
+;RAM:BEB3             display_menu:
+;RAM:BEB3 11 A2 BD                    ld      de, #menu_colours
+;RAM:BEB6 D9                          exx                                             ; select param set 2
+;RAM:BEB7 21 AA BD                    ld      hl, #menu_xy
+;RAM:BEBA 11 BA BD                    ld      de, #menu_text
+;RAM:BEBD 06 08                       ld      b, #8                                   ; 8 lines to display
+;RAM:BEBD
+;RAM:BEBD             ; End of function display_menu
+;RAM:BEBF

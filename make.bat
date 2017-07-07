@@ -11,5 +11,6 @@ xdm99.py knightlore.dsk -a kl1 -n KL1
 xdm99.py knightlore.dsk -a kl2 -n KL2
 xdm99.py knightlore.dsk -a kl3 -n KL3
 xdm99.py knightlore.dsk -a kl4 -n KL4
+xdm99.py knightlore.dsk -a kl5 -n KL5
 
 :end

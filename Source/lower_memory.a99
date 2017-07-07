@@ -1302,249 +1302,6 @@ guard_S:                                                        ; dY=-2, dX=0
 !      swpb hl
 ;RAM:BA20 18 C9                       jr      next_guard_dir
        jmp  next_guard_dir
-* ---------------------------------------------------------------------------
-*
-* START OF FUNCTION CHUNK FOR game_over
-*
-game_over:
-;RAM:BA22 3A C3 5B                    ld      a, (all_objs_in_cauldron)
-;RAM:BA25 A7                          and     a
-;RAM:BA26 C2 AB BA                    jp      NZ, game_complete_msg
-;RAM:BA29
-;RAM:BA29             loc_BA29:
-;RAM:BA29 CD 67 D5                    call    clear_scrn_buffer
-;RAM:BA2C CD 5F D5                    call    clear_scrn
-;RAM:BA2F 11 4C BB                    ld      de, #gameover_colours                   ; game over status screen
-;RAM:BA32 D9                          exx
-;RAM:BA33 21 52 BB                    ld      hl, #gameover_xy                        ; game over status screen
-;RAM:BA36 11 5E BB                    ld      de, #a_GAME_OVER
-;RAM:BA39 06 06                       ld      b, #6
-;RAM:BA3B CD BF BE                    call    display_text_list
-;RAM:BA3E 21 E2 E8                    ld      hl, # vidbuf+0xFEF                      ; video buffer address
-;RAM:BA41 11 B9 5B                    ld      de, #days
-;RAM:BA44 06 01                       ld      b, #1                                   ; 1 BCD digit pair
-;RAM:BA46 CD AE BC                    call    print_BCD_number
-;RAM:BA49 CD 10 BC                    call    calc_and_display_percent
-;RAM:BA4C 3A C6 5B                    ld      a, (num_scrns_visited)
-;RAM:BA4F 07                          rlca
-;RAM:BA50 E6 C0                       and     #0xC0 ; '�'
-;RAM:BA52 4F                          ld      c, a
-;RAM:BA53 3A C3 5B                    ld      a, (all_objs_in_cauldron)
-;RAM:BA56 E6 01                       and     #1
-;RAM:BA58 B1                          or      c
-;RAM:BA59 07                          rlca
-;RAM:BA5A 07                          rlca
-;RAM:BA5B 07                          rlca
-;RAM:BA5C E6 0E                       and     #0xE
-;RAM:BA5E 6F                          ld      l, a
-;RAM:BA5F 26 00                       ld      h, #0
-;RAM:BA61 01 B7 BB                    ld      bc, #rating_tbl
-;RAM:BA64 09                          add     hl, bc                                  ; ptr to rating text entry
-;RAM:BA65 5E                          ld      e, (hl)
-;RAM:BA66 23                          inc     hl
-;RAM:BA67 56                          ld      d, (hl)                                 ; DE=addr of rating string
-;RAM:BA68 21 58 27                    ld      hl, #0x2758
-;RAM:BA6B CD 45 BE                    call    print_text_std_font
-;RAM:BA6E 11 BB 5B                    ld      de, #objects_put_in_cauldron
-;RAM:BA71 1A                          ld      a, (de)
-;RAM:BA72 D6 0A                       sub     #10                                     ; less than 10?
-;RAM:BA74 38 03                       jr      C, loc_BA79                             ; yes, skip
-;RAM:BA76 F6 10                       or      #0x10                                   ; convert to BCD
-;RAM:BA78 12                          ld      (de), a                                 ; store BCD
-;RAM:BA79
-;RAM:BA79             loc_BA79:                                                       ; video buffer address
-;RAM:BA79 21 EA E2                    ld      hl, # vidbuf+0x9F7
-;RAM:BA7C 06 01                       ld      b, #1                                   ; 1 BCD digit pair
-;RAM:BA7E CD AE BC                    call    print_BCD_number
-;RAM:BA81 CD 96 D2                    call    print_border
-;RAM:BA84 CD 6F D5                    call    update_screen
-;RAM:BA87
-;RAM:BA87             loc_BA87:
-;RAM:BA87 AF                          xor     a
-;RAM:BA88 CD F7 B5                    call    read_port
-;RAM:BA8B 20 FA                       jr      NZ, loc_BA87                            ; wait for key release
-;RAM:BA8D 11 18 B2                    ld      de, #game_over_tune
-;RAM:BA90 CD BE B2                    call    play_audio_until_keypress
-;RAM:BA93 06 08                       ld      b, #8                                   ; how long to wait
-;RAM:BA95 CD 9B BA                    call    wait_for_key_press
-;RAM:BA98             ;
-;RAM:BA98             ; the stack has at least 1 return address on it
-;RAM:BA98             ; but the main game loop re-init's the stack each iteration
-;RAM:BA98             ;
-;RAM:BA98 C3 7F AF                    jp      start_menu
-       b    @start_menu
-*
-* END OF FUNCTION CHUNK FOR game_over
-*
-;RAM:BA9B             ; =============== S U B R O U T I N E =======================================
-;RAM:BA9B
-;RAM:BA9B
-;RAM:BA9B             wait_for_key_press:
-;RAM:BA9B 21 00 00                    ld      hl, #0
-;RAM:BA9E
-;RAM:BA9E             loc_BA9E:
-;RAM:BA9E AF                          xor     a
-;RAM:BA9F CD F7 B5                    call    read_port
-;RAM:BAA2 C0                          ret     NZ
-;RAM:BAA3 2B                          dec     hl
-;RAM:BAA4 7C                          ld      a, h
-;RAM:BAA5 B5                          or      l
-;RAM:BAA6 20 F6                       jr      NZ, loc_BA9E                            ; loop B times
-;RAM:BAA8 10 F4                       djnz    loc_BA9E
-;RAM:BAAA C9                          ret
-;RAM:BAAA             ; End of function wait_for_key_press
-;RAM:BAAA
-;RAM:BAAB             ; ---------------------------------------------------------------------------
-;RAM:BAAB             ; START OF FUNCTION CHUNK FOR lose_life
-;RAM:BAAB
-;RAM:BAAB             game_complete_msg:
-;RAM:BAAB CD 67 D5                    call    clear_scrn_buffer
-;RAM:BAAE CD 5F D5                    call    clear_scrn
-;RAM:BAB1 11 D2 BA                    ld      de, #complete_colours
-;RAM:BAB4 D9                          exx
-;RAM:BAB5 21 D8 BA                    ld      hl, #complete_xy
-;RAM:BAB8 11 E4 BA                    ld      de, #the_potion_casts
-;RAM:BABB 06 06                       ld      b, #6
-;RAM:BABD AF                          xor     a
-;RAM:BABE 32 B8 5B                    ld      (suppress_border), a
-;RAM:BAC1 CD BF BE                    call    display_text_list
-;RAM:BAC4 11 39 B2                    ld      de, #game_complete_tune
-;RAM:BAC7 CD CF B2                    call    play_audio
-;RAM:BACA 06 08                       ld      b, #8
-;RAM:BACC CD 9B BA                    call    wait_for_key_press
-;RAM:BACF C3 29 BA                    jp      loc_BA29
-;RAM:BACF             ; END OF FUNCTION CHUNK FOR lose_life
-;RAM:BACF             ; ---------------------------------------------------------------------------
-;RAM:BAD2 47 46 45 44+complete_colours:.db 0x47, 0x46, 0x45, 0x44, 0x43, 0x42
-;RAM:BAD8 40 87 40 77+complete_xy:    .db 0x40, 0x87, 0x40, 0x77, 0x30, 0x67, 0x30, 0x57, 0x50
-;RAM:BAD8 30 67 30 57+                .db 0x47, 0x30, 0x37
-;RAM:BAE4             ; "THE POTION CASTS"
-;RAM:BAE4 1D 11 0E 26+the_potion_casts:.db 0x1D, 0x11, 0xE, 0x26, 0x19, 0x18, 0x1D, 0x12, 0x18
-;RAM:BAE4 19 18 1D 12+                .db 0x17, 0x26, 0xC, 0xA, 0x1C, 0x1D, 0x9C
-;RAM:BAF4             ; "ITS MAGIC STRONG"
-;RAM:BAF4 12 1D 1C 26+                .db 0x12, 0x1D, 0x1C, 0x26, 0x16, 0xA, 0x10, 0x12, 0xC
-;RAM:BAF4 16 0A 10 12+                .db 0x26, 0x1C, 0x1D, 0x1B, 0x18, 0x17, 0x90
-;RAM:BB04             ; "ALL EVIL MUST BEWARE"
-;RAM:BB04 0A 15 15 26+                .db 0xA, 0x15, 0x15, 0x26, 0xE, 0x1F, 0x12, 0x15, 0x26
-;RAM:BB04 0E 1F 12 15+                .db 0x16, 0x1E, 0x1C, 0x1D, 0x26, 0xB, 0xE, 0x20, 0xA
-;RAM:BB04 26 16 1E 1C+                .db 0x1B, 0x8E
-;RAM:BB18             ; "THE SPELL HAS BROKEN"
-;RAM:BB18 1D 11 0E 26+                .db 0x1D, 0x11, 0xE, 0x26, 0x1C, 0x19, 0xE, 0x15, 0x15
-;RAM:BB18 1C 19 0E 15+                .db 0x26, 0x11, 0xA, 0x1C, 0x26, 0xB, 0x1B, 0x18, 0x14
-;RAM:BB18 15 26 11 0A+                .db 0xE, 0x97
-;RAM:BB2C             ; "YOU ARE FREE"
-;RAM:BB2C 22 18 1E 26+                .db 0x22, 0x18, 0x1E, 0x26, 0xA, 0x1B, 0xE, 0x26, 0xF
-;RAM:BB2C 0A 1B 0E 26+                .db 0x1B, 0xE, 0x8E
-;RAM:BB38             ; "GO FORTH TO MIRE MARE"
-;RAM:BB38 10 18 26 0F+                .db 0x10, 0x18, 0x26, 0xF, 0x18, 0x1B, 0x1D, 0x11, 0x26
-;RAM:BB38 18 1B 1D 11+                .db 0x1D, 0x18, 0x26, 0x16, 0x12, 0x1B, 0xE, 0x16, 0xA
-;RAM:BB38 26 1D 18 26+                .db 0x1B, 0x8E
-;RAM:BB4C             ; Game Over status screen
-;RAM:BB4C 47 46 45 45+gameover_colours:.db 0x47, 0x46, 0x45, 0x45, 0x43, 0x44
-;RAM:BB52 58 9F 50 7F+gameover_xy:    .db 0x58, 0x9F, 0x50, 0x7F, 0x30, 0x6F, 0x40, 0x5F, 0x30
-;RAM:BB52 30 6F 40 5F+                .db 0x4F, 0x48, 0x37
-;RAM:BB5E             ; "GAME  OVER"
-;RAM:BB5E 10 0A 16 0E+a_GAME_OVER:    .db 0x10, 0xA, 0x16, 0xE, 0x26, 0x26, 0x18, 0x1F, 0xE
-;RAM:BB5E 26 26 18 1F+                .db 0x9B
-;RAM:BB68             ; "TIME    DAYS"
-;RAM:BB68 1D 12 16 0E+                .db 0x1D, 0x12, 0x16, 0xE, 0x26, 0x26, 0x26, 0x26, 0xD
-;RAM:BB68 26 26 26 26+                .db 0xA, 0x22, 0x9C
-;RAM:BB74             ; "PERCENTAGE OF QUEST"
-;RAM:BB74 19 0E 1B 0C+                .db 0x19, 0xE, 0x1B, 0xC, 0xE, 0x17, 0x1D, 0xA, 0x10, 0xE
-;RAM:BB74 0E 17 1D 0A+                .db 0x26, 0x18, 0xF, 0x26, 0x1A, 0x1E, 0xE, 0x1C, 0x9D
-;RAM:BB87             ; "COMPLETED     %"
-;RAM:BB87 0C 18 16 19+                .db 0xC, 0x18, 0x16, 0x19, 0x15, 0xE, 0x1D, 0xE, 0xD, 0x26
-;RAM:BB87 15 0E 1D 0E+                .db 0x26, 0x26, 0x26, 0x26, 0xA7
-;RAM:BB96             ; "CHARMS COLLECTED"
-;RAM:BB96 0C 11 0A 1B+                .db 0xC, 0x11, 0xA, 0x1B, 0x16, 0x1C, 0x26, 0xC, 0x18
-;RAM:BB96 16 1C 26 0C+                .db 0x15, 0x15, 0xE, 0xC, 0x1D, 0xE, 0xD, 0x26, 0x26, 0xA6
-;RAM:BBA9             ; "OVERALL RATING"
-;RAM:BBA9 18 1F 0E 1B+                .db 0x18, 0x1F, 0xE, 0x1B, 0xA, 0x15, 0x15, 0x26, 0x1B
-;RAM:BBA9 0A 15 15 26+                .db 0xA, 0x1D, 0x12, 0x17, 0x90
-;RAM:BBB7 C7 BB       rating_tbl:     .dw a_POOR
-;RAM:BBB9 CF BB                       .dw a_AVERAGE
-;RAM:BBBB D8 BB                       .dw a_FAIR
-;RAM:BBBD E0 BB                       .dw a_GOOD
-;RAM:BBBF E8 BB                       .dw a_EXCELLENT
-;RAM:BBC1 F2 BB                       .dw a_MARVELLOUS
-;RAM:BBC3 FD BB                       .dw a_HERO
-;RAM:BBC5 05 BC                       .dw a_ADVENTURER
-;RAM:BBC7 42 26 26 26+a_POOR:         .db 0x42, 0x26, 0x26, 0x26, 0x19, 0x18, 0x18, 0x9B
-;RAM:BBCF 42 26 0A 1F+a_AVERAGE:      .db 0x42, 0x26, 0xA, 0x1F, 0xE, 0x1B, 0xA, 0x10, 0x8E
-;RAM:BBD8 42 26 26 26+a_FAIR:         .db 0x42, 0x26, 0x26, 0x26, 0xF, 0xA, 0x12, 0x9B
-;RAM:BBE0 42 26 26 26+a_GOOD:         .db 0x42, 0x26, 0x26, 0x26, 0x10, 0x18, 0x18, 0x8D
-;RAM:BBE8 42 0E 21 0C+a_EXCELLENT:    .db 0x42, 0xE, 0x21, 0xC, 0xE, 0x15, 0x15, 0xE, 0x17, 0x9D
-;RAM:BBF2 42 16 0A 1B+a_MARVELLOUS:   .db 0x42, 0x16, 0xA, 0x1B, 0x1F, 0xE, 0x15, 0x15, 0x18
-;RAM:BBF2 1F 0E 15 15+                .db 0x1E, 0x9C
-;RAM:BBFD 42 26 26 26+a_HERO:         .db 0x42, 0x26, 0x26, 0x26, 0x11, 0xE, 0x1B, 0x98
-;RAM:BC05 42 0A 0D 1F+a_ADVENTURER:   .db 0x42, 0xA, 0xD, 0x1F, 0xE, 0x17, 0x1D, 0x1E, 0x1B
-;RAM:BC05 0E 17 1D 1E+                .db 0xE, 0x9B
-;RAM:BC10
-;RAM:BC10             ; =============== S U B R O U T I N E =======================================
-;RAM:BC10
-;RAM:BC10
-;RAM:BC10             calc_and_display_percent:
-;RAM:BC10 1E 00                       ld      e, #0                                   ; zero room count
-;RAM:BC12 01 20 08                    ld      bc, #0x820                              ; B=8 bits/byte
-;RAM:BC15 21 E8 5B                    ld      hl, #scrn_visited
-;RAM:BC18
-;RAM:BC18             count_screens:
-;RAM:BC18 C5                          push    bc
-;RAM:BC19 7E                          ld      a, (hl)
-;RAM:BC1A 23                          inc     hl
-;RAM:BC1B
-;RAM:BC1B             loc_BC1B:
-;RAM:BC1B 0F                          rrca
-;RAM:BC1C 30 01                       jr      NC, loc_BC1F
-;RAM:BC1E 1C                          inc     e                                       ; room count
-;RAM:BC1F
-;RAM:BC1F             loc_BC1F:
-;RAM:BC1F 10 FA                       djnz    loc_BC1B
-;RAM:BC21 C1                          pop     bc
-;RAM:BC22 0D                          dec     c                                       ; done all screens?
-;RAM:BC23 20 F3                       jr      NZ, count_screens                       ; no, loop
-;RAM:BC25 7B                          ld      a, e
-;RAM:BC26 3D                          dec     a                                       ; -1? don't count 1st room?
-;RAM:BC27 32 C6 5B                    ld      (num_scrns_visited), a                  ; store for ratings calculations
-;RAM:BC2A 3A BB 5B                    ld      a, (objects_put_in_cauldron)
-;RAM:BC2D CB 27                       sla     a                                       ; x2
-;RAM:BC2F 83                          add     a, e
-;RAM:BC30 5F                          ld      e, a
-;RAM:BC31 01 1A A4                    ld      bc, #0xA41A                             ; 0.64102 * (128 + 14*2) = 99.999%
-;RAM:BC34 21 00 00                    ld      hl, #0
-;RAM:BC37 AF                          xor     a
-;RAM:BC38
-;RAM:BC38             loc_BC38:
-;RAM:BC38 09                          add     hl, bc
-;RAM:BC39 CE 00                       adc     a, #0
-;RAM:BC3B 27                          daa
-;RAM:BC3C 1D                          dec     e
-;RAM:BC3D 20 F9                       jr      NZ, loc_BC38                            ; calculate percentage complete (BCD)
-;RAM:BC3F 01 28 00                    ld      bc, #0x28 ; '('                         ; $A410*156 = $63FFD8+$28 = $640000
-;RAM:BC42 09                          add     hl, bc
-;RAM:BC43 CE 00                       adc     a, #0
-;RAM:BC45 27                          daa                                             ; fix rounding to 100%
-;RAM:BC46 32 CA 5B                    ld      (percent_lsw), a                        ; store least significant 2 BCD digits
-;RAM:BC49 3E 00                       ld      a, #0
-;RAM:BC4B CE 00                       adc     a, #0
-;RAM:BC4D 27                          daa
-;RAM:BC4E 32 C9 5B                    ld      (percent_msw), a                        ; store most significant BCD digit
-;RAM:BC51 21 E6 E4                    ld      hl, # vidbuf+0xBF3
-;RAM:BC54 11 C9 5B                    ld      de, #percent_msw
-;RAM:BC57 06 01                       ld      b, #1                                   ; 1 pair = 2 digits
-;RAM:BC59 1A                          ld      a, (de)
-;RAM:BC5A A7                          and     a                                       ; 100%?
-;RAM:BC5B 28 04                       jr      Z, loc_BC61                             ; no, skip
-;RAM:BC5D 04                          inc     b                                       ; 2 pair = 4 digits
-;RAM:BC5E C3 C0 BC                    jp      print_BCD_lsd
-;RAM:BC61             ; ---------------------------------------------------------------------------
-;RAM:BC61
-;RAM:BC61             loc_BC61:
-;RAM:BC61 23                          inc     hl
-;RAM:BC62 13                          inc     de                                      ; skip over leading zero
-;RAM:BC63 C3 AE BC                    jp      print_BCD_number
-;RAM:BC63             ; End of function calc_and_display_percent
-;RAM:BC63
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -1706,154 +1463,6 @@ display_day:
 *
 * =============== S U B R O U T I N E =======================================
 *
-do_menu_selection:
-;RAM:BD0C AF                          xor     a
-;RAM:BD0D 32 B8 5B                    ld      (suppress_border), a
-;RAM:BD10 21 A2 BD                    ld      hl, #menu_colours
-;RAM:BD13 06 08                       ld      b, #8                                   ; # menu entries
-;RAM:BD15
-;RAM:BD15             loc_BD15:                                                       ; reset flashing attribute
-;RAM:BD15 CB BE                       res     7, (hl)
-;RAM:BD17 23                          inc     hl                                      ; next menu colour entry
-;RAM:BD18 10 FB                       djnz    loc_BD15                                ; loop until done
-;RAM:BD1A CD 67 D5                    call    clear_scrn_buffer
-;RAM:BD1D CD B3 BE                    call    display_menu
-;RAM:BD20 CD 89 BD                    call    flash_menu
-;RAM:BD23
-;RAM:BD23             menu_loop:
-;RAM:BD23 CD B3 BE                    call    display_menu
-;RAM:BD26 11 53 B2                    ld      de, #menu_tune
-;RAM:BD29 CD B6 B2                    call    play_audio_wait_key
-;RAM:BD2C 3E F7                       ld      a, #0xF7 ; '�'                          ; 1,2,3,4,5
-;RAM:BD2E CD F7 B5                    call    read_port
-;RAM:BD31 5F                          ld      e, a                                    ; store keybd status
-;RAM:BD32 3A A4 5B                    ld      a, (user_input_method)
-;RAM:BD35 32 A6 5B                    ld      (old_input_method), a
-;RAM:BD38 CB 43                       bit     0, e                                    ; '1' (keyboard)?
-;RAM:BD3A 28 02                       jr      Z, check_for_kempston_joystick          ; no, skip
-;RAM:BD3C E6 F9                       and     #0xF9 ; '�'                             ; mask off (bits 2,1)
-;RAM:BD3E
-;RAM:BD3E             check_for_kempston_joystick:                                    ; '2' (Kempston Joystick)?
-;RAM:BD3E CB 4B                       bit     1, e
-;RAM:BD40 28 04                       jr      Z, check_for_cursor_joystick            ; no, skip
-;RAM:BD42 E6 F9                       and     #0xF9 ; '�'                             ; mask off (bits 2,1)
-;RAM:BD44 F6 02                       or      #2                                      ; set bit 1
-;RAM:BD46
-;RAM:BD46             check_for_cursor_joystick:                                      ; '3' (Cursor Joystick)?
-;RAM:BD46 CB 53                       bit     2, e
-;RAM:BD48 28 04                       jr      Z, check_for_interface_ii               ; no, skip
-;RAM:BD4A E6 F9                       and     #0xF9 ; '�'                             ; mask off (bits 2,1)
-;RAM:BD4C F6 04                       or      #4                                      ; set bit 2
-;RAM:BD4E
-;RAM:BD4E             check_for_interface_ii:                                         ; '4' (Interface II)?
-;RAM:BD4E CB 5B                       bit     3, e
-;RAM:BD50 28 02                       jr      Z, check_for_directional_control        ; no, skip
-;RAM:BD52 F6 06                       or      #6                                      ; set bits 1,2
-;RAM:BD54
-;RAM:BD54             check_for_directional_control:                                  ; store
-;RAM:BD54 32 A4 5B                    ld      (user_input_method), a
-;RAM:BD57 21 D2 5B                    ld      hl, #debounce_5
-;RAM:BD5A CB 63                       bit     4, e                                    ; '5' (directional control)?
-;RAM:BD5C 28 27                       jr      Z, clr_debounce                         ; no, skip
-;RAM:BD5E CB 46                       bit     0, (hl)                                 ; was pressed last time?
-;RAM:BD60 20 0A                       jr      NZ, check_for_start_game                ; yes, skip
-;RAM:BD62 CB C6                       set     0, (hl)                                 ; set debounce
-;RAM:BD64 3A A4 5B                    ld      a, (user_input_method)
-;RAM:BD67 EE 08                       xor     #8                                      ; toggle directional
-;RAM:BD69 32 A4 5B                    ld      (user_input_method), a
-;RAM:BD6C
-;RAM:BD6C             check_for_start_game:
-;RAM:BD6C 21 A6 5B                    ld      hl, #old_input_method
-;RAM:BD6F BE                          cp      (hl)                                    ; changed input method?
-;RAM:BD70 C4 A3 B4                    call    NZ, toggle_audio_hw_x16                 ; yes
-;RAM:BD73 3E EF                       ld      a, #0xEF ; '�'                          ; 0,9,8,7,6
-;RAM:BD75 CD F7 B5                    call    read_port
-;RAM:BD78 CB 47                       bit     0, a                                    ; '0' (Start Game)?
-;RAM:BD7A C0                          ret     NZ                                      ; yes, exit
-;RAM:BD7B 21 A0 5B                    ld      hl, #seed_1
-;RAM:BD7E 34                          inc     (hl)                                    ; remember when BASIC games did this?
-;RAM:BD7F CD 89 BD                    call    flash_menu
-;RAM:BD82 C3 23 BD                    jp      menu_loop
-;RAM:BD85             ; ---------------------------------------------------------------------------
-;RAM:BD85
-;RAM:BD85             clr_debounce:
-;RAM:BD85 CB 86                       res     0, (hl)
-;RAM:BD87 18 E3                       jr      check_for_start_game                    ; continue
-       movb  @b02h,@user_input_method
-       rt
-*
-* End of function do_menu_selection
-*
-;RAM:BD89
-;RAM:BD89             ; =============== S U B R O U T I N E =======================================
-;RAM:BD89
-;RAM:BD89
-;RAM:BD89             flash_menu:
-;RAM:BD89 21 A3 BD                    ld      hl, # menu_colours+1
-;RAM:BD8C 3A A4 5B                    ld      a, (user_input_method)
-;RAM:BD8F 0F                          rrca
-;RAM:BD90 E6 03                       and     #3                                      ; keybd/joystick bits only
-;RAM:BD92 06 04                       ld      b, #4
-;RAM:BD94 CD A3 BE                    call    toggle_selected
-;RAM:BD97 CB BE                       res     7, (hl)
-;RAM:BD99 3A A4 5B                    ld      a, (user_input_method)
-;RAM:BD9C E6 08                       and     #8                                      ; directional only
-;RAM:BD9E C8                          ret     Z
-;RAM:BD9F CB FE                       set     7, (hl)
-;RAM:BDA1 C9                          ret
-;RAM:BDA1             ; End of function flash_menu
-;RAM:BDA1
-;RAM:BDA1             ; ---------------------------------------------------------------------------
-;RAM:BDA2             ; colours
-;RAM:BDA2 43 C4 44 44+menu_colours:   .db 0x43, 0xC4, 0x44, 0x44, 0x44, 0x45, 0x47, 0x47
-;RAM:BDAA             ; XY positions
-;RAM:BDAA 58 9F 30 8F+menu_xy:        .db 88, 159, 48, 143, 48, 127, 48, 111, 48, 95, 48, 79
-;RAM:BDAA 30 7F 30 6F+                .db 48, 63, 80, 39
-;RAM:BDBA             ; "KNIGHT LORE"
-;RAM:BDBA 14 17 12 10+menu_text:      .db 0x14, 0x17, 0x12, 0x10, 0x11, 0x1D, 0x26, 0x15, 0x18
-;RAM:BDBA 11 1D 26 15+                .db 0x1B, 0x8E
-;RAM:BDC5             ; "1 KEYBOARD"
-;RAM:BDC5 01 26 14 0E+                .db 1, 0x26, 0x14, 0xE, 0x22, 0xB, 0x18, 0xA, 0x1B, 0x8D
-;RAM:BDCF             ; "2 KEMPSTON JOYSTICK"
-;RAM:BDCF 02 26 14 0E+                .db 2, 0x26, 0x14, 0xE, 0x16, 0x19, 0x1C, 0x1D, 0x18, 0x17
-;RAM:BDCF 16 19 1C 1D+                .db 0x26, 0x13, 0x18, 0x22, 0x1C, 0x1D, 0x12, 0xC, 0x94
-;RAM:BDE2             ; "3 CURSOR   JOYSTICK"
-;RAM:BDE2 03 26 0C 1E+                .db 3, 0x26, 0xC, 0x1E, 0x1B, 0x1C, 0x18, 0x1B, 0x26, 0x26
-;RAM:BDE2 1B 1C 18 1B+                .db 0x26, 0x13, 0x18, 0x22, 0x1C, 0x1D, 0x12, 0xC, 0x94
-;RAM:BDF5             ; "4 INTERFACE II"
-;RAM:BDF5 04 26 12 17+                .db 4, 0x26, 0x12, 0x17, 0x1D, 0xE, 0x1B, 0xF, 0xA, 0xC
-;RAM:BDF5 1D 0E 1B 0F+                .db 0xE, 0x26, 0x12, 0x92
-;RAM:BE03             ; "5 DIRECTIONAL CONTROL"
-;RAM:BE03 05 26 0D 12+                .db 5, 0x26, 0xD, 0x12, 0x1B, 0xE, 0xC, 0x1D, 0x12, 0x18
-;RAM:BE03 1B 0E 0C 1D+                .db 0x17, 0xA, 0x15, 0x26, 0xC, 0x18, 0x17, 0x1D, 0x1B
-;RAM:BE03 12 18 17 0A+                .db 0x18, 0x95
-;RAM:BE18             ; "0 START GAME"
-;RAM:BE18 00 26 1C 1D+                .db 0, 0x26, 0x1C, 0x1D, 0xA, 0x1B, 0x1D, 0x26, 0x10, 0xA
-;RAM:BE18 0A 1B 1D 26+                .db 0x16, 0x8E
-;RAM:BE24             ; "(c) 1984 A.C.G."
-;RAM:BE24 25 26 01 09+                .db 0x25, 0x26, 1, 9, 8, 4, 0x26, 0xA, 0x24, 0xC, 0x24
-;RAM:BE24 08 04 26 0A+                .db 0x10, 0xA4
-;RAM:BE31
-;RAM:BE31             ; =============== S U B R O U T I N E =======================================
-;RAM:BE31
-;RAM:BE31
-;RAM:BE31             print_text_single_colour:
-;RAM:BE31 E5                          push    hl                                      ; save Y,X
-;RAM:BE32 21 08 61                    ld      hl, #font
-;RAM:BE35 22 C7 5B                    ld      (gfxbase_8x8), hl
-;RAM:BE38 C1                          pop     bc                                      ; BC = Y,X
-;RAM:BE39 C5                          push    bc
-;RAM:BE3A CD 11 D8                    call    calc_vidbuf_addr
-;RAM:BE3D 69                          ld      l, c
-;RAM:BE3E 60                          ld      h, b                                    ; HL = bitmap buffer address
-;RAM:BE3F 3A B6 5B                    ld      a, (tmp_attrib)
-;RAM:BE42 08                          ex      af, af'
-;RAM:BE43 18 11                       jr      loc_BE56
-;RAM:BE43             ; End of function print_text_single_colour
-;RAM:BE43
-*
-* =============== S U B R O U T I N E =======================================
-*
 print_text_std_font:
        mov  r11,*sp+
 ;RAM:BE45 E5                          push    hl
@@ -2012,79 +1621,6 @@ loc_BE91:
 *
 * End of function print_8x8
 *
-;RAM:BEA3             ; =============== S U B R O U T I N E =======================================
-;RAM:BEA3
-;RAM:BEA3
-;RAM:BEA3             toggle_selected:
-;RAM:BEA3 A7                          and     a
-;RAM:BEA4 20 07                       jr      NZ, loc_BEAD
-;RAM:BEA6
-;RAM:BEA6             loc_BEA6:
-;RAM:BEA6 CB FE                       set     7, (hl)
-;RAM:BEA8 18 05                       jr      loc_BEAF
-;RAM:BEAA             ; ---------------------------------------------------------------------------
-;RAM:BEAA
-;RAM:BEAA             loc_BEAA:
-;RAM:BEAA 3D                          dec     a
-;RAM:BEAB 28 F9                       jr      Z, loc_BEA6
-;RAM:BEAD
-;RAM:BEAD             loc_BEAD:
-;RAM:BEAD CB BE                       res     7, (hl)
-;RAM:BEAF
-;RAM:BEAF             loc_BEAF:
-;RAM:BEAF 23                          inc     hl
-;RAM:BEB0 10 F8                       djnz    loc_BEAA
-;RAM:BEB2 C9                          ret
-;RAM:BEB2             ; End of function toggle_selected
-;RAM:BEB2
-;RAM:BEB3
-;RAM:BEB3             ; =============== S U B R O U T I N E =======================================
-;RAM:BEB3
-;RAM:BEB3
-;RAM:BEB3             display_menu:
-;RAM:BEB3 11 A2 BD                    ld      de, #menu_colours
-;RAM:BEB6 D9                          exx                                             ; select param set 2
-;RAM:BEB7 21 AA BD                    ld      hl, #menu_xy
-;RAM:BEBA 11 BA BD                    ld      de, #menu_text
-;RAM:BEBD 06 08                       ld      b, #8                                   ; 8 lines to display
-;RAM:BEBD             ; End of function display_menu
-;RAM:BEBD
-;RAM:BEBF             ; DE  = attributes
-;RAM:BEBF             ; HL' = coordinates
-;RAM:BEBF             ; DE' = text entries
-;RAM:BEBF             ;  B' = number to display
-;RAM:BEBF
-;RAM:BEBF             ; =============== S U B R O U T I N E =======================================
-;RAM:BEBF
-;RAM:BEBF
-;RAM:BEBF             display_text_list:
-;RAM:BEBF D9                          exx                                             ; select param set 1
-;RAM:BEC0 1A                          ld      a, (de)                                 ; get attribute
-;RAM:BEC1 32 B6 5B                    ld      (tmp_attrib), a                         ; store
-;RAM:BEC4 13                          inc     de                                      ; next attribute
-;RAM:BEC5 D9                          exx                                             ; select param set 2
-;RAM:BEC6 C5                          push    bc                                      ; number to display
-;RAM:BEC7 7E                          ld      a, (hl)                                 ; get X
-;RAM:BEC8 23                          inc     hl
-;RAM:BEC9 23                          inc     hl
-;RAM:BECA E5                          push    hl
-;RAM:BECB 2B                          dec     hl
-;RAM:BECC 66                          ld      h, (hl)                                 ; H = Y
-;RAM:BECD 6F                          ld      l, a                                    ; L = X
-;RAM:BECE CD 31 BE                    call    print_text_single_colour
-;RAM:BED1 E1                          pop     hl
-;RAM:BED2 C1                          pop     bc
-;RAM:BED3 10 EA                       djnz    display_text_list                       ; loop through list of messages
-;RAM:BED5 3A B8 5B                    ld      a, (suppress_border)
-;RAM:BED8 A7                          and     a                                       ; show border?
-;RAM:BED9 C0                          ret     NZ                                      ; no, return
-;RAM:BEDA 3C                          inc     a
-;RAM:BEDB 32 B8 5B                    ld      (suppress_border), a
-;RAM:BEDE CD 96 D2                    call    print_border
-;RAM:BEE1 C3 6F D5                    jp      update_screen
-;RAM:BEE1             ; End of function display_text_list
-;RAM:BEE1
-;RAM:BEE4
 * =============== S U B R O U T I N E =======================================
 *
 multiple_print_sprite:
@@ -6370,233 +5906,6 @@ render_done:
 *
 * =============== S U B R O U T I N E =======================================
 *
-check_user_input:
-       mov  r11,*sp+
-;RAM:D022 3A C3 5B                    ld      a, (all_objs_in_cauldron)
-;RAM:D025 4F                          ld      c, a
-       movb @all_objs_in_cauldron,@c
-;RAM:D026 3A C4 5B                    ld      a, (obj_dropping_into_cauldron)
-       movb @obj_dropping_into_cauldron,a
-;RAM:D029 B1                          or      c
-       socb @c,a
-;RAM:D02A 0E 00                       ld      c, #0
-;RAM:D02C C2 11 D1                    jp      NZ, finished_input
-       jeq  !
-       movb @b00h,@c
-       b    @finished_input
-;RAM:D02F 3A A4 5B                    ld      a, (user_input_method)
-!      movb @b00h,@c
-       movb @user_input_method,a
-;RAM:D032 0F                          rrca
-       srl  a,1
-;RAM:D033 E6 03                       and     #3                                      ; keybd/joystick bits only
-       andi a,>0300
-;RAM:D035 CA C8 D0                    jp      Z, keyboard
-       jeq  keyboard
-;RAM:D038 3D                          dec     a
-       sb   one,a
-;RAM:D039 28 3C                       jr      Z, kempston
-       jeq  kempston
-;RAM:D03B 3D                          dec     a
-       sb   one,a
-;RAM:D03C 28 5E                       jr      Z, cursor
-       jeq  cursor
-interface_ii:
-;RAM:D03E 3E F7                       ld      a, #0xF7 ; '�'                         ; address interface ii joystick
-;RAM:D040 CD F7 B5                    call    read_port                               ; read joystick
-;RAM:D043 C5                          push    bc
-;RAM:D044 06 05                       ld      b, #5                                   ; 5 bits to read
-;RAM:D046
-;RAM:D046             loc_D046:
-;RAM:D046 1F                          rra
-;RAM:D047 CB 11                       rl      c                                       ; reverse bit order
-;RAM:D049 10 FB                       djnz    loc_D046                                ; loop thru all bits
-;RAM:D04B 79                          ld      a, c
-;RAM:D04C C1                          pop     bc
-;RAM:D04D 4F                          ld      c, a                                    ; store joystick reading
-;RAM:D04E 3E EF                       ld      a, #0xEF ; '�'                          ; 0,9,8,7,6
-;RAM:D050 CD F7 B5                    call    read_port
-;RAM:D053 B1                          or      c                                       ; add joystick bits
-;RAM:D054 0E 00                       ld      c, #0
-;RAM:D056 CB 47                       bit     0, a                                    ; 0/left???
-;RAM:D058 28 02                       jr      Z, loc_D05C
-;RAM:D05A CB D9                       set     3, c
-;RAM:D05C
-;RAM:D05C             loc_D05C:
-;RAM:D05C CB 4F                       bit     1, a
-;RAM:D05E 28 02                       jr      Z, loc_D062
-;RAM:D060 CB D1                       set     2, c
-;RAM:D062
-;RAM:D062             loc_D062:
-;RAM:D062 CB 57                       bit     2, a
-;RAM:D064 28 02                       jr      Z, loc_D068
-;RAM:D066 CB E1                       set     4, c
-;RAM:D068
-;RAM:D068             loc_D068:
-;RAM:D068 CB 5F                       bit     3, a
-;RAM:D06A 28 02                       jr      Z, loc_D06E
-;RAM:D06C CB C9                       set     1, c
-;RAM:D06E
-;RAM:D06E             loc_D06E:
-;RAM:D06E CB 67                       bit     4, a
-;RAM:D070 28 02                       jr      Z, loc_D074
-;RAM:D072 CB C1                       set     0, c
-;RAM:D074
-;RAM:D074             loc_D074:
-;RAM:D074 C3 11 D1                    jp      finished_input
-       b    @finished_input
-* ---------------------------------------------------------------------------
-kempston:
-;RAM:D077 DB 1F                       in      a, (0x1F)
-*      Read joystick using CRU
-       li   r12,>0024                 ; CRU address of the column decoder
-       li   r0,>0600                  ; Column 6, i.e joystick #1
-       ldcr r0,3                      ; Select it
-       li   r12,>0006                 , Base CRU address for joystick 1
-;RAM:D079 0E 00                       ld      c, #0
-       movb @b00h,@c
-;RAM:D07B CB 47                       bit     0, a                                    ; right?
-       tb   2
-;RAM:D07D 28 02                       jr      Z, loc_D081
-       jeq loc_D081
-;RAM:D07F CB C9                       set     1, c                                    ; flag RIGHT
-       socb @b02h,@c
-loc_D081:
-;RAM:D081 CB 4F                       bit     1, a                                    ; left?
-       tb   1
-;RAM:D083 28 02                       jr      Z, loc_D087
-       jeq  loc_D087
-;RAM:D085 CB C1                       set     0, c                                    ; flag LEFT
-       socb @b01h,@c
-loc_D087:
-;RAM:D087 CB 57                       bit     2, a                                    ; down?
-       tb   3
-;RAM:D089 28 02                       jr      Z, loc_D08D
-       jeq  loc_D08D
-;RAM:D08B CB E1                       set     4, c                                    ; flag PICKUP/DROP
-       socb @b10h,@c
-loc_D08D:
-;RAM:D08D CB 5F                       bit     3, a                                    ; up?
-       tb   4
-;RAM:D08F 28 02                       jr      Z, loc_D093
-       jeq  loc_D093
-;RAM:D091 CB D1                       set     2, c                                    ; flag FORWARD
-       socb @b04h,@c
-loc_D093:
-;RAM:D093 CB 67                       bit     4, a                                    ; fire?
-       tb   0
-;RAM:D095 28 02                       jr      Z, loc_D099
-       jeq  loc_D099
-;RAM:D097 CB D9                       set     3, c                                    ; flag JUMP
-       socb @b08h,@c
-loc_D099:
-;RAM:D099 C3 11 D1                    jp      finished_input
-       b    @finished_input
-* ---------------------------------------------------------------------------
-cursor:
-;RAM:D09C 0E 00                       ld      c, #0
-;RAM:D09E 3E F7                       ld      a, #0xF7 ; '�'                          ; row 3
-;RAM:D0A0 CD F7 B5                    call    read_port
-;RAM:D0A3 CB 67                       bit     4, a                                    ; '5'?
-;RAM:D0A5 28 02                       jr      Z, loc_D0A9
-;RAM:D0A7 CB C1                       set     0, c
-;RAM:D0A9
-;RAM:D0A9             loc_D0A9:                                                       ; row 4
-;RAM:D0A9 3E EF                       ld      a, #0xEF ; '�'
-;RAM:D0AB CD F7 B5                    call    read_port
-;RAM:D0AE CB 47                       bit     0, a                                    ; '0'?
-;RAM:D0B0 28 02                       jr      Z, loc_D0B4
-;RAM:D0B2 CB D9                       set     3, c
-;RAM:D0B4
-;RAM:D0B4             loc_D0B4:                                                       ; '7'?
-;RAM:D0B4 CB 5F                       bit     3, a
-;RAM:D0B6 28 02                       jr      Z, loc_D0BA
-;RAM:D0B8 CB D1                       set     2, c
-;RAM:D0BA
-;RAM:D0BA             loc_D0BA:                                                       ; '8'?
-;RAM:D0BA CB 57                       bit     2, a
-;RAM:D0BC 28 02                       jr      Z, loc_D0C0
-;RAM:D0BE CB C9                       set     1, c
-;RAM:D0C0
-;RAM:D0C0             loc_D0C0:                                                       ; '6'?
-;RAM:D0C0 CB 67                       bit     4, a
-;RAM:D0C2 28 4D                       jr      Z, finished_input
-;RAM:D0C4 CB E1                       set     4, c
-;RAM:D0C6 18 49                       jr      finished_input
-* ---------------------------------------------------------------------------
-keyboard:
-;RAM:D0C8 3E FE                       ld      a, #0xFE ; '�'                          ; row 0 (SHIFT,Z,X,C,V)
-;RAM:D0CA CD F7 B5                    call    read_port
-;RAM:D0CD 0F                          rrca
-;RAM:D0CE 4F                          ld      c, a
-;RAM:D0CF E6 03                       and     #3
-;RAM:D0D1 CB 39                       srl     c
-;RAM:D0D3 CB 39                       srl     c
-;RAM:D0D5 B1                          or      c
-;RAM:D0D6 E6 03                       and     #3
-;RAM:D0D8 4F                          ld      c, a
-;RAM:D0D9 3E 7F                       ld      a, #0x7F ; ''                          ; row 7
-;RAM:D0DB CD F7 B5                    call    read_port
-;RAM:D0DE CB 4F                       bit     1, a                                    ; SYM SHIFT? (right)
-;RAM:D0E0 28 02                       jr      Z, loc_D0E4                             ; no, skip
-;RAM:D0E2 CB C9                       set     1, c                                    ; flag RIGHT
-loc_D0E4:
-;RAM:D0E4 CB 57                       bit     2, a                                    ; 'M'? (left)
-;RAM:D0E6 28 02                       jr      Z, loc_D0EA                             ; no, skip
-;RAM:D0E8 CB C1                       set     0, c                                    ; flag LEFT
-loc_D0EA:
-;RAM:D0EA CB 5F                       bit     3, a                                    ; 'N'? (right)
-;RAM:D0EC 28 02                       jr      Z, loc_D0F0                             ; no, skip
-;RAM:D0EE CB C9                       set     1, c                                    ; flag RIGHT
-loc_D0F0:
-;RAM:D0F0 CB 67                       bit     4, a                                    ; 'B'? (left)
-;RAM:D0F2 28 02                       jr      Z, loc_D0F6
-;RAM:D0F4 CB C1                       set     0, c                                    ; flag LEFT
-loc_D0F6:
-;RAM:D0F6 3E BD                       ld      a, #0xBD ; '�'                         ; row 1,6 (2nd row) A,S,F,G,G,H,J,K,L,ENTER (FORWARD)
-;RAM:D0F8 CD F7 B5                    call    read_port
-;RAM:D0FB 28 02                       jr      Z, loc_D0FF
-;RAM:D0FD CB D1                       set     2, c                                    ; flag FORWARD
-loc_D0FF:
-;RAM:D0FF 3E DB                       ld      a, #0xDB ; '�'                         ; row 2,5 (1st row) QWERTYUIOP (JUMP)
-;RAM:D101 CD F7 B5                    call    read_port
-;RAM:D104 28 02                       jr      Z, loc_D108
-;RAM:D106 CB D9                       set     3, c                                    ; flag JUMP
-loc_D108:
-;RAM:D108 3E E7                       ld      a, #0xE7 ; '�'                         ; row 3,4 (0-9) (PICKUP/DROP)
-;RAM:D10A CD F7 B5                    call    read_port
-;RAM:D10D 28 02                       jr      Z, finished_input
-;RAM:D10F CB E1                       set     4, c                                    ; flag PICKUP/DROP
-finished_input:
-;RAM:D111 3E 7E                       ld      a, #0x7E ; '~'                          ; (3rd row) SHIFT,Z,X,C,V,SPACE,SYMSHIFT,M,N,B (LEFT/RIGHT)
-;RAM:D113 CD F7 B5                    call    read_port
-;RAM:D116 E6 1E                       and     #0x1E                                   ; Z,X,C,V,SYMSHIFT,M,N,B
-;RAM:D118 C5                          push    bc
-;RAM:D119 47                          ld      b, a
-;RAM:D11A 3E 99                       ld      a, #0x99 ; '�'
-;RAM:D11C CD F7 B5                    call    read_port
-;RAM:D11F B0                          or      b
-;RAM:D120 C1                          pop     bc
-       li   r0,KEY_SP
-       bl   @chkkey
-;RAM:D121 28 02                       jr      Z, loc_D125
-       jeq  loc_D125
-;RAM:D123 CB E9                       set     5, c                                    ; flag PICKUP/DROP (directional)
-       socb @b10h,@c
-loc_D125:
-;RAM:D125 79                          ld      a, c
-       movb @c,a
-;RAM:D126 32 B5 5B                    ld      (user_input), a
-       movb a,@user_input
-;RAM:D129 C9                          ret
-       dect sp
-       mov  *sp,r11
-       rt
-*
-* End of function check_user_input
-*
-* =============== S U B R O U T I N E =======================================
-*
 lose_life:
        mov  r11,*sp+
 ;RAM:D12A 21 61 D1                    ld      hl, #plyr_spr_1_scratchpad
@@ -6756,8 +6065,19 @@ loc_D1EF:
 *
 * ---------------------------------------------------------------------------
 *
-flag_room_visited:                                              ; plyr_spr_1_screen
-;RAM:D219 3A 10 5C                    ld      a, (graphic_objs_tbl+8)
+* Set bit n of the scrn_visited table
+*
+flag_room_visited:
+;RAM:D219 3A 10 5C                    ld      a, (graphic_objs_tbl+8)                 ; plyr_spr_1_screen
+       clr  r0
+       movb @graphic_objs_tbl+8,@r0lb
+       mov  r0,r1
+       li   r2,>8000
+       andi r0,>0007
+       jeq  !
+       srl  r2,0
+!      srl  r1,3
+       socb r2,@scrn_visited(r1)
 ;RAM:D21C 4F                          ld      c, a
 ;RAM:D21D 0F                          rrca
 ;RAM:D21E 0F                          rrca
@@ -6865,42 +6185,6 @@ display_panel:
 *
 * End of function display_panel
 *
-*
-* =============== S U B R O U T I N E =======================================
-*
-;RAM:D296             print_border:
-;RAM:D296 DD 21 DB BF                 ld      ix, #sprite_scratchpad
-;RAM:D29A 21 CF D2                    ld      hl, #border_data
-;RAM:D29D CD 4C D2                    call    transfer_sprite_and_print
-;RAM:D2A0 CD 4C D2                    call    transfer_sprite_and_print
-;RAM:D2A3 CD 4C D2                    call    transfer_sprite_and_print
-;RAM:D2A6 CD 4C D2                    call    transfer_sprite_and_print
-;RAM:D2A9 CD 37 D2                    call    transfer_sprite
-;RAM:D2AC 11 08 00                    ld      de, #8                                  ; X+=8, Y+=0
-;RAM:D2AF 06 18                       ld      b, #24                                  ; 24 times
-;RAM:D2B1 CD E4 BE                    call    multiple_print_sprite
-;RAM:D2B4 CD 37 D2                    call    transfer_sprite
-;RAM:D2B7 06 18                       ld      b, #24                                  ; 24 times
-;RAM:D2B9 CD E4 BE                    call    multiple_print_sprite
-;RAM:D2BC CD 37 D2                    call    transfer_sprite
-;RAM:D2BF 11 00 01                    ld      de, #0x100                              ; X+=0, Y+=1
-;RAM:D2C2 06 80                       ld      b, #128                                 ; 128 times
-;RAM:D2C4 CD E4 BE                    call    multiple_print_sprite
-;RAM:D2C7 CD 37 D2                    call    transfer_sprite
-;RAM:D2CA 06 80                       ld      b, #128                                 ; 128 times
-;RAM:D2CC C3 E4 BE                    jp      multiple_print_sprite
-;RAM:D2CC             ; End of function print_border
-;RAM:D2CC
-;RAM:D2CC             ; ---------------------------------------------------------------------------
-;RAM:D2CF             ; sprite index, flags, X, Y
-;RAM:D2CF 89 00 00 A0 border_data:    .db 0x89, 0, 0, 0xA0
-;RAM:D2D3 89 40 E0 A0                 .db 0x89, 0x40, 0xE0, 0xA0
-;RAM:D2D7 89 C0 E0 00                 .db 0x89, 0xC0, 0xE0, 0
-;RAM:D2DB 89 80 00 00                 .db 0x89, 0x80, 0, 0
-;RAM:D2DF 8B 00 20 A8                 .db 0x8B, 0, 0x20, 0xA8
-;RAM:D2E3 8B 00 20 00                 .db 0x8B, 0, 0x20, 0
-;RAM:D2E7 8A 00 00 20                 .db 0x8A, 0, 0, 0x20
-;RAM:D2EB 8A 00 E8 20                 .db 0x8A, 0, 0xE8, 0x20
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -7522,39 +6806,6 @@ loc_D4EA:
 *
 * =============== S U B R O U T I N E =======================================
 *
-handle_pause:
-       rt
-;RAM:D50E 3E 7E                       ld      a, #0x7E ; '~'                          ; SPACE,SYMSHIFT,M,N,B
-;RAM:D510 CD F7 B5                    call    read_port
-;RAM:D513 CB 47                       bit     0, a                                    ; SPACE?
-;RAM:D515 C8                          ret     Z                                       ; no, exit
-;RAM:D516 E6 1E                       and     #0x1E                                   ; any other key?
-;RAM:D518 C0                          ret     NZ                                      ; yes, exit
-;RAM:D519
-;RAM:D519             debounce_space_press:
-;RAM:D519 3E 7E                       ld      a, #0x7E ; '~'
-;RAM:D51B CD F7 B5                    call    read_port
-;RAM:D51E CB 47                       bit     0, a                                    ; SPACE?
-;RAM:D520 20 F7                       jr      NZ, debounce_space_press                ; yes, loop
-;RAM:D522 CD A8 B4                    call    toggle_audio_hw_x24
-;RAM:D525
-;RAM:D525             wait_for_space:
-;RAM:D525 3E 7E                       ld      a, #0x7E ; '~'
-;RAM:D527 CD F7 B5                    call    read_port
-;RAM:D52A CB 47                       bit     0, a                                    ; SPACE?
-;RAM:D52C 28 F7                       jr      Z, wait_for_space                       ; no, loop
-;RAM:D52E
-;RAM:D52E             debounce_space_release:
-;RAM:D52E 3E 7E                       ld      a, #0x7E ; '~'
-;RAM:D530 CD F7 B5                    call    read_port
-;RAM:D533 CB 47                       bit     0, a                                    ; SPACE?
-;RAM:D535 20 F7                       jr      NZ, debounce_space_release              ; no, loop
-;RAM:D537 C3 A8 B4                    jp      toggle_audio_hw_x24
-;RAM:D537             ; End of function handle_pause
-;RAM:D537
-*
-* =============== S U B R O U T I N E =======================================
-*
 render_dynamic_objects:
        mov  r11,*sp+
 ;RAM:D59F AF                          xor     a
@@ -7802,7 +7053,267 @@ loc_D679:
 *
 * End of function render_dynamic_objects
 *
+* =============== S U B R O U T I N E =======================================
+*
+check_user_input:
+       mov  r11,*sp+
+;RAM:D022 3A C3 5B                    ld      a, (all_objs_in_cauldron)
+;RAM:D025 4F                          ld      c, a
+       movb @all_objs_in_cauldron,@c
+;RAM:D026 3A C4 5B                    ld      a, (obj_dropping_into_cauldron)
+       movb @obj_dropping_into_cauldron,a
+;RAM:D029 B1                          or      c
+       socb @c,a
+;RAM:D02A 0E 00                       ld      c, #0
+;RAM:D02C C2 11 D1                    jp      NZ, finished_input
+       jeq  !
+       movb @b00h,@c
+       b    @finished_input
+;RAM:D02F 3A A4 5B                    ld      a, (user_input_method)
+!      movb @b00h,@c
+       movb @user_input_method,a
+;RAM:D032 0F                          rrca
+       srl  a,1
+;RAM:D033 E6 03                       and     #3                                      ; keybd/joystick bits only
+       andi a,>0300
+;RAM:D035 CA C8 D0                    jp      Z, keyboard
+       jeq  keyboard
+;RAM:D038 3D                          dec     a
+       sb   one,a
+;RAM:D039 28 3C                       jr      Z, kempston
+       jeq  kempston
+;RAM:D03B 3D                          dec     a
+       sb   one,a
+;RAM:D03C 28 5E                       jr      Z, cursor
+       jeq  cursor
+interface_ii:
+;RAM:D03E 3E F7                       ld      a, #0xF7 ; '�'                         ; address interface ii joystick
+;RAM:D040 CD F7 B5                    call    read_port                               ; read joystick
+;RAM:D043 C5                          push    bc
+;RAM:D044 06 05                       ld      b, #5                                   ; 5 bits to read
+;RAM:D046
+;RAM:D046             loc_D046:
+;RAM:D046 1F                          rra
+;RAM:D047 CB 11                       rl      c                                       ; reverse bit order
+;RAM:D049 10 FB                       djnz    loc_D046                                ; loop thru all bits
+;RAM:D04B 79                          ld      a, c
+;RAM:D04C C1                          pop     bc
+;RAM:D04D 4F                          ld      c, a                                    ; store joystick reading
+;RAM:D04E 3E EF                       ld      a, #0xEF ; '�'                          ; 0,9,8,7,6
+;RAM:D050 CD F7 B5                    call    read_port
+;RAM:D053 B1                          or      c                                       ; add joystick bits
+;RAM:D054 0E 00                       ld      c, #0
+;RAM:D056 CB 47                       bit     0, a                                    ; 0/left???
+;RAM:D058 28 02                       jr      Z, loc_D05C
+;RAM:D05A CB D9                       set     3, c
+;RAM:D05C
+;RAM:D05C             loc_D05C:
+;RAM:D05C CB 4F                       bit     1, a
+;RAM:D05E 28 02                       jr      Z, loc_D062
+;RAM:D060 CB D1                       set     2, c
+;RAM:D062
+;RAM:D062             loc_D062:
+;RAM:D062 CB 57                       bit     2, a
+;RAM:D064 28 02                       jr      Z, loc_D068
+;RAM:D066 CB E1                       set     4, c
+;RAM:D068
+;RAM:D068             loc_D068:
+;RAM:D068 CB 5F                       bit     3, a
+;RAM:D06A 28 02                       jr      Z, loc_D06E
+;RAM:D06C CB C9                       set     1, c
+;RAM:D06E
+;RAM:D06E             loc_D06E:
+;RAM:D06E CB 67                       bit     4, a
+;RAM:D070 28 02                       jr      Z, loc_D074
+;RAM:D072 CB C1                       set     0, c
+;RAM:D074
+;RAM:D074             loc_D074:
+;RAM:D074 C3 11 D1                    jp      finished_input
+       b    @finished_input
 * ---------------------------------------------------------------------------
+kempston:
+;RAM:D077 DB 1F                       in      a, (0x1F)
+*      Read joystick using CRU
+       li   r12,>0024                 ; CRU address of the column decoder
+       li   r0,>0600                  ; Column 6, i.e joystick #1
+       ldcr r0,3                      ; Select it
+       li   r12,>0006                 , Base CRU address for joystick 1
+;RAM:D079 0E 00                       ld      c, #0
+       movb @b00h,@c
+;RAM:D07B CB 47                       bit     0, a                                    ; right?
+       tb   2
+;RAM:D07D 28 02                       jr      Z, loc_D081
+       jeq loc_D081
+;RAM:D07F CB C9                       set     1, c                                    ; flag RIGHT
+       socb @b02h,@c
+loc_D081:
+;RAM:D081 CB 4F                       bit     1, a                                    ; left?
+       tb   1
+;RAM:D083 28 02                       jr      Z, loc_D087
+       jeq  loc_D087
+;RAM:D085 CB C1                       set     0, c                                    ; flag LEFT
+       socb @b01h,@c
+loc_D087:
+;RAM:D087 CB 57                       bit     2, a                                    ; down?
+       tb   3
+;RAM:D089 28 02                       jr      Z, loc_D08D
+       jeq  loc_D08D
+;RAM:D08B CB E1                       set     4, c                                    ; flag PICKUP/DROP
+       socb @b10h,@c
+loc_D08D:
+;RAM:D08D CB 5F                       bit     3, a                                    ; up?
+       tb   4
+;RAM:D08F 28 02                       jr      Z, loc_D093
+       jeq  loc_D093
+;RAM:D091 CB D1                       set     2, c                                    ; flag FORWARD
+       socb @b04h,@c
+loc_D093:
+;RAM:D093 CB 67                       bit     4, a                                    ; fire?
+       tb   0
+;RAM:D095 28 02                       jr      Z, loc_D099
+       jeq  loc_D099
+;RAM:D097 CB D9                       set     3, c                                    ; flag JUMP
+       socb @b08h,@c
+loc_D099:
+;RAM:D099 C3 11 D1                    jp      finished_input
+       b    @finished_input
+* ---------------------------------------------------------------------------
+cursor:
+;RAM:D09C 0E 00                       ld      c, #0
+;RAM:D09E 3E F7                       ld      a, #0xF7 ; '�'                          ; row 3
+;RAM:D0A0 CD F7 B5                    call    read_port
+;RAM:D0A3 CB 67                       bit     4, a                                    ; '5'?
+;RAM:D0A5 28 02                       jr      Z, loc_D0A9
+;RAM:D0A7 CB C1                       set     0, c
+;RAM:D0A9
+;RAM:D0A9             loc_D0A9:                                                       ; row 4
+;RAM:D0A9 3E EF                       ld      a, #0xEF ; '�'
+;RAM:D0AB CD F7 B5                    call    read_port
+;RAM:D0AE CB 47                       bit     0, a                                    ; '0'?
+;RAM:D0B0 28 02                       jr      Z, loc_D0B4
+;RAM:D0B2 CB D9                       set     3, c
+;RAM:D0B4
+;RAM:D0B4             loc_D0B4:                                                       ; '7'?
+;RAM:D0B4 CB 5F                       bit     3, a
+;RAM:D0B6 28 02                       jr      Z, loc_D0BA
+;RAM:D0B8 CB D1                       set     2, c
+;RAM:D0BA
+;RAM:D0BA             loc_D0BA:                                                       ; '8'?
+;RAM:D0BA CB 57                       bit     2, a
+;RAM:D0BC 28 02                       jr      Z, loc_D0C0
+;RAM:D0BE CB C9                       set     1, c
+;RAM:D0C0
+;RAM:D0C0             loc_D0C0:                                                       ; '6'?
+;RAM:D0C0 CB 67                       bit     4, a
+;RAM:D0C2 28 4D                       jr      Z, finished_input
+;RAM:D0C4 CB E1                       set     4, c
+;RAM:D0C6 18 49                       jr      finished_input
+* ---------------------------------------------------------------------------
+keyboard:
+;RAM:D0C8 3E FE                       ld      a, #0xFE ; '�'                          ; row 0 (SHIFT,Z,X,C,V)
+;RAM:D0CA CD F7 B5                    call    read_port
+;RAM:D0CD 0F                          rrca
+;RAM:D0CE 4F                          ld      c, a
+;RAM:D0CF E6 03                       and     #3
+;RAM:D0D1 CB 39                       srl     c
+;RAM:D0D3 CB 39                       srl     c
+;RAM:D0D5 B1                          or      c
+;RAM:D0D6 E6 03                       and     #3
+;RAM:D0D8 4F                          ld      c, a
+;RAM:D0D9 3E 7F                       ld      a, #0x7F ; ''                          ; row 7
+;RAM:D0DB CD F7 B5                    call    read_port
+;RAM:D0DE CB 4F                       bit     1, a                                    ; SYM SHIFT? (right)
+;RAM:D0E0 28 02                       jr      Z, loc_D0E4                             ; no, skip
+;RAM:D0E2 CB C9                       set     1, c                                    ; flag RIGHT
+loc_D0E4:
+;RAM:D0E4 CB 57                       bit     2, a                                    ; 'M'? (left)
+;RAM:D0E6 28 02                       jr      Z, loc_D0EA                             ; no, skip
+;RAM:D0E8 CB C1                       set     0, c                                    ; flag LEFT
+loc_D0EA:
+;RAM:D0EA CB 5F                       bit     3, a                                    ; 'N'? (right)
+;RAM:D0EC 28 02                       jr      Z, loc_D0F0                             ; no, skip
+;RAM:D0EE CB C9                       set     1, c                                    ; flag RIGHT
+loc_D0F0:
+;RAM:D0F0 CB 67                       bit     4, a                                    ; 'B'? (left)
+;RAM:D0F2 28 02                       jr      Z, loc_D0F6
+;RAM:D0F4 CB C1                       set     0, c                                    ; flag LEFT
+loc_D0F6:
+;RAM:D0F6 3E BD                       ld      a, #0xBD ; '�'                         ; row 1,6 (2nd row) A,S,F,G,G,H,J,K,L,ENTER (FORWARD)
+;RAM:D0F8 CD F7 B5                    call    read_port
+;RAM:D0FB 28 02                       jr      Z, loc_D0FF
+;RAM:D0FD CB D1                       set     2, c                                    ; flag FORWARD
+loc_D0FF:
+;RAM:D0FF 3E DB                       ld      a, #0xDB ; '�'                         ; row 2,5 (1st row) QWERTYUIOP (JUMP)
+;RAM:D101 CD F7 B5                    call    read_port
+;RAM:D104 28 02                       jr      Z, loc_D108
+;RAM:D106 CB D9                       set     3, c                                    ; flag JUMP
+loc_D108:
+;RAM:D108 3E E7                       ld      a, #0xE7 ; '�'                         ; row 3,4 (0-9) (PICKUP/DROP)
+;RAM:D10A CD F7 B5                    call    read_port
+;RAM:D10D 28 02                       jr      Z, finished_input
+;RAM:D10F CB E1                       set     4, c                                    ; flag PICKUP/DROP
+finished_input:
+;RAM:D111 3E 7E                       ld      a, #0x7E ; '~'                          ; (3rd row) SHIFT,Z,X,C,V,SPACE,SYMSHIFT,M,N,B (LEFT/RIGHT)
+;RAM:D113 CD F7 B5                    call    read_port
+;RAM:D116 E6 1E                       and     #0x1E                                   ; Z,X,C,V,SYMSHIFT,M,N,B
+;RAM:D118 C5                          push    bc
+;RAM:D119 47                          ld      b, a
+;RAM:D11A 3E 99                       ld      a, #0x99 ; '�'
+;RAM:D11C CD F7 B5                    call    read_port
+;RAM:D11F B0                          or      b
+;RAM:D120 C1                          pop     bc
+       li   r0,KEY_SP
+       bl   @chkkey
+;RAM:D121 28 02                       jr      Z, loc_D125
+       jeq  loc_D125
+;RAM:D123 CB E9                       set     5, c                                    ; flag PICKUP/DROP (directional)
+       socb @b10h,@c
+loc_D125:
+;RAM:D125 79                          ld      a, c
+       movb @c,a
+;RAM:D126 32 B5 5B                    ld      (user_input), a
+       movb a,@user_input
+;RAM:D129 C9                          ret
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function check_user_input
+*
+* =============== S U B R O U T I N E =======================================
+*
+handle_pause:
+       rt
+;RAM:D50E 3E 7E                       ld      a, #0x7E ; '~'                          ; SPACE,SYMSHIFT,M,N,B
+;RAM:D510 CD F7 B5                    call    read_port
+;RAM:D513 CB 47                       bit     0, a                                    ; SPACE?
+;RAM:D515 C8                          ret     Z                                       ; no, exit
+;RAM:D516 E6 1E                       and     #0x1E                                   ; any other key?
+;RAM:D518 C0                          ret     NZ                                      ; yes, exit
+;RAM:D519
+;RAM:D519             debounce_space_press:
+;RAM:D519 3E 7E                       ld      a, #0x7E ; '~'
+;RAM:D51B CD F7 B5                    call    read_port
+;RAM:D51E CB 47                       bit     0, a                                    ; SPACE?
+;RAM:D520 20 F7                       jr      NZ, debounce_space_press                ; yes, loop
+;RAM:D522 CD A8 B4                    call    toggle_audio_hw_x24
+;RAM:D525
+;RAM:D525             wait_for_space:
+;RAM:D525 3E 7E                       ld      a, #0x7E ; '~'
+;RAM:D527 CD F7 B5                    call    read_port
+;RAM:D52A CB 47                       bit     0, a                                    ; SPACE?
+;RAM:D52C 28 F7                       jr      Z, wait_for_space                       ; no, loop
+;RAM:D52E
+;RAM:D52E             debounce_space_release:
+;RAM:D52E 3E 7E                       ld      a, #0x7E ; '~'
+;RAM:D530 CD F7 B5                    call    read_port
+;RAM:D533 CB 47                       bit     0, a                                    ; SPACE?
+;RAM:D535 20 F7                       jr      NZ, debounce_space_release              ; no, loop
+;RAM:D537 C3 A8 B4                    jp      toggle_audio_hw_x24
+;RAM:D537             ; End of function handle_pause
+;RAM:D537
+* ---------------------------------------------------------------------------
+
 *
 * End of lower memory
 *

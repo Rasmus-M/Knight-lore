@@ -1,0 +1,313 @@
+* ---------------------------------------------------------------------------
+*
+* START OF FUNCTION CHUNK FOR game_over
+*
+game_over:
+;RAM:BA22 3A C3 5B                    ld      a, (all_objs_in_cauldron)
+;RAM:BA25 A7                          and     a
+;RAM:BA26 C2 AB BA                    jp      NZ, game_complete_msg
+;RAM:BA29
+;RAM:BA29             loc_BA29:
+;RAM:BA29 CD 67 D5                    call    clear_scrn_buffer
+;RAM:BA2C CD 5F D5                    call    clear_scrn
+;RAM:BA2F 11 4C BB                    ld      de, #gameover_colours                   ; game over status screen
+;RAM:BA32 D9                          exx
+;RAM:BA33 21 52 BB                    ld      hl, #gameover_xy                        ; game over status screen
+;RAM:BA36 11 5E BB                    ld      de, #a_GAME_OVER
+;RAM:BA39 06 06                       ld      b, #6
+;RAM:BA3B CD BF BE                    call    display_text_list
+;RAM:BA3E 21 E2 E8                    ld      hl, # vidbuf+0xFEF                      ; video buffer address
+;RAM:BA41 11 B9 5B                    ld      de, #days
+;RAM:BA44 06 01                       ld      b, #1                                   ; 1 BCD digit pair
+;RAM:BA46 CD AE BC                    call    print_BCD_number
+;RAM:BA49 CD 10 BC                    call    calc_and_display_percent
+;RAM:BA4C 3A C6 5B                    ld      a, (num_scrns_visited)
+;RAM:BA4F 07                          rlca
+;RAM:BA50 E6 C0                       and     #0xC0 ; '�'
+;RAM:BA52 4F                          ld      c, a
+;RAM:BA53 3A C3 5B                    ld      a, (all_objs_in_cauldron)
+;RAM:BA56 E6 01                       and     #1
+;RAM:BA58 B1                          or      c
+;RAM:BA59 07                          rlca
+;RAM:BA5A 07                          rlca
+;RAM:BA5B 07                          rlca
+;RAM:BA5C E6 0E                       and     #0xE
+;RAM:BA5E 6F                          ld      l, a
+;RAM:BA5F 26 00                       ld      h, #0
+;RAM:BA61 01 B7 BB                    ld      bc, #rating_tbl
+;RAM:BA64 09                          add     hl, bc                                  ; ptr to rating text entry
+;RAM:BA65 5E                          ld      e, (hl)
+;RAM:BA66 23                          inc     hl
+;RAM:BA67 56                          ld      d, (hl)                                 ; DE=addr of rating string
+;RAM:BA68 21 58 27                    ld      hl, #0x2758
+;RAM:BA6B CD 45 BE                    call    print_text_std_font
+;RAM:BA6E 11 BB 5B                    ld      de, #objects_put_in_cauldron
+;RAM:BA71 1A                          ld      a, (de)
+;RAM:BA72 D6 0A                       sub     #10                                     ; less than 10?
+;RAM:BA74 38 03                       jr      C, loc_BA79                             ; yes, skip
+;RAM:BA76 F6 10                       or      #0x10                                   ; convert to BCD
+;RAM:BA78 12                          ld      (de), a                                 ; store BCD
+;RAM:BA79
+;RAM:BA79             loc_BA79:                                                       ; video buffer address
+;RAM:BA79 21 EA E2                    ld      hl, # vidbuf+0x9F7
+;RAM:BA7C 06 01                       ld      b, #1                                   ; 1 BCD digit pair
+;RAM:BA7E CD AE BC                    call    print_BCD_number
+;RAM:BA81 CD 96 D2                    call    print_border
+;RAM:BA84 CD 6F D5                    call    update_screen
+;RAM:BA87
+;RAM:BA87             loc_BA87:
+;RAM:BA87 AF                          xor     a
+;RAM:BA88 CD F7 B5                    call    read_port
+;RAM:BA8B 20 FA                       jr      NZ, loc_BA87                            ; wait for key release
+;RAM:BA8D 11 18 B2                    ld      de, #game_over_tune
+;RAM:BA90 CD BE B2                    call    play_audio_until_keypress
+;RAM:BA93 06 08                       ld      b, #8                                   ; how long to wait
+;RAM:BA95 CD 9B BA                    call    wait_for_key_press
+;RAM:BA98             ;
+;RAM:BA98             ; the stack has at least 1 return address on it
+;RAM:BA98             ; but the main game loop re-init's the stack each iteration
+;RAM:BA98             ;
+;RAM:BA98 C3 7F AF                    jp      start_menu
+       b    @start_menu
+*
+* END OF FUNCTION CHUNK FOR game_over
+*
+;RAM:BA9B             ; =============== S U B R O U T I N E =======================================
+;RAM:BA9B
+;RAM:BA9B
+;RAM:BA9B             wait_for_key_press:
+;RAM:BA9B 21 00 00                    ld      hl, #0
+;RAM:BA9E
+;RAM:BA9E             loc_BA9E:
+;RAM:BA9E AF                          xor     a
+;RAM:BA9F CD F7 B5                    call    read_port
+;RAM:BAA2 C0                          ret     NZ
+;RAM:BAA3 2B                          dec     hl
+;RAM:BAA4 7C                          ld      a, h
+;RAM:BAA5 B5                          or      l
+;RAM:BAA6 20 F6                       jr      NZ, loc_BA9E                            ; loop B times
+;RAM:BAA8 10 F4                       djnz    loc_BA9E
+;RAM:BAAA C9                          ret
+;RAM:BAAA             ; End of function wait_for_key_press
+;RAM:BAAA
+;RAM:BAAB             ; ---------------------------------------------------------------------------
+;RAM:BAAB             ; START OF FUNCTION CHUNK FOR lose_life
+;RAM:BAAB
+;RAM:BAAB             game_complete_msg:
+;RAM:BAAB CD 67 D5                    call    clear_scrn_buffer
+;RAM:BAAE CD 5F D5                    call    clear_scrn
+;RAM:BAB1 11 D2 BA                    ld      de, #complete_colours
+;RAM:BAB4 D9                          exx
+;RAM:BAB5 21 D8 BA                    ld      hl, #complete_xy
+;RAM:BAB8 11 E4 BA                    ld      de, #the_potion_casts
+;RAM:BABB 06 06                       ld      b, #6
+;RAM:BABD AF                          xor     a
+;RAM:BABE 32 B8 5B                    ld      (suppress_border), a
+;RAM:BAC1 CD BF BE                    call    display_text_list
+;RAM:BAC4 11 39 B2                    ld      de, #game_complete_tune
+;RAM:BAC7 CD CF B2                    call    play_audio
+;RAM:BACA 06 08                       ld      b, #8
+;RAM:BACC CD 9B BA                    call    wait_for_key_press
+;RAM:BACF C3 29 BA                    jp      loc_BA29
+;RAM:BACF             ; END OF FUNCTION CHUNK FOR lose_life
+;RAM:BACF             ; ---------------------------------------------------------------------------
+;RAM:BAD2 47 46 45 44+complete_colours:.db 0x47, 0x46, 0x45, 0x44, 0x43, 0x42
+;RAM:BAD8 40 87 40 77+complete_xy:    .db 0x40, 0x87, 0x40, 0x77, 0x30, 0x67, 0x30, 0x57, 0x50
+;RAM:BAD8 30 67 30 57+                .db 0x47, 0x30, 0x37
+;RAM:BAE4             ; "THE POTION CASTS"
+;RAM:BAE4 1D 11 0E 26+the_potion_casts:.db 0x1D, 0x11, 0xE, 0x26, 0x19, 0x18, 0x1D, 0x12, 0x18
+;RAM:BAE4 19 18 1D 12+                .db 0x17, 0x26, 0xC, 0xA, 0x1C, 0x1D, 0x9C
+;RAM:BAF4             ; "ITS MAGIC STRONG"
+;RAM:BAF4 12 1D 1C 26+                .db 0x12, 0x1D, 0x1C, 0x26, 0x16, 0xA, 0x10, 0x12, 0xC
+;RAM:BAF4 16 0A 10 12+                .db 0x26, 0x1C, 0x1D, 0x1B, 0x18, 0x17, 0x90
+;RAM:BB04             ; "ALL EVIL MUST BEWARE"
+;RAM:BB04 0A 15 15 26+                .db 0xA, 0x15, 0x15, 0x26, 0xE, 0x1F, 0x12, 0x15, 0x26
+;RAM:BB04 0E 1F 12 15+                .db 0x16, 0x1E, 0x1C, 0x1D, 0x26, 0xB, 0xE, 0x20, 0xA
+;RAM:BB04 26 16 1E 1C+                .db 0x1B, 0x8E
+;RAM:BB18             ; "THE SPELL HAS BROKEN"
+;RAM:BB18 1D 11 0E 26+                .db 0x1D, 0x11, 0xE, 0x26, 0x1C, 0x19, 0xE, 0x15, 0x15
+;RAM:BB18 1C 19 0E 15+                .db 0x26, 0x11, 0xA, 0x1C, 0x26, 0xB, 0x1B, 0x18, 0x14
+;RAM:BB18 15 26 11 0A+                .db 0xE, 0x97
+;RAM:BB2C             ; "YOU ARE FREE"
+;RAM:BB2C 22 18 1E 26+                .db 0x22, 0x18, 0x1E, 0x26, 0xA, 0x1B, 0xE, 0x26, 0xF
+;RAM:BB2C 0A 1B 0E 26+                .db 0x1B, 0xE, 0x8E
+;RAM:BB38             ; "GO FORTH TO MIRE MARE"
+;RAM:BB38 10 18 26 0F+                .db 0x10, 0x18, 0x26, 0xF, 0x18, 0x1B, 0x1D, 0x11, 0x26
+;RAM:BB38 18 1B 1D 11+                .db 0x1D, 0x18, 0x26, 0x16, 0x12, 0x1B, 0xE, 0x16, 0xA
+;RAM:BB38 26 1D 18 26+                .db 0x1B, 0x8E
+;RAM:BB4C             ; Game Over status screen
+;RAM:BB4C 47 46 45 45+gameover_colours:.db 0x47, 0x46, 0x45, 0x45, 0x43, 0x44
+;RAM:BB52 58 9F 50 7F+gameover_xy:    .db 0x58, 0x9F, 0x50, 0x7F, 0x30, 0x6F, 0x40, 0x5F, 0x30
+;RAM:BB52 30 6F 40 5F+                .db 0x4F, 0x48, 0x37
+;RAM:BB5E             ; "GAME  OVER"
+;RAM:BB5E 10 0A 16 0E+a_GAME_OVER:    .db 0x10, 0xA, 0x16, 0xE, 0x26, 0x26, 0x18, 0x1F, 0xE
+;RAM:BB5E 26 26 18 1F+                .db 0x9B
+;RAM:BB68             ; "TIME    DAYS"
+;RAM:BB68 1D 12 16 0E+                .db 0x1D, 0x12, 0x16, 0xE, 0x26, 0x26, 0x26, 0x26, 0xD
+;RAM:BB68 26 26 26 26+                .db 0xA, 0x22, 0x9C
+;RAM:BB74             ; "PERCENTAGE OF QUEST"
+;RAM:BB74 19 0E 1B 0C+                .db 0x19, 0xE, 0x1B, 0xC, 0xE, 0x17, 0x1D, 0xA, 0x10, 0xE
+;RAM:BB74 0E 17 1D 0A+                .db 0x26, 0x18, 0xF, 0x26, 0x1A, 0x1E, 0xE, 0x1C, 0x9D
+;RAM:BB87             ; "COMPLETED     %"
+;RAM:BB87 0C 18 16 19+                .db 0xC, 0x18, 0x16, 0x19, 0x15, 0xE, 0x1D, 0xE, 0xD, 0x26
+;RAM:BB87 15 0E 1D 0E+                .db 0x26, 0x26, 0x26, 0x26, 0xA7
+;RAM:BB96             ; "CHARMS COLLECTED"
+;RAM:BB96 0C 11 0A 1B+                .db 0xC, 0x11, 0xA, 0x1B, 0x16, 0x1C, 0x26, 0xC, 0x18
+;RAM:BB96 16 1C 26 0C+                .db 0x15, 0x15, 0xE, 0xC, 0x1D, 0xE, 0xD, 0x26, 0x26, 0xA6
+;RAM:BBA9             ; "OVERALL RATING"
+;RAM:BBA9 18 1F 0E 1B+                .db 0x18, 0x1F, 0xE, 0x1B, 0xA, 0x15, 0x15, 0x26, 0x1B
+;RAM:BBA9 0A 15 15 26+                .db 0xA, 0x1D, 0x12, 0x17, 0x90
+;RAM:BBB7 C7 BB       rating_tbl:     .dw a_POOR
+;RAM:BBB9 CF BB                       .dw a_AVERAGE
+;RAM:BBBB D8 BB                       .dw a_FAIR
+;RAM:BBBD E0 BB                       .dw a_GOOD
+;RAM:BBBF E8 BB                       .dw a_EXCELLENT
+;RAM:BBC1 F2 BB                       .dw a_MARVELLOUS
+;RAM:BBC3 FD BB                       .dw a_HERO
+;RAM:BBC5 05 BC                       .dw a_ADVENTURER
+;RAM:BBC7 42 26 26 26+a_POOR:         .db 0x42, 0x26, 0x26, 0x26, 0x19, 0x18, 0x18, 0x9B
+;RAM:BBCF 42 26 0A 1F+a_AVERAGE:      .db 0x42, 0x26, 0xA, 0x1F, 0xE, 0x1B, 0xA, 0x10, 0x8E
+;RAM:BBD8 42 26 26 26+a_FAIR:         .db 0x42, 0x26, 0x26, 0x26, 0xF, 0xA, 0x12, 0x9B
+;RAM:BBE0 42 26 26 26+a_GOOD:         .db 0x42, 0x26, 0x26, 0x26, 0x10, 0x18, 0x18, 0x8D
+;RAM:BBE8 42 0E 21 0C+a_EXCELLENT:    .db 0x42, 0xE, 0x21, 0xC, 0xE, 0x15, 0x15, 0xE, 0x17, 0x9D
+;RAM:BBF2 42 16 0A 1B+a_MARVELLOUS:   .db 0x42, 0x16, 0xA, 0x1B, 0x1F, 0xE, 0x15, 0x15, 0x18
+;RAM:BBF2 1F 0E 15 15+                .db 0x1E, 0x9C
+;RAM:BBFD 42 26 26 26+a_HERO:         .db 0x42, 0x26, 0x26, 0x26, 0x11, 0xE, 0x1B, 0x98
+;RAM:BC05 42 0A 0D 1F+a_ADVENTURER:   .db 0x42, 0xA, 0xD, 0x1F, 0xE, 0x17, 0x1D, 0x1E, 0x1B
+;RAM:BC05 0E 17 1D 1E+                .db 0xE, 0x9B
+;RAM:BC10
+;RAM:BC10             ; =============== S U B R O U T I N E =======================================
+;RAM:BC10
+;RAM:BC10
+;RAM:BC10             calc_and_display_percent:
+;RAM:BC10 1E 00                       ld      e, #0                                   ; zero room count
+;RAM:BC12 01 20 08                    ld      bc, #0x820                              ; B=8 bits/byte
+;RAM:BC15 21 E8 5B                    ld      hl, #scrn_visited
+;RAM:BC18
+;RAM:BC18             count_screens:
+;RAM:BC18 C5                          push    bc
+;RAM:BC19 7E                          ld      a, (hl)
+;RAM:BC1A 23                          inc     hl
+;RAM:BC1B
+;RAM:BC1B             loc_BC1B:
+;RAM:BC1B 0F                          rrca
+;RAM:BC1C 30 01                       jr      NC, loc_BC1F
+;RAM:BC1E 1C                          inc     e                                       ; room count
+;RAM:BC1F
+;RAM:BC1F             loc_BC1F:
+;RAM:BC1F 10 FA                       djnz    loc_BC1B
+;RAM:BC21 C1                          pop     bc
+;RAM:BC22 0D                          dec     c                                       ; done all screens?
+;RAM:BC23 20 F3                       jr      NZ, count_screens                       ; no, loop
+;RAM:BC25 7B                          ld      a, e
+;RAM:BC26 3D                          dec     a                                       ; -1? don't count 1st room?
+;RAM:BC27 32 C6 5B                    ld      (num_scrns_visited), a                  ; store for ratings calculations
+;RAM:BC2A 3A BB 5B                    ld      a, (objects_put_in_cauldron)
+;RAM:BC2D CB 27                       sla     a                                       ; x2
+;RAM:BC2F 83                          add     a, e
+;RAM:BC30 5F                          ld      e, a
+;RAM:BC31 01 1A A4                    ld      bc, #0xA41A                             ; 0.64102 * (128 + 14*2) = 99.999%
+;RAM:BC34 21 00 00                    ld      hl, #0
+;RAM:BC37 AF                          xor     a
+;RAM:BC38
+;RAM:BC38             loc_BC38:
+;RAM:BC38 09                          add     hl, bc
+;RAM:BC39 CE 00                       adc     a, #0
+;RAM:BC3B 27                          daa
+;RAM:BC3C 1D                          dec     e
+;RAM:BC3D 20 F9                       jr      NZ, loc_BC38                            ; calculate percentage complete (BCD)
+;RAM:BC3F 01 28 00                    ld      bc, #0x28 ; '('                         ; $A410*156 = $63FFD8+$28 = $640000
+;RAM:BC42 09                          add     hl, bc
+;RAM:BC43 CE 00                       adc     a, #0
+;RAM:BC45 27                          daa                                             ; fix rounding to 100%
+;RAM:BC46 32 CA 5B                    ld      (percent_lsw), a                        ; store least significant 2 BCD digits
+;RAM:BC49 3E 00                       ld      a, #0
+;RAM:BC4B CE 00                       adc     a, #0
+;RAM:BC4D 27                          daa
+;RAM:BC4E 32 C9 5B                    ld      (percent_msw), a                        ; store most significant BCD digit
+;RAM:BC51 21 E6 E4                    ld      hl, # vidbuf+0xBF3
+;RAM:BC54 11 C9 5B                    ld      de, #percent_msw
+;RAM:BC57 06 01                       ld      b, #1                                   ; 1 pair = 2 digits
+;RAM:BC59 1A                          ld      a, (de)
+;RAM:BC5A A7                          and     a                                       ; 100%?
+;RAM:BC5B 28 04                       jr      Z, loc_BC61                             ; no, skip
+;RAM:BC5D 04                          inc     b                                       ; 2 pair = 4 digits
+;RAM:BC5E C3 C0 BC                    jp      print_BCD_lsd
+;RAM:BC61             ; ---------------------------------------------------------------------------
+;RAM:BC61
+;RAM:BC61             loc_BC61:
+;RAM:BC61 23                          inc     hl
+;RAM:BC62 13                          inc     de                                      ; skip over leading zero
+;RAM:BC63 C3 AE BC                    jp      print_BCD_number
+;RAM:BC63             ; End of function calc_and_display_percent
+;RAM:BC63
+*
+* =============== S U B R O U T I N E =======================================
+*
+;RAM:D296             print_border:
+;RAM:D296 DD 21 DB BF                 ld      ix, #sprite_scratchpad
+;RAM:D29A 21 CF D2                    ld      hl, #border_data
+;RAM:D29D CD 4C D2                    call    transfer_sprite_and_print
+;RAM:D2A0 CD 4C D2                    call    transfer_sprite_and_print
+;RAM:D2A3 CD 4C D2                    call    transfer_sprite_and_print
+;RAM:D2A6 CD 4C D2                    call    transfer_sprite_and_print
+;RAM:D2A9 CD 37 D2                    call    transfer_sprite
+;RAM:D2AC 11 08 00                    ld      de, #8                                  ; X+=8, Y+=0
+;RAM:D2AF 06 18                       ld      b, #24                                  ; 24 times
+;RAM:D2B1 CD E4 BE                    call    multiple_print_sprite
+;RAM:D2B4 CD 37 D2                    call    transfer_sprite
+;RAM:D2B7 06 18                       ld      b, #24                                  ; 24 times
+;RAM:D2B9 CD E4 BE                    call    multiple_print_sprite
+;RAM:D2BC CD 37 D2                    call    transfer_sprite
+;RAM:D2BF 11 00 01                    ld      de, #0x100                              ; X+=0, Y+=1
+;RAM:D2C2 06 80                       ld      b, #128                                 ; 128 times
+;RAM:D2C4 CD E4 BE                    call    multiple_print_sprite
+;RAM:D2C7 CD 37 D2                    call    transfer_sprite
+;RAM:D2CA 06 80                       ld      b, #128                                 ; 128 times
+;RAM:D2CC C3 E4 BE                    jp      multiple_print_sprite
+;RAM:D2CC             ; End of function print_border
+;RAM:D2CC
+;RAM:D2CC             ; ---------------------------------------------------------------------------
+;RAM:D2CF             ; sprite index, flags, X, Y
+;RAM:D2CF 89 00 00 A0 border_data:    .db 0x89, 0, 0, 0xA0
+;RAM:D2D3 89 40 E0 A0                 .db 0x89, 0x40, 0xE0, 0xA0
+;RAM:D2D7 89 C0 E0 00                 .db 0x89, 0xC0, 0xE0, 0
+;RAM:D2DB 89 80 00 00                 .db 0x89, 0x80, 0, 0
+;RAM:D2DF 8B 00 20 A8                 .db 0x8B, 0, 0x20, 0xA8
+;RAM:D2E3 8B 00 20 00                 .db 0x8B, 0, 0x20, 0
+;RAM:D2E7 8A 00 00 20                 .db 0x8A, 0, 0, 0x20
+;RAM:D2EB 8A 00 E8 20                 .db 0x8A, 0, 0xE8, 0x20
+;RAM:BEBF             ; =============== S U B R O U T I N E =======================================
+;RAM:BEBF
+;RAM:BEBF             ; DE  = attributes
+;RAM:BEBF             ; HL' = coordinates
+;RAM:BEBF             ; DE' = text entries
+;RAM:BEBF             ;  B' = number to display
+;RAM:BEBF
+;RAM:BEBF             display_text_list:
+;RAM:BEBF D9                          exx                                             ; select param set 1
+;RAM:BEC0 1A                          ld      a, (de)                                 ; get attribute
+;RAM:BEC1 32 B6 5B                    ld      (tmp_attrib), a                         ; store
+;RAM:BEC4 13                          inc     de                                      ; next attribute
+;RAM:BEC5 D9                          exx                                             ; select param set 2
+;RAM:BEC6 C5                          push    bc                                      ; number to display
+;RAM:BEC7 7E                          ld      a, (hl)                                 ; get X
+;RAM:BEC8 23                          inc     hl
+;RAM:BEC9 23                          inc     hl
+;RAM:BECA E5                          push    hl
+;RAM:BECB 2B                          dec     hl
+;RAM:BECC 66                          ld      h, (hl)                                 ; H = Y
+;RAM:BECD 6F                          ld      l, a                                    ; L = X
+;RAM:BECE CD 31 BE                    call    print_text_single_colour
+;RAM:BED1 E1                          pop     hl
+;RAM:BED2 C1                          pop     bc
+;RAM:BED3 10 EA                       djnz    display_text_list                       ; loop through list of messages
+;RAM:BED5 3A B8 5B                    ld      a, (suppress_border)
+;RAM:BED8 A7                          and     a                                       ; show border?
+;RAM:BED9 C0                          ret     NZ                                      ; no, return
+;RAM:BEDA 3C                          inc     a
+;RAM:BEDB 32 B8 5B                    ld      (suppress_border), a
+;RAM:BEDE CD 96 D2                    call    print_border
+;RAM:BEE1 C3 6F D5                    jp      update_screen
+;RAM:BEE1             ; End of function display_text_list
+;RAM:BEE1
