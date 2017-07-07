@@ -171,7 +171,7 @@ loc_B000:
 ;RAM:B015 CD 0E D5                    call    handle_pause                            ; handle pause key
        bl   @handle_pause             ; TODO
 ;RAM:B018 CD A9 B8                    call    init_cauldron_bubbles
-       bl   @init_cauldron_bubbles    ; TODO
+       bl   @init_cauldron_bubbles
 ;RAM:B01B CD 62 CE                    call    list_objects_to_draw                    ; builds a list of screen objects
        bl   @list_objects_to_draw
 ;RAM:B01E CD 9F D5                    call    render_dynamic_objects                  ; renders above list
@@ -485,17 +485,6 @@ upd_131_to_133:
 ;RAM:B5F2 CD 65 B9                    call    move_towards_plyr
 ;RAM:B5F5 18 B2                       jr      loc_B5A9
 ;RAM:B5F7
-;RAM:B5F7             ; =============== S U B R O U T I N E =======================================
-;RAM:B5F7
-;RAM:B5F7
-;RAM:B5F7             read_port:
-;RAM:B5F7 D3 FD                       out     (0xFD), a                               ; select upper address
-;RAM:B5F9 DB FE                       in      a, (0xFE)                               ; read status
-;RAM:B5FB 2F                          cpl                                             ; positive logic
-;RAM:B5FC E6 1F                       and     #0x1F                                   ; mask off undefined bits
-;RAM:B5FE C9                          ret
-;RAM:B5FE             ; End of function read_port
-;RAM:B5FE
 ;RAM:B5FF             ; ---------------------------------------------------------------------------
 ;RAM:B5FF             ; ball (bouncing around)
 ;RAM:B5FF             ; - bounces towards wulf
@@ -942,9 +931,9 @@ set_deadly_wipe_and_draw_flags:
 *
 set_both_deadly_flags:
 ;RAM:B85C DD 7E 0D                    ld      a, 13(ix)
-       socb @ba0h,@13(ix)
 ;RAM:B85F F6 A0                       or      #0xA0 ; '�'                             ; fatal if you hit it, it hits you
 ;RAM:B861 DD 77 0D                    ld      13(ix), a
+       socb @ba0h,@13(ix)
        rt
 *
 * End of function set_both_deadly_flags
@@ -989,28 +978,48 @@ upd_178_179:                                                    ; adjust (-4,-8)
 * =============== S U B R O U T I N E =======================================
 *
 init_cauldron_bubbles:
-       rt
+       mov  r11,*sp+
 ;RAM:B8A9 3A 10 5C                    ld      a, (graphic_objs_tbl+8)                 ; plyr_spr_1 screen
+       movb @graphic_objs_tbl+8,a
 ;RAM:B8AC FE 88                       cp      #136                                    ; cauldron room?
+       cb   a,@b5ch
 ;RAM:B8AE C0                          ret     NZ                                      ; no, exit
+       jne  init_cauldron_bubbles_return
 ;RAM:B8AF 11 68 5C                    ld      de, #special_objs_here_1                ; special_objs_here[1]
+       li   de,special_objs_here_1
 ;RAM:B8B2 1A                          ld      a, (de)                                 ; graphic no.
+       movb *de,a
 ;RAM:B8B3 A7                          and     a                                       ; null?
 ;RAM:B8B4 C0                          ret     NZ                                      ; no, return
+       jne  init_cauldron_bubbles_return
 ;RAM:B8B5 3A C3 5B                    ld      a, (all_objs_in_cauldron)
+       movb @all_objs_in_cauldron,a
 ;RAM:B8B8 A7                          and     a
 ;RAM:B8B9 C0                          ret     NZ
+       jne  init_cauldron_bubbles_return
 ;RAM:B8BA 21 C8 B8                    ld      hl, #cauldron_bubbles                   ; source data
+       li   hl,cauldron_bubbles
 ;RAM:B8BD 01 12 00                    ld      bc, #18                                 ; 18 bytes to copy
+       li   bc,18
 ;RAM:B8C0 D5                          push    de
 ;RAM:B8C1 DD E1                       pop     ix                                      ; save destination
+       mov  de,ix
 ;RAM:B8C3 ED B0                       ldir                                            ; copy
+       bl   @ldir
 ;RAM:B8C5 C3 D8 C4                    jp      adj_m4_m12
-;RAM:B8C5             ; End of function init_cauldron_bubbles
-;RAM:B8C5
-;RAM:B8C5             ; ---------------------------------------------------------------------------
-;RAM:B8C8 A0 80 80 80+cauldron_bubbles:.db 0xA0, 0x80, 0x80, 0x80, 5, 5, 0xC, 0x10, 0xB4, 0, 0
-;RAM:B8C8 05 05 0C 10+                .db 0, 0, 0xA0, 0, 0, 0, 0
+       bl    @adj_m4_m12
+init_cauldron_bubbles_return:
+       dect sp
+       movb *sp,r11
+       rt
+*
+cauldron_bubbles:
+       byte >A0, >80, >80, >80, >05, >05, >0C, >10, >B4
+       byte >00, >00, >00, >00, >A0, >00, >00, >00, >00
+*
+* End of function init_cauldron_bubbles
+*
+* ---------------------------------------------------------------------------
 ;RAM:B8DA             ; ---------------------------------------------------------------------------
 ;RAM:B8DA             ; even more sparkles (showing next object required)
 ;RAM:B8DA

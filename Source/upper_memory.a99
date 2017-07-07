@@ -488,10 +488,10 @@ plyr_spr_init_data:
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
 * ---------------------------------------------------------------------------
 start_locations:
-        byte >2F, >44, >B3, >8F         ; Standard
+;       byte >2F, >44, >B3, >8F         ; Standard
 ;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
 ;       byte >01,>01,>01,>01
-;       byte 136,136,136,136            ; Cauldron room
+        byte 136,136,136,136            ; Cauldron room
 * ---------------------------------------------------------------------------
 panel_data:
        byte >86, >00, >10, >34
@@ -764,6 +764,18 @@ handle_pause:
 ;RAM:D537             ; End of function handle_pause
 ;RAM:D537
 * ---------------------------------------------------------------------------
+
+;RAM:B5F7             ; =============== S U B R O U T I N E =======================================
+;RAM:B5F7
+;RAM:B5F7
+;RAM:B5F7             read_port:
+;RAM:B5F7 D3 FD                       out     (0xFD), a                               ; select upper address
+;RAM:B5F9 DB FE                       in      a, (0xFE)                               ; read status
+;RAM:B5FB 2F                          cpl                                             ; positive logic
+;RAM:B5FC E6 1F                       and     #0x1F                                   ; mask off undefined bits
+;RAM:B5FE C9                          ret
+;RAM:B5FE             ; End of function read_port
+;RAM:B5FE
 
 *
 * =============== S U B R O U T I N E =======================================
@@ -2435,6 +2447,7 @@ b47h   byte >47
 b51h   byte >51
 b58h   byte >58
 b5ah   byte >5a
+b5ch   byte >5c
 b68h   byte >68
 b60h   byte >60
 b78h   byte >78
@@ -2457,7 +2470,7 @@ bffh   byte >ff
 
 * ---------------------------------------------------------------------------
 *
-* 195 bytes free
+* 194 bytes free
 *
 * ---------------------------------------------------------------------------
 
