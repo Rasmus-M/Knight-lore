@@ -107,7 +107,7 @@ zx_aram:
 
 * ===========================================================================
 *
-* Lower memory
+* Lower memory - main game code
 *
        aorg >2000
        copy "lower_memory.a99"
