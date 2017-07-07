@@ -2171,20 +2171,36 @@ loc_BF91:
 ;RAM:C1A0 C9                          ret
 ;RAM:C1A0             ; End of function can_pickup_spec_obj
 ;RAM:C1A0
-;RAM:C1A1
-;RAM:C1A1             ; =============== S U B R O U T I N E =======================================
-;RAM:C1A1
-;RAM:C1A1
-;RAM:C1A1             is_obj_moving:
+*
+* =============== S U B R O U T I N E =======================================
+*
+is_obj_moving:
 ;RAM:C1A1 DD 7E 09                    ld      a, 9(ix)                                ; dX
 ;RAM:C1A4 DD B6 0A                    or      10(ix)                                  ; dY
 ;RAM:C1A7 DD B6 0B                    or      11(ix)                                  ; dZ
 ;RAM:C1AA C9                          ret
-;RAM:C1AA             ; End of function is_obj_moving
-;RAM:C1AA
-;RAM:C1AB             ; ---------------------------------------------------------------------------
-;RAM:C1AB             ; extra life
-;RAM:C1AB
+       rt
+*
+* End of function is_obj_moving
+*
+* =============== S U B R O U T I N E =======================================
+*
+set_wipe_and_draw_IY:
+;RAM:C69D FD E5                       push    iy
+;RAM:C69F DD E5                       push    ix
+;RAM:C6A1 FD E5                       push    iy
+;RAM:C6A3 DD E1                       pop     ix
+;RAM:C6A5 CD 92 C6                    call    set_wipe_and_draw_flags
+;RAM:C6A8 DD E1                       pop     ix
+;RAM:C6AA FD E1                       pop     iy
+;RAM:C6AC C9                          ret
+       rt
+* End of function set_wipe_and_draw_IY
+*
+* ---------------------------------------------------------------------------
+*
+* extra life
+*
 upd_103:
        b    @no_update
 ;RAM:C1AB CD D3 C4                    call    upd_128_to_130
@@ -2215,6 +2231,7 @@ upd_103:
 ;RAM:C1EE
 ;RAM:C1EE             loc_C1EE:
 ;RAM:C1EE C3 C6 C4                    jp      dec_dZ_upd_XYZ_wipe_if_moving
+
 ;RAM:C1F1             ; ---------------------------------------------------------------------------
 ;RAM:C1F1             ; special objects being put in cauldron
 ;RAM:C1F1
@@ -3330,38 +3347,137 @@ get_delta_from_tbl:
 delta_tbl:
        byte >FF, 1, >FE, 2, >FD, 3, >FC, 4, >FB, 5, >FA, 6, >F9, 7, >F8, 8
 * ---------------------------------------------------------------------------
-;RAM:C65E             ; portcullis (static)
-;RAM:C65E
+* portcullis (static)
 upd_8:
-       b    @no_update
 ;RAM:C65E CD DD C4                    call    adj_m6_m12
+       bl   @adj_m6_m12
 ;RAM:C661 21 AF 5B                    ld      hl, #portcullis_moving
+       li   hl,portcullis_moving
 ;RAM:C664 7E                          ld      a, (hl)
+       movb *hl,a
 ;RAM:C665 A7                          and     a                                       ; moving?
 ;RAM:C666 C0                          ret     NZ                                      ; yes, exit
+       jne  upd_8_return
 ;RAM:C667 3A AE 5B                    ld      a, (room_size_Z)
+       movb @room_size_Z,a
 ;RAM:C66A DD BE 03                    cp      3(ix)                                   ; objZ = room height?
+       cb   a,@3(ix)
 ;RAM:C66D 28 3E                       jr      Z, init_portcullis_up                   ; yes, skip
+       jne  init_portcullis_up
 ;RAM:C66F C6 1F                       add     a, #31
+       ab   @b1fh,a
 ;RAM:C671 DD BE 03                    cp      3(ix)                                   ; objZ <= room height+31?
+       cb   a,@3(ix)
 ;RAM:C674 30 37                       jr      NC, init_portcullis_up                  ; yes, skip
+       jhe  init_portcullis_up
 ;RAM:C676 3A B0 5B                    ld      a, (portcullis_move_cnt)
+       movb @portcullis_move_cnt,a
 ;RAM:C679 FE 04                       cp      #4                                      ; moved less than 4 times?
+       sb   a,@b04h
 ;RAM:C67B 38 08                       jr      C, init_portcullis_down                 ; yes, move immediately
+       jl   init_portcullis_down
 ;RAM:C67D 3A A5 5B                    ld      a, (seed_3)
+       movb @seed_3,a
 ;RAM:C680 E6 1F                       and     #0x1F                                   ; 1in32 chance?
+       andi a,>1f00
 ;RAM:C682 C0                          ret     NZ                                      ; no, return
+       jne  upd_8_return
 ;RAM:C683 F6 80                       or      #0x80 ; '�'                             ; arbitrarily large count
-;RAM:C685
-;RAM:C685             init_portcullis_down:
+       ori  a,>8000
+init_portcullis_down:
 ;RAM:C685 3C                          inc     a
+       ab   one,a
 ;RAM:C686 32 B0 5B                    ld      (portcullis_move_cnt), a
+       movb a,@portcullis_move_cnt
 ;RAM:C689 DD CB 00 C6                 set     0, 0(ix)                                ; graphic_no=9
+       socb one,*ix
 ;RAM:C68D DD 36 0B FF                 ld      11(ix), #0xFF                           ; dZ=-1 (down)
-;RAM:C691
-;RAM:C691             loc_C691:                                                       ; flag portculis moving
-;RAM:C691 34                          inc     (hl)
+       movb @bffh,@11(ix)
+loc_C691:
+;RAM:C691 34                          inc     (hl)                                    ; flag portculis moving
+       ab   one,*hl
 ;RAM:C692
+upd_8_return:
+       dect sp
+       mov  *sp,r11
+       b    *r11
+* ---------------------------------------------------------------------------
+*
+init_portcullis_up:
+;RAM:C6AD 3A A5 5B                    ld      a, (seed_3)
+       movb @seed_3,a
+;RAM:C6B0 E6 1F                       and     #0x1F                                   ; 1in32 chance?
+       andi a,>1f00
+;RAM:C6B2 C0                          ret     NZ                                      ; yes, exit
+       jne  upd_8_return
+;RAM:C6B3 DD CB 00 C6                 set     0, 0(ix)                                ; graphic_no=9
+       socb one,*ix
+;RAM:C6B7 DD 36 0B 01                 ld      11(ix), #1                              ; dZ=1 (up)
+       movb one,@11(ix)
+;RAM:C6BB 18 D4                       jr      loc_C691
+       jmp  loc_C691
+* ---------------------------------------------------------------------------
+* portcullis (moving)
+*
+upd_9:
+;RAM:C6BD CD DD C4                    call    adj_m6_m12
+       bl   @adj_m6_m12
+;RAM:C6C0 DD CB 0D FE                 set     7, 13(ix)                               ; fatal if it hits player
+       socb @b80h,@13(ix)
+;RAM:C6C4 3A 14 5C                    ld      a, (graphic_objs_tbl+0xC)
+       movb @graphic_objs_tbl+>0C,a
+;RAM:C6C7 E6 F0                       and     #0xF0 ; '�'                             ; entering screen?
+       andi a,>f000
+;RAM:C6C9 C0                          ret     NZ                                      ; yes, exit
+       jne upd_9_return
+;RAM:C6CA DD 7E 0B                    ld      a, 11(ix)                               ; dZ
+       movb @11(ix),a
+;RAM:C6CD A7                          and     a                                       ; up?
+;RAM:C6CE F2 EA C6                    jp      P, move_portcullis_up                   ; yes, go
+       jgt  move_portcullis_up
+       jeq  move_portcullis_up
+;RAM:C6D1 DD 35 0B                    dec     11(ix)                                  ; accelerate speed?
+       sb   one,@11(ix)
+;RAM:C6D4 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
+;RAM:C6D7 DD CB 0C 56                 bit     2, 12(ix)                               ; out of bounds?
+       movb @12(ix),r0
+       andi r0,>0400
+;RAM:C6DB 28 B5                       jr      Z, set_wipe_and_draw_flags              ; no, go
+       jeq  set_wipe_and_draw_flags
+;RAM:C6DD CD 89 B4                    call    audio_B489
+;      TODO
+stop_portcullis:
+;RAM:C6E0 AF                          xor     a                                       ; flag not moving
+       clr  a
+;RAM:C6E1 32 AF 5B                    ld      (portcullis_moving), a
+       movb a,@portcullis_moving
+;RAM:C6E4 DD CB 00 86                 res     0, 0(ix)                                ; graphic_no=8
+       szcb one,*ix
+;RAM:C6E8 18 A8                       jr      set_wipe_and_draw_flags
+       jmp  set_wipe_and_draw_flags
+* ---------------------------------------------------------------------------
+move_portcullis_up:
+;RAM:C6EA DD 36 0B 02                 ld      11(ix), #2                              ; dZ
+       movb @b02h,@11(ix)
+;RAM:C6EE CD 67 B4                    call    audio_B467
+;      TODO
+;RAM:C6F1 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
+;RAM:C6F4 3A AE 5B                    ld      a, (room_size_Z)
+       movb @room_size_Z,a
+;RAM:C6F7 C6 1F                       add     a, #31
+       ab   @b1fh,a
+;RAM:C6F9 DD BE 03                    cp      3(ix)                                   ; objZ < room height+31?
+       cb   a,@3(ix)
+;RAM:C6FC 30 94                       jr      NC, set_wipe_and_draw_flags             ; yes, go
+       jhe  set_wipe_and_draw_flags
+;RAM:C6FE 18 E0                       jr      stop_portcullis
+       jmp  stop_portcullis
+upd_9_return:
+       dect sp
+       mov  *sp,r11
+       b    *r11
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -3377,67 +3493,7 @@ set_wipe_and_draw_flags:
 *
 * End of function set_wipe_and_draw_flags
 *
-;RAM:C69D
-;RAM:C69D             ; =============== S U B R O U T I N E =======================================
-;RAM:C69D
-;RAM:C69D
-;RAM:C69D             set_wipe_and_draw_IY:
-;RAM:C69D FD E5                       push    iy
-;RAM:C69F DD E5                       push    ix
-;RAM:C6A1 FD E5                       push    iy
-;RAM:C6A3 DD E1                       pop     ix
-;RAM:C6A5 CD 92 C6                    call    set_wipe_and_draw_flags
-;RAM:C6A8 DD E1                       pop     ix
-;RAM:C6AA FD E1                       pop     iy
-;RAM:C6AC C9                          ret
-;RAM:C6AC             ; End of function set_wipe_and_draw_IY
-;RAM:C6AC
-;RAM:C6AD             ; ---------------------------------------------------------------------------
-;RAM:C6AD
-;RAM:C6AD             init_portcullis_up:
-;RAM:C6AD 3A A5 5B                    ld      a, (seed_3)
-;RAM:C6B0 E6 1F                       and     #0x1F                                   ; 1in32 chance?
-;RAM:C6B2 C0                          ret     NZ                                      ; yes, exit
-;RAM:C6B3 DD CB 00 C6                 set     0, 0(ix)                                ; graphic_no=9
-;RAM:C6B7 DD 36 0B 01                 ld      11(ix), #1                              ; dZ=1 (up)
-;RAM:C6BB 18 D4                       jr      loc_C691
-;RAM:C6BD             ; ---------------------------------------------------------------------------
-;RAM:C6BD             ; portcullis (moving)
-;RAM:C6BD
-upd_9:
-       b    @no_update
-;RAM:C6BD CD DD C4                    call    adj_m6_m12
-;RAM:C6C0 DD CB 0D FE                 set     7, 13(ix)                               ; fatal if it hits player
-;RAM:C6C4 3A 14 5C                    ld      a, (graphic_objs_tbl+0xC)
-;RAM:C6C7 E6 F0                       and     #0xF0 ; '�'                             ; entering screen?
-;RAM:C6C9 C0                          ret     NZ                                      ; yes, exit
-;RAM:C6CA DD 7E 0B                    ld      a, 11(ix)                               ; dZ
-;RAM:C6CD A7                          and     a                                       ; up?
-;RAM:C6CE F2 EA C6                    jp      P, move_portcullis_up                   ; yes, go
-;RAM:C6D1 DD 35 0B                    dec     11(ix)                                  ; accelerate speed?
-;RAM:C6D4 CD 00 C7                    call    dec_dZ_and_update_XYZ
-;RAM:C6D7 DD CB 0C 56                 bit     2, 12(ix)                               ; out of bounds?
-;RAM:C6DB 28 B5                       jr      Z, set_wipe_and_draw_flags              ; no, go
-;RAM:C6DD CD 89 B4                    call    audio_B489
-;RAM:C6E0
-;RAM:C6E0             stop_portcullis:                                                ; flag not moving
-;RAM:C6E0 AF                          xor     a
-;RAM:C6E1 32 AF 5B                    ld      (portcullis_moving), a
-;RAM:C6E4 DD CB 00 86                 res     0, 0(ix)                                ; graphic_no=8
-;RAM:C6E8 18 A8                       jr      set_wipe_and_draw_flags
-;RAM:C6EA             ; ---------------------------------------------------------------------------
-;RAM:C6EA
-;RAM:C6EA             move_portcullis_up:                                             ; dZ
-;RAM:C6EA DD 36 0B 02                 ld      11(ix), #2
-;RAM:C6EE CD 67 B4                    call    audio_B467
-;RAM:C6F1 CD 00 C7                    call    dec_dZ_and_update_XYZ
-;RAM:C6F4 3A AE 5B                    ld      a, (room_size_Z)
-;RAM:C6F7 C6 1F                       add     a, #31
-;RAM:C6F9 DD BE 03                    cp      3(ix)                                   ; objZ < room height+31?
-;RAM:C6FC 30 94                       jr      NC, set_wipe_and_draw_flags             ; yes, go
-;RAM:C6FE 18 E0                       jr      stop_portcullis
-;RAM:C700
-;* =============== S U B R O U T I N E =======================================
+* =============== S U B R O U T I N E =======================================
 *
 dec_dZ_and_update_XYZ:
        mov  r11,*sp+

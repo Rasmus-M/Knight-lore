@@ -2437,6 +2437,7 @@ b10h   byte >10
 b12h   byte >12
 b14h   byte >14
 b17h   byte >17
+b1fh   byte >1f
 b20h   byte >20
 b22h   byte >22
 b28h   byte >28
