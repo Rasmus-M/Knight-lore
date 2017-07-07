@@ -13,33 +13,6 @@
        copy "update-sprite-jump-table.a99"
 
 * ---------------------------------------------------------------------------
-*
-* scratchpad for player sprites/objects
-*
-plyr_spr_1_scratchpad:
-       byte 0, 0, 0, 0, 0, 0, 0, 0
-start_loc_1:
-       byte 0, 0, 0, 0
-flags12_1:
-       byte 0, 0, 0, 0
-byte_D171:
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-plyr_spr_2_scratchpad:
-       byte 0, 0, 0, 0, 0, 0, 0, 0
-start_loc_2:
-       byte 0, 0, 0, 0, 0, 0, 0, 0
-byte_D191:
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-* ---------------------------------------------------------------------------
-sun_moon_scratchpad:
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-* ---------------------------------------------------------------------------
-objects_to_draw:
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-       byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-* ---------------------------------------------------------------------------
 sprite_scratchpad:
        byte >8A, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00
        byte >00, >00, >00, >00, >00, >00, >00, >00, >03, >01, >E8, >A0, >00, >00, >00, >00
@@ -62,7 +35,125 @@ render_list:
        even
 * ---------------------------------------------------------------------------
 
-
+*
+* =============== S U B R O U T I N E =======================================
+*
+print_days:
+       mov  r11,*sp+
+;RAM:BC66 21 E2 D9                    ld      hl, # vidbuf+0xEF                       ; (120,7)
+       li   hl,vidbuf+>00EF
+;RAM:BC69 11 B9 5B                    ld      de, #days
+       li   de,days
+;RAM:BC6C 06 01                       ld      b, #1
+       movb one,b
+;RAM:BC6E CD AE BC                    call    print_BCD_number
+       bl   @print_BCD_number
+;RAM:BC71 21 EF 5A                    ld      hl, # zx_aram+0x2EF                     ; attribute memory
+       li   hl,zx_aram+>02EF
+;RAM:BC74 36 47                       ld      (hl), #0x47 ; 'G'
+;RAM:BC76 2C                          inc     l
+;RAM:BC77 36 47                       ld      (hl), #0x47 ; 'G'
+       li   a,>4700
+       li   bc,>0201
+       bl   @fill_color_window
+;RAM:BC79 C9                          ret
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function print_days
+*
+* =============== S U B R O U T I N E =======================================
+*
+print_lives_gfx:
+       mov  r11,*sp+
+;RAM:BC7A DD 21 DB BF                 ld      ix, #sprite_scratchpad
+       li   ix,sprite_scratchpad
+;RAM:BC7E DD 36 00 8C                 ld      0(ix), #0x8C ; '�'                      ; sprite index
+       movb @b8ch,*ix
+;RAM:BC82 DD 36 07 00                 ld      7(ix), #0                               ; clear flags
+       movb @b00h,@7(ix)
+;RAM:BC86 DD 36 1A 10                 ld      26(ix), #16                             ; pixel X
+       movb @b10h,@26(ix)
+;RAM:BC8A DD 36 1B 20                 ld      27(ix), #32                             ; pixel Y
+       movb @b20h,@27(ix)
+;RAM:BC8E CD 18 D7                    call    print_sprite
+       bl   @print_sprite
+;RAM:BC91 3E 47                       ld      a, #0x47 ; 'G'
+       movb @b47h,a
+;RAM:BC93 11 42 5A                    ld      de, # zx_aram+0x242
+       li   hl,zx_aram+>0242
+;RAM:BC96 06 02                       ld      b, #2
+       li   bc,>0201
+;RAM:BC98 CD 09 D5                    call    fill_DE
+       bl   @fill_color_window
+;RAM:BC9B 11 62 5A                    ld      de, # zx_aram+0x262
+       li   hl,zx_aram+>0262
+;RAM:BC9E 06 04                       ld      b, #4
+       li   bc,>0401
+;RAM:BCA0 C3 09 D5                    jp      fill_DE
+       bl   @fill_color_window
+*      Return
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function print_lives_gfx
+*
+* =============== S U B R O U T I N E =======================================
+*
+print_lives:
+;RAM:BCA3 11 BA 5B                    ld      de, #lives                              ; ptr number
+       li   de,lives
+;RAM:BCA6 06 01                       ld      b, #1                                   ; 1 byte (2 BCD digits)
+       movb one,b
+;RAM:BCA8 21 D7 DD                    ld      hl, # vidbuf+0x4E4                      ; screen buffer location
+       li   hl,vidbuf+>04E4
+;RAM:BCAB C3 AE BC                    jp      print_BCD_number
+       b    @print_BCD_number
+*
+* End of function print_lives
+*
+* =============== S U B R O U T I N E =======================================
+*
+display_day:
+       mov  r11,*sp+
+;RAM:BCCA 3A AD 5B                    ld      a, (curr_room_attrib)                   ; attribute
+       movb @curr_room_attrib,a
+;RAM:BCCD 2F                          cpl
+       inv  a
+;RAM:BCCE C6 02                       add     a, #2
+       ab   @b02h,a
+;RAM:BCD0 E6 07                       and     #7
+       andi a,>0700
+;RAM:BCD2 F6 40                       or      #0x40 ; '@'                             ; bright on
+       ori  a,>4000
+;RAM:BCD4 32 E7 BC                    ld      (day_txt), a
+       movb a,@day_txt
+;RAM:BCD7 21 EC BC                    ld      hl, #day_font
+       li   hl,day_font
+;RAM:BCDA 22 C7 5B                    ld      (gfxbase_8x8), hl                       ; set print routine font
+       mov  hl,@gfxbase_8x8
+;RAM:BCDD 11 E7 BC                    ld      de, #day_txt
+       li   de,day_txt
+;RAM:BCE0 21 70 0F                    ld      hl, #0xF70                              ; screen location
+       li   hl,>0f70
+;RAM:BCE3 E5                          push    hl
+       mov  hl,*sp+
+;RAM:BCE4 C3 4C BE                    jp      print_text
+       b    @print_text
+* ---------------------------------------------------------------------------
+day_txt:
+       byte >00, >00, >01, >02, >83
+       byte >00 ; Added one byte for word alignment
+day_font:
+       byte >06, >07, >06, >06, >06, >06, >06, >0F
+       byte >00, >01, >82, >C6, >64, >6C, >6D, >C6
+       byte >C8, >C6, >E1, >60, >60, >E0, >64, >63
+       byte >60, >60, >60, >E0, >60, >40, >C0, >80
+*
+* End of function display_day
+*
 * =============== S U B R O U T I N E =======================================
 *
 display_panel:
@@ -159,6 +250,215 @@ loc_D317:                                                                       
        b    @fill_color_window
 *
 * End of function colour_sun_moon
+*
+* =============== S U B R O U T I N E =======================================
+*
+* HL = screen buffer address
+* DE = ptr number to print (BCD)
+* B  = number of bytes (BCD digit pairs)
+*
+print_BCD_number:
+       mov  r11,*sp+
+;RAM:BCAE E5                          push    hl
+print_BCD_number_1:
+       mov  hl,*sp+
+;RAM:BCAF 21 08 61                    ld      hl, #font
+       li   hl,font
+;RAM:BCB2 22 C7 5B                    ld      (gfxbase_8x8), hl
+       mov  hl,@gfxbase_8x8
+;RAM:BCB5 E1                          pop     hl
+       dect sp
+       mov  *sp,hl
+loc_BCB6:
+;RAM:BCB6 1A                          ld      a, (de)                                 ; get number
+       movb *de,a
+;RAM:BCB7 0F                          rrca
+;RAM:BCB8 0F                          rrca
+;RAM:BCB9 0F                          rrca
+;RAM:BCBA 0F                          rrca
+       srl  a,4
+;RAM:BCBB E6 0F                       and     #0xF                                    ; high digit
+       andi a,>0f00
+;RAM:BCBD CD 7F BE                    call    print_8x8
+       bl   @print_8x8
+print_BCD_lsd:
+;RAM:BCC0 1A                          ld      a, (de)                                 ; get number
+       movb *de,a
+;RAM:BCC1 E6 0F                       and     #0xF                                    ; low digit
+       andi a,>0f00
+;RAM:BCC3 CD 7F BE                    call    print_8x8
+       bl   @print_8x8
+;RAM:BCC6 13                          inc     de                                      ; next byte address
+       inc  de
+;RAM:BCC7 10 ED                       djnz    loc_BCB6                                ; loop through all bytes
+       sb   one,b
+       jne  loc_BCB6
+;RAM:BCC9 C9                          ret
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function print_BCD_number
+*
+* =============== S U B R O U T I N E =======================================
+*
+print_text_std_font:
+       mov  r11,*sp+
+;RAM:BE45 E5                          push    hl
+       mov  hl,*sp+
+;RAM:BE46 21 08 61                    ld      hl, #font
+       li   hl,font
+;RAM:BE49 22 C7 5B                    ld      (gfxbase_8x8), hl
+       mov   hl,@gfxbase_8x8
+*
+* de: address of text
+* screen location pushed to stack
+* @gfxbase_8x8 contains fint address
+*
+print_text:
+;RAM:BE4C C1                          pop     bc                                      ; pop screen location
+       dect sp
+       mov  *sp,bc
+;RAM:BE4D C5                          push    bc
+       mov  bc,*sp+
+;RAM:BE4E CD 11 D8                    call    calc_vidbuf_addr
+       bl   @calc_vidbuf_addr
+;RAM:BE51 69                          ld      l, c
+;RAM:BE52 60                          ld      h, b                                    ; HL = bitmap buffer address
+       mov  bc,hl
+;RAM:BE53 1A                          ld      a, (de)                                 ; attribute
+       movb *de,a
+;RAM:BE54 08                          ex      af, af'
+       mov  af,af_
+;RAM:BE55 13                          inc     de                                      ; ptr first character
+       inc  de
+loc_BE56:
+;RAM:BE56 D9                          exx
+       bl   @exx
+;RAM:BE57 E1                          pop     hl                                      ; HL = Y,X
+       dect sp
+       mov  *sp,hl
+;RAM:BE58 D5                          push    de
+       mov  de,*sp+
+;RAM:BE59 CD 48 D8                    call    calc_attrib_addr
+       bl   @calc_attrib_addr
+;RAM:BE5C 6B                          ld      l, e
+;RAM:BE5D 62                          ld      h, d                                    ; HL = attribute memory address
+       mov  de,hl
+;RAM:BE5E D1                          pop     de
+       dect sp
+       mov  *sp,de
+loc_BE5F:
+;RAM:BE5F D9                          exx
+       bl   @exx
+;RAM:BE60 1A                          ld      a, (de)                                 ; next character
+       movb *de,a
+;RAM:BE61 CB 7F                       bit     7, a                                    ; done?
+;RAM:BE63 20 0D                       jr      NZ, loc_BE72                            ; yes, skip
+       jlt  loc_BE72
+;RAM:BE65 D5                          push    de
+       mov  de,*sp+
+;RAM:BE66 CD 7F BE                    call    print_8x8                               ; display a character
+       bl   @print_8x8
+;RAM:BE69 D1                          pop     de
+       dect sp
+       mov  *sp,de
+;RAM:BE6A 13                          inc     de
+       inc  de
+;RAM:BE6B D9                          exx
+       bl   @exx
+;RAM:BE6C 08                          ex      af, af'
+       mov  af_,af
+;RAM:BE6D 77                          ld      (hl), a                                 ; store attribute
+       bl   @set_attribute
+;RAM:BE6E 2C                          inc     l                                       ; next attribute address
+       ab   one,@l
+;RAM:BE6F 08                          ex      af, af'
+       mov  af,af_
+;RAM:BE70 18 ED                       jr      loc_BE5F                                ; loop until message done
+       jmp  loc_BE5F
+* ---------------------------------------------------------------------------
+loc_BE72:
+;RAM:BE72 E6 7F                       and     #0x7F ; ''                             ; mask off end-of-message bit
+       andi a,>7f00
+;RAM:BE74 D5                          push    de
+       mov  de,*sp+
+;RAM:BE75 CD 7F BE                    call    print_8x8                               ; display a character
+      bl   @print_8x8
+;RAM:BE78 D1                          pop     de
+       dect sp
+       mov  *sp,de
+;RAM:BE79 13                          inc     de
+       inc  de
+;RAM:BE7A D9                          exx
+       bl   @exx
+;RAM:BE7B 08                          ex      af, af'
+       mov  af_,af
+;RAM:BE7C 77                          ld      (hl), a                                 ; store attribute
+       bl   @set_attribute
+;RAM:BE7D D9                          exx
+       bl   @exx
+;RAM:BE7E C9                          ret
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function print_text_std_font
+*
+* =============== S U B R O U T I N E =======================================
+*
+print_8x8:
+;RAM:BE7F C5                          push    bc
+       mov  bc,*sp+
+;RAM:BE80 D5                          push    de
+       mov  de,*sp+
+;RAM:BE81 E5                          push    hl
+       mov  hl,*sp+
+;RAM:BE82 6F                          ld      l, a
+;RAM:BE83 26 00                       ld      h, #0                                   ; HL = character
+       clr  hl
+       movb a,@l
+;RAM:BE85 29                          add     hl, hl
+;RAM:BE86 29                          add     hl, hl
+;RAM:BE87 29                          add     hl, hl                                  ; calculate offset into font data
+       sla  hl,3
+;RAM:BE88 ED 5B C7 5B                 ld      de, (gfxbase_8x8)
+       mov  @gfxbase_8x8,de
+;RAM:BE8C 19                          add     hl, de                                  ; calculate address of font data
+       a    de,hl
+;RAM:BE8D EB                          ex      de, hl                                  ; DE = font data
+       mov  hl,de
+;RAM:BE8E E1                          pop     hl
+       dect sp
+       mov  *sp,hl
+;RAM:BE8F 06 08                       ld      b, #8                                   ; # bytes (lines) to display
+       movb @b08h,b
+loc_BE91:
+;RAM:BE91 1A                          ld      a, (de)                                 ; get font data byte
+;RAM:BE92 77                          ld      (hl), a                                 ; store in video/buffer memory
+;RAM:BE93 13                          inc     de                                      ; next font data byte
+       movb *de+,*hl
+;RAM:BE94 C5                          push    bc
+;RAM:BE95 01 E0 FF                    ld      bc, #0xFFE0                             ; next video/buffer line
+;RAM:BE98 09                          add     hl, bc
+;RAM:BE99 C1                          pop     bc
+       ai   hl,-32
+;RAM:BE9A 10 F5                       djnz    loc_BE91                                ; loop until done character
+       sb   one,b
+       jne  loc_BE91
+;RAM:BE9C D1                          pop     de
+       dect sp
+       mov  *sp,de
+;RAM:BE9D 01 01 01                    ld      bc, #0x101
+;RAM:BEA0 09                          add     hl, bc                                  ; video/buffer address for next character
+       ai   hl,>0101
+;RAM:BEA1 C1                          pop     bc
+       dect sp
+       mov  *sp,bc
+;RAM:BEA2 C9                          ret
+       rt
+*
+* End of function print_8x8
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -688,6 +988,28 @@ updscr2:
 *
 * =============== S U B R O U T I N E =======================================
 *
+blit_2x8:
+       mov  r11,*sp+
+;RAM:C432 CD 26 D8                    call    calc_vram_addr            ; dest
+       bl   @calc_vram_addr
+;RAM:C435 CD 11 D8                    call    calc_vidbuf_addr          ; source
+       bl   @calc_vidbuf_addr
+;RAM:C438 69                          ld      l, c
+;RAM:C439 60                          ld      h, b
+       mov  bc,hl
+;RAM:C43A 01 02 08                    ld      bc, #0x802
+       li   bc,>0802
+;RAM:C43D C3 7C D6                    jp      blit_to_screen
+       bl    @blit_to_screen          ; cannot jump because blit_to_screen doesn't pop return address
+*      Return
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function blit_2x8
+*
+* =============== S U B R O U T I N E =======================================
+*
 * Copy a section of the video buffer to the screen
 *
 * HL=source
@@ -804,6 +1126,47 @@ blit3:
        rt
 *
 * End of function blit_to_screen
+*
+* =============== S U B R O U T I N E =======================================
+*
+* HL = starting location
+* B = width (bytes)
+* C = height (lines)
+* A = attribute
+*
+* Note that line length is fixed at 32.
+*
+fill_window:
+;RAM:C515 11 20 00                    ld      de, #32                                 ; Line length
+       li   de,32
+loc_C518:
+;RAM:C518 C5                          push    bc
+       mov  bc,*sp+
+;RAM:C519 E5                          push    hl
+       mov  hl,*sp+
+loc_C51A:
+;RAM:C51A 77                          ld      (hl), a                                 ; set byte
+;RAM:C51B 23                          inc     hl                                      ; next location
+       movb a,*hl+
+;RAM:C51C 10 FC                       djnz    loc_C51A                                ; loop for 1 line
+       sb   one,b
+       jne  loc_C51A
+;RAM:C51E E1                          pop     hl
+       dect sp
+       mov  *sp,hl
+;RAM:C51F 19                          add     hl, de                                  ; next line
+       a    de,hl
+;RAM:C520 C1                          pop     bc
+       dect sp
+       mov  *sp,bc
+;RAM:C521 0D                          dec     c                                       ; done all lines?
+       sb   one,@c
+;RAM:C522 20 F4                       jr      NZ, loc_C518                            ; no, loop
+       jne  loc_C518
+;RAM:C524 C9                          ret
+       rt
+*
+* End of function fill_window
 *
 *=============== S U B R O U T I N E =======================================
 *
