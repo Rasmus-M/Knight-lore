@@ -129,6 +129,7 @@ vidbuf:
        aorg >7800
        copy "start-menu.a99"
        copy "game-over.a99"
+       copy "sound.a99"
 *
 cartridge_memory_end:
        data -1

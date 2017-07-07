@@ -286,12 +286,6 @@ loc_B090:
 *
 * End of function reset_objs_wipe_flag
 *
-
-* ---------------------------------------------------------------------------
-*      Sound routines copied to separate file
-       copy "zx-sound.a99"
-* ---------------------------------------------------------------------------
-
 * =============== S U B R O U T I N E =======================================
 *
 * returns C flag set if any other object intersects with this one
@@ -1238,7 +1232,7 @@ guard_W:
        jne  !
        rt
 ;RAM:B9E8 21 00 02                    ld      hl, #0x200                              ; dY=2, dX=0
-!      swpb hl
+!      li   hl,>0200
 next_guard_dir:
 ;RAM:B9EB DD 7E 0D                    ld      a, 13(ix)                               ; direction
        movb @13(ix),a
@@ -1257,7 +1251,7 @@ next_guard_dir:
 ;RAM:B9F6 B0                          or      b                                       ; inc lowest 2 bits (mod 4)
        socb b,a
 ;RAM:B9F7 DD 77 0D                    ld      13(ix), a
-       movb a,@12(ix)
+       movb a,@13(ix)
 ;RAM:B9FA C9                          ret
        rt
 * ---------------------------------------------------------------------------
@@ -1280,12 +1274,12 @@ guard_E:                                                        ; dY=0, dX=+2
        li   hl,>0002
 ;RAM:BA0B DD CB 0C 46                 bit     0, 12(ix)                               ; X OOB?
        movb @12(ix),r0
-       andi r0,>0100f
+       andi r0,>0100
 ;RAM:BA0F C8                          ret     Z                                       ; no, exit
        jne  !
        rt
 ;RAM:BA10 21 00 FE                    ld      hl, #0xFE00                             ; dY=-2, dX=0
-!      swpb hl
+!      li   hl,>fe00
 ;RAM:BA13 18 D6                       jr      next_guard_dir
        jmp  next_guard_dir
 * ---------------------------------------------------------------------------
@@ -3612,7 +3606,7 @@ loc_C7E4:
 ;RAM:C7F3 30 04                       jr      NC, loc_C7F9                            ; no, skip
        jhe  loc_C7F9
 ;RAM:C7F5 FD CB 07 C6                 set     0, 7(iy)                                ; flag near arch
-       socb @b01h,@7(iy)
+       socb one,@7(iy)
 loc_C7F9:
 ;RAM:C7F9 FD 19                       add     iy, de                                  ; next entry
        a    de,iy
@@ -3914,7 +3908,7 @@ chk_facing_E:
 ;RAM:C8D9 CD 1E CA                    call    get_sprite_dir
        bl   @get_sprite_dir
 ;RAM:C8DC FE 01                       cp      #1                                      ; E?
-       cb   a,@b01h
+       cb   a,one
 ;RAM:C8DE 18 F2                       jr      loc_C8D2
        jmp  loc_C8D2
 * ---------------------------------------------------------------------------
@@ -4424,7 +4418,7 @@ handle_exit_screen:
 ;RAM:CA7A C8                          ret     Z                                       ; no, return
        jeq  handle_exit_screen_return
 ;RAM:CA7B DD CB 07 86                 res     0, 7(ix)                                ; reset flag
-       szcb @b01h,@7(ix)
+       szcb one,@7(ix)
 ;RAM:CA7F 01 92 CA                    ld      bc, #screen_move_tbl
        li   bc,screen_move_tbl
 ;RAM:CA82 2A AB 5B                    ld      hl, (room_size_X)
@@ -4732,7 +4726,7 @@ loc_CBAF:
 ;RAM:CBB2 30 2D                       jr      NC, loc_CBE1
        jhe  loc_CBE1
 ;RAM:CBB4 DD CB 0C C6                 set     0, 12(ix)                               ; set X OOB
-       socb @b01h,@12(ix)
+       socb one,@12(ix)
 ;RAM:CBB8 DD 7E 0D                    ld      a, 13(ix)
        movb @13(ix),a
 ;RAM:CBBB 0F                          rrca
@@ -4814,7 +4808,7 @@ loc_CBFE:
 ;RAM:CC01 30 2D                       jr      NC, loc_CC30                            ; next entry
        jhe  loc_CC30
 ;RAM:CC03 DD CB 0C CE                 set     1, 12(ix)                               ; set Y OOB
-       socb @b01h,@12(ix)
+       socb @b02h,@12(ix)
 ;RAM:CC07 DD 7E 0D                    ld      a, 13(ix)
        movb @13(ix),a
 ;RAM:CC0A 0F                          rrca
@@ -5093,7 +5087,7 @@ loc_CCF6:
 ;RAM:CCFA 38 0B                       jr      C, dX_ok                                ; yes, skip
        jl   dX_ok
 ;RAM:CCFC DD CB 0C C6                 set     0, 12(ix)                               ; set X OOB
-       socb @b01h,@12(ix)
+       socb one,@12(ix)
 ;RAM:CD00 79                          ld      a, c                                    ; dX
        movb @c,a
 ;RAM:CD01 CD 89 CA                    call    adj_d_for_out_of_bounds
@@ -5155,7 +5149,7 @@ loc_CD21:
 ;RAM:CD25 38 0B                       jr      C, dY_ok                                ; yes, skip
        jl   dY_ok
 ;RAM:CD27 DD CB 0C CE                 set     1, 12(ix)                               ; set Y OOB
-       socb @b01h,@12(ix)
+       socb @b02h,@12(ix)
 ;RAM:CD2B 7D                          ld      a, l                                    ; dY
        movb @l,a
 ;RAM:CD2C CD 89 CA                    call    adj_d_for_out_of_bounds

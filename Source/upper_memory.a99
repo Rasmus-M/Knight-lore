@@ -484,20 +484,11 @@ start_loc_2:
 byte_D191:
        byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 plyr_spr_init_data:
-* +0 graphic_no.
-* +1 x (center)
-* +2 y (center)
-* +3 z (bottom)
-* +4 width (X radius)
-* +5 depth (Y radius)
-* +6 height
-* +7 flags
        byte >78, >80, >80, >80, >05, >05, >17, >1C
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
 * ---------------------------------------------------------------------------
 start_locations:
-;       byte >2F, >44, >B3, >8F         ; Standard
-       byte >2F,>2F,>2F,>2F
+        byte >2F, >44, >B3, >8F         ; Standard
 ;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
 ;       byte >01,>01,>01,>01
 ;       byte 136,136,136,136            ; Cauldron room
