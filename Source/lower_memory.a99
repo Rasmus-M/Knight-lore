@@ -738,8 +738,7 @@ loc_B749:
 ;RAM:B75B DD 7E 0D                    ld      a, 13(ix)
        movb @13(ix),a
 ;RAM:B75E EE 01                       xor     #1                                      ; toggle direction
-       li   r0,>0100
-       xor  r0,a
+       xor  one,a
 ;RAM:B760 DD 77 0D                    ld      13(ix), a
        movb a,@13(ix)
 loc_B763:
@@ -1096,16 +1095,16 @@ upd_164_to_167:
 ;RAM:B958 D6 10                       sub     #0x10
 ;RAM:B95A FE 40                       cp      #0x40 ; '@'
 ;RAM:B95C 38 04                       jr      C, loc_B962
-;RAM:B95E             ;
-;RAM:B95E             ; final sparkles in cauldron
-;RAM:B95E
-upd_111:                                                        ; invalid
-       b    @no_update
-;RAM:B95E DD 36 00 01                 ld      0(ix), #1
-;RAM:B962
-;RAM:B962             loc_B962:
+*
+* final sparkles in cauldron
+*
+upd_111:
+;RAM:B95E DD 36 00 01                 ld      0(ix), #1                               ; invalid
+       mov  one,*ix
+loc_B962:
 ;RAM:B962 C3 32 C2                    jp      audio_B467_wipe_and_draw
-;RAM:B965
+       b    @audio_B467_wipe_and_draw
+*
 ;RAM:B965             ; =============== S U B R O U T I N E =======================================
 ;RAM:B965
 ;RAM:B965
@@ -1139,8 +1138,7 @@ toggle_next_prev_sprite:
 ;RAM:B985 DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
        movb *ix,a
 ;RAM:B988 EE 01                       xor     #1                                      ; toggle next/prev sprite
-       li   r0,>0100
-       xor  r0,a
+       xor  one,a
 ;RAM:B98A 18 0C                       jr      save_graphic_no
        jmp  save_graphic_no
 * ---------------------------------------------------------------------------
@@ -1704,34 +1702,37 @@ upd_127:
 ;RAM:BF1E C3 D5 AF                    jp      jump_to_upd_object
        b    @jump_to_upd_object
 * ---------------------------------------------------------------------------
-;RAM:BF21             ; START OF FUNCTION CHUNK FOR chk_and_init_transform
-;RAM:BF21
+* START OF FUNCTION CHUNK FOR chk_and_init_transform
 init_death_sparkles:                                                                  ; twinkly transform
-;      TODO
 ;RAM:BF21 DD 36 00 70                 ld      0(ix), #112
+       movb @b70h,*ix
 ;RAM:BF25 DD CB 07 CE                 set     1, 7(ix)                                ; ignore in 3D calcs
+       socb @b02h,@7(ix)
 ;RAM:BF29 18 06                       jr      loc_BF31
-;RAM:BF29             ; END OF FUNCTION CHUNK FOR chk_and_init_transform
-;RAM:BF2B             ; ---------------------------------------------------------------------------
-;RAM:BF2B             ; death sparkles
-;RAM:BF2B
+       jmp  loc_BF31
+* END OF FUNCTION CHUNK FOR chk_and_init_transform
+* ---------------------------------------------------------------------------
+* death sparkles
 upd_112_to_118_184:
-       b    @no_update
 ;RAM:BF2B CD D8 C4                    call    adj_m4_m12
+       bl   @adj_m4_m12
 ;RAM:BF2E DD 34 00                    inc     0(ix)                                   ; graphic_no
-;RAM:BF31             ; START OF FUNCTION CHUNK FOR chk_and_init_transform
-;RAM:BF31
-;RAM:BF31             loc_BF31:
+       ab   one,*ix
+* START OF FUNCTION CHUNK FOR chk_and_init_transform
+loc_BF31:
 ;RAM:BF31 CD 03 B4                    call    audio_B403
+;      TODO
 ;RAM:BF34 C3 92 C6                    jp      set_wipe_and_draw_flags
-;RAM:BF34             ; END OF FUNCTION CHUNK FOR chk_and_init_transform
-;RAM:BF37             ; ---------------------------------------------------------------------------
-;RAM:BF37             ; sparkles (object in cauldron)
-;RAM:BF37
+       b    @set_wipe_and_draw_flags
+* END OF FUNCTION CHUNK FOR chk_and_init_transform
+* ---------------------------------------------------------------------------
+* sparkles (object in cauldron)
 upd_185_187:
        b    @no_update
 ;RAM:BF37 DD 6E 10                    ld      l, 16(ix)
+       movb @16(ix),@l
 ;RAM:BF3A DD 66 11                    ld      h, 17(ix)
+       movb @17(ix),h
 ;RAM:BF3D             ;
 ;RAM:BF3D             ;  BUG: this routine is primarily for special objects
 ;RAM:BF3D             ;       when dropped into cauldron etc (disappear)
@@ -1746,12 +1747,13 @@ upd_185_187:
 ;RAM:BF3D             ; BUG VERIFIED! on the Spectrum under MESS
 ;RAM:BF3D             ;
 ;RAM:BF3D 36 00                       ld      (hl), #0                                ; zap graphic_no in special_objs_tbl
-;RAM:BF3F             ; last death sparkle
-;RAM:BF3F
+       movb @b00h,*hl
+* last death sparkle
 upd_119:
-       b    @no_update
 ;RAM:BF3F CD D8 C4                    call    adj_m4_m12
+       bl   @adj_m4_m12
 ;RAM:BF42 C3 5E B9                    jp      upd_111
+       b    @upd_111
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -2256,9 +2258,11 @@ upd_104_to_110:
 ;RAM:C22F             loc_C22F:
 ;RAM:C22F CD 00 C7                    call    dec_dZ_and_update_XYZ
 ;RAM:C232
-;RAM:C232             audio_B467_wipe_and_draw:                                       ; audio?
-;RAM:C232 CD 67 B4                    call    audio_B467
+audio_B467_wipe_and_draw:
+;RAM:C232 CD 67 B4                    call    audio_B467                              ; audio?
+;      TODO
 ;RAM:C235 C3 92 C6                    jp      set_wipe_and_draw_flags
+       b    @set_wipe_and_draw_flags
 ;RAM:C238             ; ---------------------------------------------------------------------------
 ;RAM:C238
 ;RAM:C238             centre_of_room:
@@ -2401,94 +2405,151 @@ no_update:
 ;RAM:C305 C9                          ret
 ;RAM:C305             ; End of function prepare_final_animation
 ;RAM:C305
-;RAM:C306
-;RAM:C306             ; =============== S U B R O U T I N E =======================================
-;RAM:C306
-;RAM:C306
-;RAM:C306             chk_and_init_transform:
-;RAM:C306
-;RAM:C306             ; FUNCTION CHUNK AT RAM:BF21 SIZE 0000000A BYTES
-;RAM:C306             ; FUNCTION CHUNK AT RAM:BF31 SIZE 00000006 BYTES
-;RAM:C306
+*
+* =============== S U B R O U T I N E =======================================
+*
+chk_and_init_transform:
+       mov  r11,*sp+
 ;RAM:C306 3A B1 5B                    ld      a, (transform_flag_graphic)
+       movb @transform_flag_graphic,a
 ;RAM:C309 A7                          and     a
 ;RAM:C30A C8                          ret     Z
-;RAM:C30B DD 7E 0C                    ld      a, 12(ix)
+       jeq  chk_and_init_transform_return
+;RAM:C30B DD 7E 0C                    ld      a, 12(ix)                               ; entering room?
+       movb @12(ix),a
 ;RAM:C30E E6 F0                       and     #0xF0 ; '�'
+       andi a,>f000
 ;RAM:C310 C0                          ret     NZ
+       jne  chk_and_init_transform_return
 ;RAM:C311 DD CB 0C 5E                 bit     3, 12(ix)                               ; already jumping?
+       movb @12(ix),r0
+       andi r0,>0800
 ;RAM:C315 C0                          ret     NZ                                      ; yes, exit
+       jne  chk_and_init_transform_return
 ;RAM:C316 33                          inc     sp
 ;RAM:C317 33                          inc     sp
+;      Return to caller's caller
+       dect sp
 ;RAM:C318 DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
 ;RAM:C31B 32 B1 5B                    ld      (transform_flag_graphic), a
+       movb *ix,@transform_flag_graphic
 ;RAM:C31E DD 36 10 08                 ld      16(ix), #8                              ; transform count
+       movb @b08h,@16(ix)
 ;RAM:C322 DD E5                       push    ix
+       mov  ix,*sp+
 ;RAM:C324 11 20 00                    ld      de, #0x20 ; ' '
+       li   de,>20
 ;RAM:C327 DD 19                       add     ix, de
+       a    de,ix
 ;RAM:C329 DD 36 00 01                 ld      0(ix), #1
+       movb one,*ix
 ;RAM:C32D CD 92 C6                    call    set_wipe_and_draw_flags
+       bl   @set_wipe_and_draw_flags_0
 ;RAM:C330 DD E1                       pop     ix
+       dect sp
+       mov  *sp,ix
 ;RAM:C332 CD ED C4                    call    upd_11
+       bl   @upd_11_0
 ;RAM:C335 18 20                       jr      rand_legs_sprite
-;RAM:C337             ; ---------------------------------------------------------------------------
-;RAM:C337             ; human/wulf transform
-;RAM:C337
+       jmp  rand_legs_sprite
+chk_and_init_transform_return:
+       dect sp
+       mov  *sp,r11
+       rt
+* ---------------------------------------------------------------------------
+* human/wulf transform
+*
 upd_92_to_95:
-       b    @no_update
 ;RAM:C337 CD ED C4                    call    upd_11
+       bl   @upd_11_0
 ;RAM:C33A DD CB 0D 76                 bit     6, 13(ix)
+       movb @13(ix),r0
+       andi r0,>0400
 ;RAM:C33E 28 09                       jr      Z, loc_C349
+       jeq  loc_C349
 ;RAM:C340 3A C3 5B                    ld      a, (all_objs_in_cauldron)
+       movb @all_objs_in_cauldron,a
 ;RAM:C343 A7                          and     a
 ;RAM:C344 20 03                       jr      NZ, loc_C349
+       jne  loc_C349
 ;RAM:C346 C3 21 BF                    jp      init_death_sparkles
-;RAM:C349             ; ---------------------------------------------------------------------------
-;RAM:C349
-;RAM:C349             loc_C349:
+       b    @init_death_sparkles
+* ---------------------------------------------------------------------------
+loc_C349:
 ;RAM:C349 3A A2 5B                    ld      a, (seed_2)
+       movb @seed_2,a
 ;RAM:C34C E6 03                       and     #3                                      ; 1-in-4 chance?
+       andi a,>0300
 ;RAM:C34E C0                          ret     NZ                                      ; no, return
+       jne  chk_and_init_transform_return
 ;RAM:C34F CD 72 B4                    call    audio_B472
+;      TODO
 ;RAM:C352 DD 35 10                    dec     16(ix)                                  ; copy of graphic_no
+       sb   one,@16(ix)
 ;RAM:C355 28 20                       jr      Z, loc_C377
-;RAM:C357
-;RAM:C357             rand_legs_sprite:                                               ; RANDOM
-;RAM:C357 ED 5F                       ld      a, r
+       jeq  loc_C377
+rand_legs_sprite:
+;RAM:C357 ED 5F                       ld      a, r                                    ; RANDOM
+       li   a,>9500                   ; TODO
 ;RAM:C359 4F                          ld      c, a
+       movb a,@c
 ;RAM:C35A 3A A5 5B                    ld      a, (seed_3)
+       movb @seed_3,a
 ;RAM:C35D 81                          add     a, c
+       ab   @c,a
 ;RAM:C35E E6 03                       and     #3
+       andi a,>0300
 ;RAM:C360 F6 5C                       or      #92                                     ; leg sprite (92-95)
+       ori  a,>5c00
 ;RAM:C362 DD BE 00                    cp      0(ix)                                   ; same as current?
+       cb   a,*ix
 ;RAM:C365 20 02                       jr      NZ, loc_C369                            ; no, skip
+       jne  loc_C369
 ;RAM:C367 EE 01                       xor     #1                                      ; change
-;RAM:C369
-;RAM:C369             loc_C369:                                                       ; store new sprite
-;RAM:C369 DD 77 00                    ld      0(ix), a
+       xor  one,a
+loc_C369:
+;RAM:C369 DD 77 00                    ld      0(ix), a                                ; store new sprite
+       movb a,*ix
 ;RAM:C36C DD 7E 07                    ld      a, 7(ix)
+       movb @7(ix),a
 ;RAM:C36F EE 40                       xor     #0x40 ; '@'                             ; toggle hflip
+       li   r0,>4000
+       xor  r0,a
 ;RAM:C371 DD 77 07                    ld      7(ix), a
+       movb a,@7(ix)
 ;RAM:C374 C3 92 C6                    jp      set_wipe_and_draw_flags
-;RAM:C377             ; ---------------------------------------------------------------------------
-;RAM:C377
-;RAM:C377             loc_C377:
+       b    @set_wipe_and_draw_flags
+* ---------------------------------------------------------------------------
+loc_C377:
 ;RAM:C377 3A B1 5B                    ld      a, (transform_flag_graphic)
+       movb @transform_flag_graphic,a
 ;RAM:C37A EE 20                       xor     #0x20 ; ' '
+       li   r0,>2000
+       xor  r0,a
 ;RAM:C37C DD 77 00                    ld      0(ix), a                                ; graphic_no
+       movb a,*ix
 ;RAM:C37F C6 10                       add     a, #0x10
+       ab   @b10h,a
 ;RAM:C381 DD 77 20                    ld      0x20(ix), a                             ; graphic_no (top half)
+       movb a,@>20(ix)
 ;RAM:C384 AF                          xor     a
+       clr  a
 ;RAM:C385 32 B1 5B                    ld      (transform_flag_graphic), a
+       movb a,@transform_flag_graphic
 ;RAM:C388 CD DD C4                    call    adj_m6_m12
+       bl   @adj_m6_m12
 ;RAM:C38B DD CB 00 6E                 bit     5, 0(ix)
+       movb *ix,r0
+       andi r0,>2000
 ;RAM:C38F 28 03                       jr      Z, loc_C394
+       jeq  loc_C394
 ;RAM:C391 DD 35 13                    dec     19(ix)                                  ; dY_adj
-;RAM:C394
-;RAM:C394             loc_C394:
+       sb   one,@19(ix)
+loc_C394:
 ;RAM:C394 C3 92 C6                    jp      set_wipe_and_draw_flags
-;RAM:C394             ; End of function chk_and_init_transform
-;RAM:C394
+       b    @set_wipe_and_draw_flags
+*
+* End of function chk_and_init_transform
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -2599,8 +2660,7 @@ toggle_day_night:
 ;RAM:C3FF DD 7E 00                    ld      a, 0(ix)                                ; index
        movb *ix,a
 ;RAM:C402 EE 01                       xor     #1                                      ; toggle sun/moon
-       li   r0,>0100
-       xor  r0,a
+       xor  one,a
 ;RAM:C404 DD 77 00                    ld      0(ix), a
        movb a,*ix
 ;RAM:C407 CD 0D D3                    call    colour_sun_moon
@@ -2829,6 +2889,8 @@ upd_10:
        jmp  jp_set_pixel_adj
 * bricks
 * =============== S U B R O U T I N E =======================================
+upd_11_0:
+       mov  r11,*sp+
 upd_11:
 ;RAM:C4ED 21 F4 FE                    ld      hl, #0xFEF4                             ; -2, -12
        li   hl,>fef4
@@ -3300,7 +3362,11 @@ upd_8:
 ;RAM:C691             loc_C691:                                                       ; flag portculis moving
 ;RAM:C691 34                          inc     (hl)
 ;RAM:C692
+*
 * =============== S U B R O U T I N E =======================================
+*
+set_wipe_and_draw_flags_0:
+       mov  r11,*sp+
 set_wipe_and_draw_flags:
 ;RAM:C692 DD 7E 07                    ld      a, 7(ix)                                ; flags
 ;RAM:C695 F6 30                       or      #0x30 ; '0'                             ; set WIPE & DRAW
@@ -3308,8 +3374,9 @@ set_wipe_and_draw_flags:
        socb @b30h,@7(ix)
 ;RAM:C69A C3 4D CD                    jp      set_draw_objs_overlapped
        b    @set_draw_objs_overlapped_1
+*
 * End of function set_wipe_and_draw_flags
-;RAM:C69A
+*
 ;RAM:C69D
 ;RAM:C69D             ; =============== S U B R O U T I N E =======================================
 ;RAM:C69D
@@ -3730,11 +3797,11 @@ upd_player_bottom:
 ;RAM:C837 DD CB 2D F6                 set     6, 0x2D(ix)                             ; set dead top half
        socb @b40h,@>2d(ix)
 ;RAM:C83B C3 21 BF                    jp      init_death_sparkles
-;      b    @init_death_sparkles      ; TODO
+;      b    @init_death_sparkles
 * ---------------------------------------------------------------------------
 loc_C83E:
 ;RAM:C83E CD 06 C3                    call    chk_and_init_transform                  ; returns to caller if transforming
-;      bl   @chk_and_init_transform   ; TODO
+       bl   @chk_and_init_transform
 ;RAM:C841 CD 22 D0                    call    check_user_input
        bl   @check_user_input
 ;RAM:C844 CD 0E C0                    call    handle_pickup_drop
@@ -5396,14 +5463,12 @@ loc_CDD3:
 * player (human top half)
 upd_32_to_47:
 ;RAM:CDDA CD F7 C4                    call    adj_m8_m12
-;      b    @adj_m8_m12_1
        bl   @adj_m8_m12
 ;RAM:CDDD 18 03                       jr      upd_player_top
        jmp  upd_player_top
 * ---------------------------------------------------------------------------
 * player (wulf top half)
 upd_64_to_79:
-       b    @no_update
 ;RAM:CDDF CD 01 C5                    call    adj_m12_m12
        bl   @adj_m12_m12
 * ---------------------------------------------------------------------------
@@ -5421,7 +5486,7 @@ upd_player_top:
        andi r0,>4000
 ;RAM:CDEC C2 21 BF                    jp      NZ, init_death_sparkles
        jeq  loc_CDEF
-;      b    @init_death_sparkles      ; TODO
+;       b    @init_death_sparkles
 loc_CDEF:
 ;RAM:CDEF DD E5                       push    ix
 ;RAM:CDF1 D1                          pop     de                                      ; DE=top

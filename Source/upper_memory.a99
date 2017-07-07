@@ -488,10 +488,10 @@ plyr_spr_init_data:
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
 * ---------------------------------------------------------------------------
 start_locations:
-;       byte >2F, >44, >B3, >8F         ; Standard
+       byte >2F, >44, >B3, >8F         ; Standard
 ;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
 ;       byte >01,>01,>01,>01
-        byte 136,136,136,136            ; Cauldron room
+;        byte 136,136,136,136            ; Cauldron room
 * ---------------------------------------------------------------------------
 panel_data:
        byte >86, >00, >10, >34
@@ -2029,7 +2029,7 @@ ti_99_4a_init:
        limi 0
        lwpi WRKSP
        li   sp,STACK
-       li   one,>0101
+       li   one,>0100
        bl   @gmode
        mov  @ret_from_init,r11
        rt
@@ -2450,6 +2450,7 @@ b5ah   byte >5a
 b5ch   byte >5c
 b68h   byte >68
 b60h   byte >60
+b70h   byte >70
 b78h   byte >78
 b80h   byte >80
 b8ch   byte >8c
