@@ -1044,49 +1044,73 @@ blit_to_screen:
 ;RAM:D69A C1                          pop     bc
 ;RAM:D69B 10 DF                       djnz    blit_to_screen                          ; no, loop
 ;RAM:D69D C9                          ret
-
+*      Transfer parameters
        mov  de,@wrksp2                 ; Destination: de -> r0
        mov  hl,@wrksp2+2               ; Source: hl -> r1
        mov  bc,@wrksp2+4               ; Dimensions: bc -> r2
        lwpi wrksp2
-       mov  r2,r3
-       andi r2,>ff00                   ; Lines
-       swpb r2
-       andi r3,>00ff                   ; Bytes/line
-       mov  r0,r4
-       andi r4,7                       ; Number of lines into character row (n)
-       ci   r4,7                       ; If n is 7 it's a full row
-       jeq  blit1                      ; and we can skip adding more lines
-       neg  r4                         ; -n
-       ai   r4,7                       ; 7 - n extra lines
-       a    r4,r2                      ; add extra lines
-       sla  r4,5
-       s    r4,r1                      ; Adjust source
-blit1:
-       andi r0,>FFF8                   ; Move dest to top of character row
-       mov  r3,r4                      ; Copy number of bytes/line
+*      Init
        li   r15,vdpwd
-blit2:
+       mov  r2,r3                      ; Lines and columns
+       andi r2,>ff00
+       swpb r2                         ; Total lines
+       andi r3,>00ff                   ; Columns
+       mov  r0,r5                      ; Destination address
+       andi r5,7                       ; Number of lines into character row (n)
+       ci   r5,7                       ; If n is 7 it's a full row
+       jeq  blit3                      ; and we can skip to section 2
+*      Section 1: lines in bottom character row
+       andi r0,>FFF8                   ; Move dest to top of character row
+       inc  r5                         ; One more line to draw
+       mov  r5,r6                      ; Line offset = n+1
+       sla  r6,5                       ; Source offset = (n+1) * 32
+       mov  r3,r4                      ; Init column counter
+blit1:
        bl   @vwad                      ; Set VDP write address
-       li   r3,32
-       mov  r1,r5
-       a    r3,r1
-       mov  r1,r6
-       a    r3,r1
-       mov  r1,r7
-       a    r3,r1
-       mov  r1,r8
-       a    r3,r1
-       mov  r1,r9
-       a    r3,r1
-       mov  r1,r10
-       a    r3,r1
-       mov  r1,r11
-       a    r3,r1
-       mov  r1,r12
-       a    r3,r1
-       mov  r4,r3                      ; Reset bytes/line counter
+       mov  r5,r7                      ; Init line counter
+       a    r6,r1                      ; Move source n+1 lines down, i.e. up in image
+blit2:
+       ai   r1,-32                     ; One line up in buffer, i.e. down in image
+       movb *r1,*r15                   ; Write byte
+       dec  r7                         ; Line counter
+       jne  blit2
+       ai   r0,8                       ; Next dest column
+       inc  r1                         ; Next source column
+       dec  r4                         ; Column counter
+       jne  blit1
+*      Adjust for end of section 1
+       a    r6,r1                      ; Move source n+1 lines down, i.e. up in image
+       s    r3,r1                      ; Move source back to first column
+       ai   r0,-256                    ; Move dest one row up
+       mov  r3,r6                      ; Columns
+       sla  r6,3                       ; Columns * 8
+       s    r6,r0                      ; Move dest back to first column
+       s    r5,r2                      ; Subtract drawn lines from total
+*      Section 2: full character rows
 blit3:
+       ci   r2,8
+       jlt  blit5
+       andi r0,>FFF8                   ; Move dest to top of character row
+       bl   @vwad                      ; Set VDP write address
+       li   r4,32
+       mov  r1,r5
+       a    r4,r1
+       mov  r1,r6
+       a    r4,r1
+       mov  r1,r7
+       a    r4,r1
+       mov  r1,r8
+       a    r4,r1
+       mov  r1,r9
+       a    r4,r1
+       mov  r1,r10
+       a    r4,r1
+       mov  r1,r11
+       a    r4,r1
+       mov  r1,r12
+       a    r4,r1
+       mov  r3,r4                      ; Reset bytes/line counter
+blit4:
        movb *r12+,*r15                 ; Output in reverse order
        movb *r11+,*r15
        movb *r10+,*r15
@@ -1095,26 +1119,115 @@ blit3:
        movb *r7+,*r15
        movb *r6+,*r15
        movb *r5+,*r15
-
-;       seto *r15
-;       seto *r15
-;       seto *r15
-;       seto *r15
-;       seto *r15
-;       seto *r15
-;       seto *r15
-;       seto *r15
-
-       dec  r3
-       jne  blit3
-       ai   r0,-256
-       ai   r2,-8
-       jgt  blit2
+       dec  r4
+       jne  blit4
+       ai   r0,-256                    ; Move dest one row up
+       ai   r2,-8                      ; Subtract 8 lines from total
+       ci   r2,7
+       jgt  blit3
+*      Section 3: lines in top character row
+blit5:
+       mov  r2,r6                      ; Remaining lines n
+       jeq  blit8                      ; Return is no more left
+       ai   r0,8                       ; Dest 8 lines down
+       s    r2,r0                      ; And up n lines
+       sla  r6,5                       ; Source offset = n * 32
+       mov  r3,r4                      ; Init column counter
+blit6:
+       bl   @vwad                      ; Set VDP write address
+       mov  r2,r7                      ; Init line counter
+       a    r6,r1                      ; Move source n lines down, i.e. up in image
+blit7:
+       ai   r1,-32                     ; One line up in buffer, i.e. down in image
+       movb *r1,*r15                   ; Write byte
+       dec  r7                         ; Line counter
+       jne  blit7
+       ai   r0,8                       ; Next dest column
+       inc  r1                         ; Next source column
+       dec  r4                         ; Column counter
+       jne  blit6
+*      Return
+blit8:
        lwpi wrksp
        rt
 *
 * End of function blit_to_screen
 *
+
+;* =============== S U B R O U T I N E =======================================
+;*
+;* Copy a section of the video buffer to the screen
+;* This is a simple version that copies full character rows
+;*
+;* HL=source
+;* DE=destination
+;* B=lines
+;* C=bytes/line
+;*
+;* Note that B and C are swapped compared to fill_window
+;*
+;blit_to_screen:
+;       mov  de,@wrksp2                 ; Destination: de -> r0
+;       mov  hl,@wrksp2+2               ; Source: hl -> r1
+;       mov  bc,@wrksp2+4               ; Dimensions: bc -> r2
+;       lwpi wrksp2
+;       mov  r2,r3
+;       andi r2,>ff00                   ; Lines
+;       swpb r2
+;       andi r3,>00ff                   ; Bytes/line
+;       mov  r0,r4
+;       andi r4,7                       ; Number of lines into character row (n)
+;       ci   r4,7                       ; If n is 7 it's a full row
+;       jeq  blit1                      ; and we can skip adding more lines
+;       neg  r4                         ; -n
+;       ai   r4,7                       ; 7 - n extra lines
+;       a    r4,r2                      ; add extra lines
+;       sla  r4,5
+;       s    r4,r1                      ; Adjust source
+;blit1:
+;       andi r0,>FFF8                   ; Move dest to top of character row
+;       mov  r3,r4                      ; Copy number of bytes/line
+;       li   r15,vdpwd
+;blit2:
+;       bl   @vwad                      ; Set VDP write address
+;       li   r3,32
+;       mov  r1,r5
+;       a    r3,r1
+;       mov  r1,r6
+;       a    r3,r1
+;       mov  r1,r7
+;       a    r3,r1
+;       mov  r1,r8
+;       a    r3,r1
+;       mov  r1,r9
+;       a    r3,r1
+;       mov  r1,r10
+;       a    r3,r1
+;       mov  r1,r11
+;       a    r3,r1
+;       mov  r1,r12
+;       a    r3,r1
+;       mov  r4,r3                      ; Reset bytes/line counter
+;blit3:
+;       movb *r12+,*r15                 ; Output in reverse order
+;       movb *r11+,*r15
+;       movb *r10+,*r15
+;       movb *r9+,*r15
+;       movb *r8+,*r15
+;       movb *r7+,*r15
+;       movb *r6+,*r15
+;       movb *r5+,*r15
+;       dec  r3
+;       jne  blit3
+;       ai   r0,-256
+;       ai   r2,-8
+;       jgt  blit2
+;       lwpi wrksp
+;       rt
+;*
+;* End of function blit_to_screen
+;*
+
 * =============== S U B R O U T I N E =======================================
 *
 * HL = starting location
