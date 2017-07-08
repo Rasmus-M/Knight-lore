@@ -5559,12 +5559,12 @@ flag_room_visited:
        clr  r0
        movb @graphic_objs_tbl+8,@r0lb
        mov  r0,r1
-       li   r2,>8000
+       li   a,>8000
        andi r0,>0007
        jeq  !
-       srl  r2,0
+       srl  a,0
 !      srl  r1,3
-       socb r2,@scrn_visited(r1)
+       socb a,@scrn_visited(r1)
 ;RAM:D21C 4F                          ld      c, a
 ;RAM:D21D 0F                          rrca
 ;RAM:D21E 0F                          rrca
