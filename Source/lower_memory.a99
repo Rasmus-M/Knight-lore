@@ -580,11 +580,11 @@ loc_B626:
 ;RAM:B629 32 76 B6                    ld      (loc_B676), a                           ; self-modifying code
        movb a,@loc_B676
 ;RAM:B62C 3A 10 5C                    ld      a, (graphic_objs_tbl+8)                 ; plyr_spr_1 screen
-       movb @graphic_objs_tbl+8,r0
+       movb @graphic_objs_tbl+8,tmp0
 ;RAM:B62F E6 01                       and     #1
 ;RAM:B631 3E 04                       ld      a, #4
        movb @b04h,a
-       andi r0,>0100
+       andi tmp0,>0100
 ;RAM:B633 28 07                       jr      Z, loc_B63C
        jeq  loc_B63C
 ;RAM:B635 47                          ld      b, a
@@ -597,8 +597,8 @@ loc_B626:
        ab   b,a
 loc_B63C:
 ;RAM:B63C DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB?
-       movb @12(ix),r0
-       andi r0,>0400
+       movb @12(ix),tmp0
+       andi tmp0,>0400
 ;RAM:B640 28 26                       jr      Z, loc_B668                             ; no, skip
        jeq  loc_B668
 ;RAM:B642 DD 77 0B                    ld      11(ix), a                               ; new dZ
@@ -786,8 +786,8 @@ loc_B720:
 * ---------------------------------------------------------------------------
 loc_B726:
 ;RAM:B726 DD CB 0A 7E                 bit     7, 10(ix)                               ; dY<0?
-       movb @10(ix),r0
-       andi r0,>8000
+       movb @10(ix),tmp0
+       andi tmp0,>8000
 ;RAM:B72A 28 0A                       jr      Z, loc_B736                             ; no, go
        jeq  loc_B736
 ;RAM:B72C DD CB 00 DE                 set     3, 0(ix)                                ; graphic_no
@@ -810,11 +810,11 @@ upd_150_151:
 ;RAM:B73C CD 0B C5                    call    adj_p7_m12
        bl   @adj_p7_m12
 ;RAM:B73F DD CB 0D 46                 bit     0, 13(ix)                               ; E or W?
-       movb @13(ix),r0
+       movb @13(ix),tmp0
 ;RAM:B743 3E 02                       ld      a, #2
        movb @b02h,a
 ;RAM:B745 20 02                       jr      NZ, loc_B749                            ; E, skip
-       andi r0,>0100
+       andi tmp0,>0100
        jne  loc_B749
 ;RAM:B747 ED 44                       neg
        inv  a
@@ -829,8 +829,8 @@ loc_B749:
 ;RAM:B752 CD 00 C7                    call    dec_dZ_and_update_XYZ
        bl   @dec_dZ_and_update_XYZ
 ;RAM:B755 DD CB 0C 46                 bit     0, 12(ix)                               ; X OOB?
-       movb @12(ix),r0
-       andi r0,>0100
+       movb @12(ix),tmp0
+       andi tmp0,>0100
 ;RAM:B759 28 08                       jr      Z, loc_B763                             ; no, skip
        jeq  loc_B763
 ;RAM:B75B DD 7E 0D                    ld      a, 13(ix)
@@ -881,8 +881,8 @@ loc_B788:
 * ---------------------------------------------------------------------------
 loc_B78E:
 ;RAM:B78E DD CB 0A 7E                 bit     7, 10(ix)                               ; dY<0?
-       movb @10(ix),r0
-       andi r0,>8000
+       movb @10(ix),tmp0
+       andi tmp0,>8000
 ;RAM:B792 28 09                       jr      Z, loc_B79D                             ; no, go
        jeq  loc_B79D
 ;RAM:B794 DD CB 00 C6                 set     0, 0(ix)                                ; sprite 31/139
@@ -1288,8 +1288,8 @@ guard_W:
 ;RAM:B9E0 21 FE 00                    ld      hl, #0xFE ; '�'                        ; dY=0, dX=-2
        li   hl,>00fe
 ;RAM:B9E3 DD CB 0C 46                 bit     0, 12(ix)                               ; X OOB?
-       movb @12(ix),r0
-       andi r0,>0100
+       movb @12(ix),tmp0
+       andi tmp0,>0100
 ;RAM:B9E7 C8                          ret     Z                                       ; no, exit
        jne  !
        rt
@@ -1321,8 +1321,8 @@ guard_N:                                                        ; dY=+2, dX=0
 ;RAM:B9FB 21 00 02                    ld      hl, #0x200
        li   hl,>0200
 ;RAM:B9FE DD CB 0C 4E                 bit     1, 12(ix)                               ; Y OOB?
-       movb @12(ix),r0
-       andi r0,>0200
+       movb @12(ix),tmp0
+       andi tmp0,>0200
 ;RAM:BA02 C8                          ret     Z                                       ; no, exit
        jne  !
        rt
@@ -1335,8 +1335,8 @@ guard_E:                                                        ; dY=0, dX=+2
 ;RAM:BA08 21 02 00                    ld      hl, #2
        li   hl,>0002
 ;RAM:BA0B DD CB 0C 46                 bit     0, 12(ix)                               ; X OOB?
-       movb @12(ix),r0
-       andi r0,>0100
+       movb @12(ix),tmp0
+       andi tmp0,>0100
 ;RAM:BA0F C8                          ret     Z                                       ; no, exit
        jne  !
        rt
@@ -1349,8 +1349,8 @@ guard_S:                                                        ; dY=-2, dX=0
 ;RAM:BA15 21 00 FE                    ld      hl, #0xFE00
        li   hl,>fe00
 ;RAM:BA18 DD CB 0C 4E                 bit     1, 12(ix)                               ; Y OOB?
-       movb @12(ix),r0
-       andi r0,>0200
+       movb @12(ix),tmp0
+       andi tmp0,>0200
 ;RAM:BA1C C8                          ret     Z                                       ; no, exit
        jne  !
        rt
@@ -1863,8 +1863,8 @@ chk_and_init_transform:
 ;RAM:C310 C0                          ret     NZ
        jne  chk_and_init_transform_return
 ;RAM:C311 DD CB 0C 5E                 bit     3, 12(ix)                               ; already jumping?
-       movb @12(ix),r0
-       andi r0,>0800
+       movb @12(ix),tmp0
+       andi tmp0,>0800
 ;RAM:C315 C0                          ret     NZ                                      ; yes, exit
        jne  chk_and_init_transform_return
 ;RAM:C316 33                          inc     sp
@@ -1904,8 +1904,8 @@ upd_92_to_95:
 ;RAM:C337 CD ED C4                    call    upd_11
        bl   @upd_11_0
 ;RAM:C33A DD CB 0D 76                 bit     6, 13(ix)
-       movb @13(ix),r0
-       andi r0,>0400
+       movb @13(ix),tmp0
+       andi tmp0,>0400
 ;RAM:C33E 28 09                       jr      Z, loc_C349
        jeq  loc_C349
 ;RAM:C340 3A C3 5B                    ld      a, (all_objs_in_cauldron)
@@ -1954,8 +1954,8 @@ loc_C369:
 ;RAM:C36C DD 7E 07                    ld      a, 7(ix)
        movb @7(ix),a
 ;RAM:C36F EE 40                       xor     #0x40 ; '@'                             ; toggle hflip
-       li   r0,>4000
-       xor  r0,a
+       li   tmp0,>4000
+       xor  tmp0,a
 ;RAM:C371 DD 77 07                    ld      7(ix), a
        movb a,@7(ix)
 ;RAM:C374 C3 92 C6                    jp      set_wipe_and_draw_flags
@@ -1965,8 +1965,8 @@ loc_C377:
 ;RAM:C377 3A B1 5B                    ld      a, (transform_flag_graphic)
        movb @transform_flag_graphic,a
 ;RAM:C37A EE 20                       xor     #0x20 ; ' '
-       li   r0,>2000
-       xor  r0,a
+       li   tmp0,>2000
+       xor  tmp0,a
 ;RAM:C37C DD 77 00                    ld      0(ix), a                                ; graphic_no
        movb a,*ix
 ;RAM:C37F C6 10                       add     a, #0x10
@@ -1980,8 +1980,8 @@ loc_C377:
 ;RAM:C388 CD DD C4                    call    adj_m6_m12
        bl   @adj_m6_m12
 ;RAM:C38B DD CB 00 6E                 bit     5, 0(ix)
-       movb *ix,r0
-       andi r0,>2000
+       movb *ix,tmp0
+       andi tmp0,>2000
 ;RAM:C38F 28 03                       jr      Z, loc_C394
        jeq  loc_C394
 ;RAM:C391 DD 35 13                    dec     19(ix)                                  ; dY_adj
@@ -2805,8 +2805,8 @@ upd_9:
 ;RAM:C6D4 CD 00 C7                    call    dec_dZ_and_update_XYZ
        bl   @dec_dZ_and_update_XYZ
 ;RAM:C6D7 DD CB 0C 56                 bit     2, 12(ix)                               ; out of bounds?
-       movb @12(ix),r0
-       andi r0,>0400
+       movb @12(ix),tmp0
+       andi tmp0,>0400
 ;RAM:C6DB 28 B5                       jr      Z, set_wipe_and_draw_flags              ; no, go
        jeq  set_wipe_and_draw_flags
 ;RAM:C6DD CD 89 B4                    call    audio_B489
@@ -2891,8 +2891,8 @@ add_dXYZ_1
 * arch (far side)
 upd_3_5:
 ;RAM:C722 DD CB 07 76                 bit     6, 7(ix)                                ; hflip?
-       movb @7(ix),r0
-       andi r0,>4000
+       movb @7(ix),tmp0
+       andi tmp0,>4000
 ;RAM:C726 20 0A                       jr      NZ, adj_3_5_hflip                       ; yes, go
        jne  adj_3_5_hflip
 ;RAM:C728 21 F7 FD                    ld      hl, #0xFDF7                             ; -3, -9
@@ -2933,8 +2933,8 @@ adj_m3_p1:
 upd_2_4:
 ;       b    @no_update
 ;RAM:C73C DD CB 07 76                 bit     6, 7(ix)                                 ; hflip?
-       movb @7(ix),r0
-       andi r0,>4000
+       movb @7(ix),tmp0
+       andi tmp0,>4000
 ;RAM:C740 20 2A                       jr      NZ, adj_2_4_hflip                       ; yes, go
        jne  adj_2_4_hflip
 ;RAM:C742 DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
@@ -3003,8 +3003,8 @@ loc_C791:
 ;RAM:C795 28 3F                       jr      Z, loc_C7D6                             ; yes, skip
        jeq  loc_C7D6
 ;RAM:C797 FD CB 07 5E                 bit     3, 7(iy)
-       movb @7(iy),r0
-       andi r0,>0800
+       movb @7(iy),tmp0
+       andi tmp0,>0800
 ;RAM:C79B 28 39                       jr      Z, loc_C7D6
        jeq  loc_C7D6
 ;RAM:C79D CD FE C7                    call    is_near_to
@@ -3093,8 +3093,8 @@ loc_C7E4:
 ;RAM:C7E8 28 0F                       jr      Z, loc_C7F9                             ; yes, skip
        jeq  loc_C7F9
 ;RAM:C7EA FD CB 07 5E                 bit     3, 7(iy)                                ; auto-adjust?
-       movb @7(iy),r0
-       andi r0,>0800
+       movb @7(iy),tmp0
+       andi tmp0,>0800
 ;RAM:C7EE 28 09                       jr      Z, loc_C7F9                             ; no, skip
        jeq  loc_C7F9
 ;RAM:C7F0 CD FE C7                    call    is_near_to
@@ -3205,8 +3205,8 @@ upd_48_to_53_56_to_61:
 *
 upd_player_bottom:
 ;RAM:C82B DD CB 0D 76                 bit     6, 13(ix)                               ; dead?
-       movb @13(ix),r0
-       andi r0,>4000
+       movb @13(ix),tmp0
+       andi tmp0,>4000
 ;RAM:C82F 28 0D                       jr      Z, loc_C83E                             ; no, skip
        jeq  loc_C83E
 ;RAM:C831 3A C3 5B                    ld      a, (all_objs_in_cauldron)
@@ -3334,8 +3334,8 @@ handle_left_right:
 ;RAM:C8A5 28 4B                       jr      Z, left_right_rotational                ; keybd? yes, skip
        jeq  left_right_rotational
 ;RAM:C8A7 CB 5E                       bit     3, (hl)                                 ; directional?
-       movb *hl,r0
-       andi r0,>0800
+       movb *hl,tmp0
+       andi tmp0,>0800
 ;RAM:C8A9 28 47                       jr      Z, left_right_rotational
        jeq  left_right_rotational
 ;RAM:C8AB DD 7E 0C                    ld      a, 12(ix)                               ; flags12
@@ -3345,35 +3345,35 @@ handle_left_right:
 ;RAM:C8B0 C0                          ret     NZ                                      ; yes, exit
        jne  handle_left_right_return
 ;RAM:C8B1 DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB?
-       movb @12(ix),r0
-       andi r0,>0400
+       movb @12(ix),tmp0
+       andi tmp0,>0400
 ;RAM:C8B5 C8                          ret     Z                                       ; no, exit
        jeq  handle_left_right_return
 ;RAM:C8B6 CB 41                       bit     0, c                                    ; joystick left?
-       mov  bc,r1
-       mov  r1,r0
-       andi r0,>0001
+       mov  bc,tmp1
+       mov  tmp1,tmp0
+       andi tmp0,>0001
 ;RAM:C8B8 20 04                       jr      NZ, loc_C8BE                            ; yes, skip
        jne  loc_C8BE
 ;RAM:C8BA CB 51                       bit     2, c                                    ; joystick up?
-       mov  r1,r0
-       andi r0,>0004
+       mov  tmp1,tmp0
+       andi tmp0,>0004
 ;RAM:C8BC 20 0F                       jr      NZ, chk_facing_N                        ; yes, skip
        jne  chk_facing_N
 loc_C8BE:
 ;RAM:C8BE CB 49                       bit     1, c                                    ; joystick right?
-       mov  r1,r0
-       andi r0,>0002
+       mov  tmp1,tmp0
+       andi tmp0,>0002
 ;RAM:C8C0 20 17                       jr      NZ, chk_facing_E                        ; yes, go
        jne  chk_facing_E
 ;RAM:C8C2 CB 61                       bit     4, c                                    ; joystick down?
-       mov  r1,r0
-       andi r0,>0010
+       mov  tmp1,tmp0
+       andi tmp0,>0010
 ;RAM:C8C4 20 1A                       jr      NZ, chk_facing_S                        ; yes, go
        jne  chk_facing_S
 ;RAM:C8C6 CB 41                       bit     0, c                                    ; joystick left?
-       mov  r1,r0
-       andi r0,>0001
+       mov  tmp1,tmp0
+       andi tmp0,>0001
 ;RAM:C8C8 20 1F                       jr      NZ, chk_facing_W                        ; yes, go
        jne  chk_facing_W
 ;RAM:C8CA CB 91                       res     2, c
@@ -3459,13 +3459,13 @@ loc_C8FD:
 ;RAM:C906 C0                          ret     NZ                                      ; yes, exit
        jne  handle_left_right_return
 ;RAM:C907 DD CB 0C 5E                 bit     3, 12(ix)                               ; already jumping?
-       movb @12(ix),r0
-       andi r0,>0800
+       movb @12(ix),tmp0
+       andi tmp0,>0800
 ;RAM:C90B C0                          ret     NZ                                      ; yes, exit
        jne  handle_left_right_return
 ;RAM:C90C CB 51                       bit     2, c                                    ; forward?
-       movb  @c,r0
-       andi r0,>0400
+       movb  @c,tmp0
+       andi tmp0,>0400
 ;RAM:C90E 20 05                       jr      NZ, loc_C915                            ; yes, skip
        jne  loc_C915
 ;RAM:C910 C5                          push    bc
@@ -3480,30 +3480,30 @@ loc_C915:
 ;RAM:C91A DD 77 0D                    ld      13(ix), a
        movb a,@13(ix)
 ;RAM:C91D CB 49                       bit     1, c                                    ; right?
-       movb  @c,r0
-       andi r0,>0200
+       movb  @c,tmp0
+       andi tmp0,>0200
 left_right_calc_sprite:
 ;RAM:C91F 20 1F                       jr      NZ, loc_C940                            ; yes, skip
        jne  loc_C940
 ;RAM:C921 DD CB 07 76                 bit     6, 7(ix)                                ; hflip?
-       movb @7(ix),r0
-       andi r0,>4000
+       movb @7(ix),tmp0
+       andi tmp0,>4000
 ;RAM:C925 20 08                       jr      NZ, loc_C92F                            ; yes, skip
        jne  loc_C92F
 loc_C927:
 ;RAM:C927 DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
        movb *ix,a
 ;RAM:C92A EE 08                       xor     #8
-       li   r0,>0800
-       xor  r0,a
+       li   tmp0,>0800
+       xor  tmp0,a
 ;RAM:C92C DD 77 00                    ld      0(ix), a
        movb a,*ix
 loc_C92F:
 ;RAM:C92F DD 7E 07                    ld      a, 7(ix)
        movb @7(ix),a
 ;RAM:C932 EE 40                       xor     #0x40 ; '@'                             ; toggle hflip
-       li   r0,>4000
-       xor  r0,a
+       li   tmp0,>4000
+       xor  tmp0,a
 ;RAM:C934 DD 77 07                    ld      7(ix), a
        movb a,@7(ix)
 ;RAM:C937 DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
@@ -3517,8 +3517,8 @@ loc_C92F:
 ;* ---------------------------------------------------------------------------
 loc_C940:
 ;RAM:C940 DD CB 07 76                 bit     6, 7(ix)                                ; hflip?
-       movb @7(ix),r0
-       andi r0,>4000
+       movb @7(ix),tmp0
+       andi tmp0,>4000
 ;RAM:C944 20 E1                       jr      NZ, loc_C927                            ; yes, go
        jne  loc_C927
 ;RAM:C946 18 E7                       jr      loc_C92F
@@ -3529,8 +3529,8 @@ loc_C940:
 *
 handle_jump:
 ;RAM:C948 CB 59                       bit     3, c                                    ; jump?
-       movb  @c,r0
-       andi r0,>0800
+       movb  @c,tmp0
+       andi tmp0,>0800
 ;RAM:C94A C8                          ret     Z                                       ; no, exit
        jeq  handle_jump_return
 ;RAM:C94B DD 7E 0C                    ld      a, 12(ix)                               ; flags12
@@ -3540,8 +3540,8 @@ handle_jump:
 ;RAM:C950 C0                          ret     NZ                                      ; yes, exit
        jne  handle_jump_return
 ;RAM:C951 DD CB 0C 5E                 bit     3, 12(ix)                               ; already jumping?
-       movb @12(ix),r0
-       andi r0,>0800
+       movb @12(ix),tmp0
+       andi tmp0,>0800
 ;RAM:C955 C0                          ret     NZ                                      ; yes, exit
        jne  handle_jump_return
 ;RAM:C956 DD 7E 0B                    ld      a, 11(ix)                               ; dZ
@@ -3574,13 +3574,13 @@ handle_forward:
 ;RAM:C96E 20 0A                       jr      NZ, loc_C97A                            ; yes, skip
        jne  loc_C97A
 ;RAM:C970 DD CB 0C 5E                 bit     3, 12(ix)                               ; already jumping?
-       movb @12(ix),r0
-       andi r0,>0800
+       movb @12(ix),tmp0
+       andi tmp0,>0800
 ;RAM:C974 20 04                       jr      NZ, loc_C97A                            ; yes, skip
        jne  loc_C97A
 ;RAM:C976 CB 51                       bit     2, c                                    ; forward?
-       movb @c,r0
-       andi r0,>0400
+       movb @c,tmp0
+       andi tmp0,>0400
 ;RAM:C978 28 1A                       jr      Z, loc_C994                             ; no, go
        jeq  loc_C994
 loc_C97A:
@@ -3649,8 +3649,8 @@ move_player:
        movb @b02h,@11(ix)
 loc_C9AB:
 ;RAM:C9ABDD CB 0C 5E                  bit     3, 12(ix)                               ; already jumping?
-       movb @12(ix),r0
-       andi r0,>0800
+       movb @12(ix),tmp0
+       andi tmp0,>0800
 ;RAM:C9AF 20 0B                       jr      NZ, loc_C9BC                            ; yes, skip
        jne  loc_C9BC
 ;RAM:C9B1 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
@@ -3660,8 +3660,8 @@ loc_C9AB:
 ;RAM:C9B6 20 04                       jr      NZ, loc_C9BC                            ; yes, skip
        jne  loc_C9BC
 ;RAM:C9B8 CB 51                       bit     2, c                                    ; forward?
-       movb @c,r0
-       andi r0,>0400
+       movb @c,tmp0
+       andi tmp0,>0400
 ;RAM:C9BA 28 05                       jr      Z, loc_C9C1                             ; no, skip
        jeq  loc_C9C1
 loc_C9BC:
@@ -3679,8 +3679,8 @@ loc_C9C1:
 ;RAM:C9C5 FA CC C9                    jp      M, loc_C9CC
        jlt  loc_C9CC
 ;RAM:C9C8 CB 59                       bit     3, c                                    ; jump?
-       movb @c,r0
-       andi r0,>0800
+       movb @c,tmp0
+       andi tmp0,>0800
 ;RAM:C9CA 20 01                       jr      NZ, loc_C9CD                            ; yes, skip
        jne  loc_C9CD
 loc_C9CC:
@@ -3704,8 +3704,8 @@ loc_C9CD:
 ;RAM:C9DF CD 06 C7                    call    add_dXYZ
        bl   @add_DXYZ
 ;RAM:C9E2 DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB?
-       movb @12(ix),r0
-       andi r0,>0400
+       movb @12(ix),tmp0
+       andi tmp0,>0400
 ;RAM:C9E6 28 0B                       jr      Z, clear_dX_dY                          ; no, go
        jeq  clear_dX_dY
 ;RAM:C9E8 3A C1 5B                    ld      a, (tmp_dZ)
@@ -3909,8 +3909,8 @@ handle_exit_screen:
 ;RAM:CA75 C0                          ret     NZ                                      ; yes, exit
        jne  handle_exit_screen_return
 ;RAM:CA76 DD CB 07 46                 bit     0, 7(ix)                                ; near an arch?
-       movb @7(ix),r0
-       andi r0,>0100
+       movb @7(ix),tmp0
+       andi tmp0,>0100
 ;RAM:CA7A C8                          ret     Z                                       ; no, return
        jeq  handle_exit_screen_return
 ;RAM:CA7B DD CB 07 86                 res     0, 7(ix)                                ; reset flag
@@ -4112,8 +4112,8 @@ screen_south:
 adj_for_out_of_bounds:
        mov  r11,*sp+
 ;RAM:CB45 DD CB 07 4E                 bit     1, 7(ix)                                ; ignore bit
-       movb @7(ix),r0
-       andi r0,>0200
+       movb @7(ix),tmp0
+       andi tmp0,>0200
 ;RAM:CB49 C0                          ret     NZ
        jne  adj_for_out_of_bounds_return
 ;RAM:CB4A DD CB 07 CE                 set     1, 7(ix)                                ; set ignore bit
@@ -4242,8 +4242,8 @@ loc_CBAF:
 ;RAM:CBCA DD 77 0D                    ld      13(ix), a
        movb a,@13(ix)
 ;RAM:CBCD FD CB 07 56                 bit     2, 7(iy)                                ; moveable?
-       movb @7(iy),r0
-       andi r0,>0400
+       movb @7(iy),tmp0
+       andi tmp0,>0400
 ;RAM:CBD1 28 06                       jr      Z, loc_CBD9                             ; no, skip
        jeq  loc_CBD9
 ;RAM:CBD3 DD 7E 09                    ld      a, 9(ix)
@@ -4324,8 +4324,8 @@ loc_CBFE:
 ;RAM:CC19 DD 77 0D                    ld      13(ix), a
        movb a,@13(ix)
 ;RAM:CC1C FD CB 07 56                 bit     2, 7(iy)                                ; moveable?
-       movb @7(iy),r0
-       andi r0,>0400
+       movb @7(iy),tmp0
+       andi tmp0,>0400
 ;RAM:CC20 28 06                       jr      Z, loc_CC28                             ; no, skip
        jeq  loc_CC28
 ;RAM:CC22 DD 7E 0A                    ld      a, 10(ix)
@@ -4408,8 +4408,8 @@ loc_CC4D:
 ;RAM:CC6B FD CB 0D DE                 set     3, 13(iy)                               ; triggered (falling, collapsing blocks)
        socb @b08h,@13(iy)
 ;RAM:CC6F DD CB 07 56                 bit     2, 7(ix)                                ; moveable?
-       movb @7(ix),r0
-       andi r0,>0400
+       movb @7(ix),tmp0
+       andi tmp0,>0400
 ;RAM:CC73 28 18                       jr      Z, loc_CC8D                             ; no, skip
        jeq  loc_CC8D
 ;RAM:CC75 DD 7E 09                    ld      a, 9(ix)                                ; dX
@@ -4550,8 +4550,8 @@ adj_dX_for_out_of_bounds:
 ;RAM:CCE2 C0                          ret     NZ                                      ; yes, exit
        jne  adj_dX_for_out_of_bounds_return
 ;RAM:CCE3 DD CB 07 46                 bit     0, 7(ix)                                ; near an arch?
-       movb @7(ix),r0
-       andi r0,>0100
+       movb @7(ix),tmp0
+       andi tmp0,>0100
 ;RAM:CCE7 C0                          ret     NZ                                      ; yes, exit
        jne  adj_dX_for_out_of_bounds_return
 ;RAM:CCE8 3A AB 5B                    ld      a, (room_size_X)
@@ -4612,8 +4612,8 @@ adj_dY_for_out_of_bounds:
 ;RAM:CD0D C0                          ret     NZ                                      ; yes, exit
        jne  adj_dY_for_out_of_bounds_return
 ;RAM:CD0E DD CB 07 46                 bit     0, 7(ix)                                ; near and arch?
-       movb @7(ix),r0
-       andi r0,>0100
+       movb @7(ix),tmp0
+       andi tmp0,>0100
 ;RAM:CD12 C0                          ret     NZ                                      ; yes, exit
        jne  adj_dY_for_out_of_bounds_return
 ;RAM:CD13 3A AC 5B                    ld      a, (room_size_Y)
@@ -4763,8 +4763,8 @@ test_overlap_obj:
 ;RAM:CD9F 28 21                       jr      Z, next_overlap_obj                     ; yes, skip
        jeq  next_overlap_obj
 ;RAM:CDA1 FD CB 07 66                 bit     4, 7(iy)                                ; DRAW flag already set?
-       movb @7(iy),r0
-       andi r0,>1000
+       movb @7(iy),tmp0
+       andi tmp0,>1000
 ;RAM:CDA5 20 1B                       jr      NZ, next_overlap_obj                    ; yes, skip
        jne  next_overlap_obj
 ;RAM:CDA7 FD 7E 1A                    ld      a, 26(iy)                               ; pixel X
@@ -4865,8 +4865,8 @@ upd_player_top:
 ;RAM:CDE6 20 07                       jr      NZ, loc_CDEF
        jne  loc_CDEF
 ;RAM:CDE8 DD CB 0D 76                 bit     6, 13(ix)
-       movb @13(ix),r0
-       andi r0,>4000
+       movb @13(ix),tmp0
+       andi tmp0,>4000
 ;RAM:CDEC C2 21 BF                    jp      NZ, init_death_sparkles
        jeq  loc_CDEF
 ;       b    @init_death_sparkles
@@ -5001,8 +5001,8 @@ loc_CE72:
 ;RAM:CE76 28 08                       jr      Z, loc_CE80                             ; yes, skip
        jeq  loc_CE80
 ;RAM:CE78 DD CB 07 66                 bit     4, 7(ix)                                ; draw flag set?
-       movb @7(ix),r0
-       andi r0,>1000
+       movb @7(ix),tmp0
+       andi tmp0,>1000
 ;RAM:CE7C 28 02                       jr      Z, loc_CE80                             ; no, skip
        jeq  loc_CE80
 ;RAM:CE7E 71                          ld      (hl), c                                 ; add object index to list
@@ -5053,8 +5053,8 @@ loc_CEC6:
        jne  !
        b    @render_done
 ;RAM:CECD CB 7F                       bit     7, a                                    ; already rendered?
-!      movb  a,r0
-       andi r0,>8000
+!      movb  a,tmp0
+       andi tmp0,>8000
 ;RAM:CECF 20 F5                       jr      NZ, loc_CEC6                            ; yes, skip
        jne  loc_CEC6
 ;RAM:CED1 CD B5 D3                    call    get_ptr_object                          ; ret=HL
@@ -5074,8 +5074,8 @@ loc_CEDB:
        jne  !
        b    @render_obj_no1
 ;RAM:CEE2 CB 7F                       bit     7, a
-!      movb a,r0
-       andi r0,>8000
+!      movb a,tmp0
+       andi tmp0,>8000
 ;RAM:CEE4 20 F5                       jr      NZ, loc_CEDB
        jne  loc_CEDB
 ;RAM:CEE6 CD B5 D3                    call    get_ptr_object
@@ -5150,10 +5150,10 @@ loc_CF16:
 ;RAM:CF30 FD 96 05                    sub     5(iy)                                   ; sub D2
        sb   @5(iy),a
 ;RAM:CF33 95                          sub     l                                       ; Y2-D2-(Y1+D1)
-       movb a,r0                      ; TODO: is this correct?
+       movb a,tmp0                      ; TODO: is this correct?
 ;RAM:CF34 79                          ld      a, c
        movb @c,a
-       cb   r0,@l
+       cb   tmp0,@l
 ;RAM:CF35 38 02                       jr      C, loc_CF39                             ; overlap (C+=3)
        jl   loc_CF39
 ;RAM:CF37 C6 03                       add     a, #3                                   ; no overlap (C+=6)
@@ -5189,10 +5189,10 @@ loc_CF3C:
 ;RAM:CF56 FD 96 04                    sub     4(iy)                                   ; sub W2
        sb   @4(iy),a
 ;RAM:CF59 95                          sub     l                                       ; X2-W2-(X1+W1)
-       movb a,r0
+       movb a,tmp0
 ;RAM:CF5A 79                          ld      a, c
        movb @c,a
-       cb   r0,@l
+       cb   tmp0,@l
 ;RAM:CF5B 38 02                       jr      C, loc_CF5F                             ; overlap (C+=9)
        jl   loc_Cf5F
 ;RAM:CF5D C6 09                       add     a, #9                                   ; no overlap (c+=18)
@@ -5556,15 +5556,15 @@ loc_D1EF:
 *
 flag_room_visited:
 ;RAM:D219 3A 10 5C                    ld      a, (graphic_objs_tbl+8)                 ; plyr_spr_1_screen
-       clr  r0
+       clr  tmp0
        movb @graphic_objs_tbl+8,@r0lb
-       mov  r0,r1
+       mov  tmp0,tmp1
        li   a,>8000
-       andi r0,>0007
+       andi tmp0,>0007
        jeq  !
        srl  a,0
-!      srl  r1,3
-       socb a,@scrn_visited(r1)
+!      srl  tmp1,3
+       socb a,@scrn_visited(tmp1)
 ;RAM:D21C 4F                          ld      c, a
 ;RAM:D21D 0F                          rrca
 ;RAM:D21E 0F                          rrca
@@ -6189,8 +6189,8 @@ wipe_next_object:
 ;RAM:D5C3 DD E1                       pop     ix
        mov  hl,ix
 ;RAM:D5C5 DD CB 07 6E                 bit     5, 7(ix)                                ; wipe flag?
-       movb @7(ix),r0
-       andi r0,>2000
+       movb @7(ix),tmp0
+       andi tmp0,>2000
 ;RAM:D5C9 28 E7                       jr      Z, wipe_next_object                     ; no, go
        jeq  wipe_next_object
 ;RAM:D5CB DD CB 07 AE                 res     5, 7(ix)                                ; clear wipe flag
@@ -6310,9 +6310,9 @@ loc_D62C:
 ;RAM:D635 7C                          ld      a, h
 ;RAM:D636 60                          ld      h, b
 ;RAM:D637 47                          ld      b, a                                    ; swap HL & BC
-       mov  hl,r0
+       mov  hl,tmp0
        mov  bc,hl
-       mov  r0,bc
+       mov  tmp0,bc
 ;RAM:D638 3A A8 5B                    ld      a, (objs_wiped_cnt)
        movb @objs_wiped_cnt,a
 ;RAM:D63B 3C                          inc     a

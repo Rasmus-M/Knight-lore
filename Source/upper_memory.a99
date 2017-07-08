@@ -542,9 +542,10 @@ interface_ii:
 kempston:
 ;RAM:D077 DB 1F                       in      a, (0x1F)
 *      Read joystick using CRU
+;      Note: r12=af_
        li   r12,>0024                 ; CRU address of the column decoder
-       li   r0,>0600                  ; Column 6, i.e joystick #1
-       ldcr r0,3                      ; Select it
+       li   tmp0,>0600                  ; Column 6, i.e joystick #1
+       ldcr tmp0,3                      ; Select it
        li   r12,>0006                 , Base CRU address for joystick 1
 ;RAM:D079 0E 00                       ld      c, #0
        movb @b00h,@c
@@ -670,7 +671,7 @@ finished_input:
 ;RAM:D11C CD F7 B5                    call    read_port
 ;RAM:D11F B0                          or      b
 ;RAM:D120 C1                          pop     bc
-       li   r0,KEY_SP
+       li   tmp0,KEY_SP
        bl   @chkkey
 ;RAM:D121 28 02                       jr      Z, loc_D125
        jeq  loc_D125
@@ -743,9 +744,9 @@ add_HL_A:
 ;RAM:D4F4 7C                          ld      a, h
 ;RAM:D4F5 CE 00                       adc     a, #0
 ;RAM:D4F7 67                          ld      h, a
-       clr  r0
+       clr  tmp0
        movb a,@r0lb
-       a    r0,hl
+       a    tmp0,hl
 ;RAM:D4F8 C9                          ret
        rt
 *
@@ -768,10 +769,10 @@ HL_equals_DE_x_A:
 ;RAM:D504             loc_D504:
 ;RAM:D504 10 F9                       djnz    loc_D4FF
 ;RAM:D506 C1                          pop     bc
-       clr  r0
+       clr  tmp0
        movb a,@r0lb
-       mpy  de,r0
-       mov  r1,hl
+       mpy  de,tmp0
+       mov  tmp1,hl
 ;RAM:D507 C9                          ret
        rt
 *
@@ -879,8 +880,6 @@ clear_scrn:
 ;RAM:D55F
 ;RAM:D55F AF                          xor     a                                       ; border colour BLACK, activate MIC
 ;RAM:D560 D3 FE                       out     (0xFE), a                               ; ULA
-       li   r0,>0700
-       bl   @vwtr
 ;RAM:D562 CD 4C D5                    call    clr_attribute_memory
        bl   @clr_attribute_memory
 ;RAM:D565 18 DD                       jr      clr_bitmap_memory
@@ -1051,20 +1050,10 @@ blit_to_screen:
        mov  hl,@wrksp2+2               ; Source: hl -> r1
        mov  bc,@wrksp2+4               ; Dimensions: bc -> r2
        lwpi wrksp2
-
-;x1     equ  8
-;y1     equ  4
-;w1     equ  16
-;h1     equ  16
-;       li   r0,(y1+h1)*256-(256-7)+(x1*8)        ; Dest
-;       li   r1,vidbuf+>1800-32-(y1*8*32)+x1      ; Source
-;       li   r2,(h1*8*256)+w1                     ; Size (lines, bytes/line)
-
        mov  r2,r3
        andi r2,>ff00                   ; Lines
        swpb r2
        andi r3,>00ff                   ; Bytes/line
-
        mov  r0,r4
        andi r4,7                       ; Number of lines into character row (n)
        ci   r4,7                       ; If n is 7 it's a full row
@@ -1074,7 +1063,6 @@ blit_to_screen:
        a    r4,r2                      ; add extra lines
        sla  r4,5
        s    r4,r1                      ; Adjust source
-
 blit1:
        andi r0,>FFF8                   ; Move dest to top of character row
        mov  r3,r4                      ; Copy number of bytes/line
@@ -1246,12 +1234,12 @@ calc_2d_info:
        movb @26(ix),a
 ;RAM:CD3C E6 07                       and     #7                                      ; bit offset
        andi a,>0700
-       movb a,r0                      ; preserve flags
+       movb a,tmp0                    ; preserve flags
 ;RAM:CD3E 1A                          ld      a, (de)                                 ; ptr sprite data (width)
 ;RAM:CD3F 13                          inc     de                                      ; ptr height
        movb *de+,a
 ;RAM:CD40 28 01                       jr      Z, loc_CD43
-       movb r0,r0
+       movb tmp0,tmp0
        jeq  loc_CD43
 ;RAM:CD42 3C                          inc     a
        ab   one,a
@@ -1529,9 +1517,9 @@ print_sprite_1:
 ;RAM:D738 ED 44                       neg                                             ; -16, -32, -48, -64, -80
 ;RAM:D73A C6 50                       add     a, #0x50 ; 'P'                          ; 64, 48, 32, 16, 0
 *      On the TI we use a loop
-       clr  r1
+       clr  tmp1
        movb a,@r1lb                   ; width
-       mov  r1,r0                     ; width
+       mov  tmp1,tmp0                 ; copy width
        clr  a
 loc_D73C:                                                                             ; self-modifying code
 ;RAM:D73C 32 AD D7                    ld      (loc_D7AC+1), a                         ; set jump offset
@@ -1598,7 +1586,7 @@ loc_D76F:
        inv  a
        ab   one,a
 ;RAM:D77C D6 06                       sub     #6                                      ; -14, -20, -30, -38, -46
-       sb   @b0ah,a                    ; 10 on the TI
+       sb   @b0ah,a                   ; 10 on the TI
 * TMS9900 offsets are in words
        sra  a,1
 ;RAM:D77E 18 BC                       jr      loc_D73C                                ; to self modifying code
@@ -1680,7 +1668,7 @@ loc_D7AC:
        jmp  loc_D790
 * ---------------------------------------------------------------------------
 * For sprites with bit offset
-       mov  r0,r1
+       mov  tmp0,tmp1
        clr  de
        clr  hl
 plot_shifted_line:
@@ -1692,7 +1680,7 @@ shift_mask_1:
        sla  hl,0                       ; Actual shift values inserted by self-modiyfying code
        szcb d,*bc
        socb h,*bc+
-       dec  r1
+       dec  tmp1
        jeq  plot_shifted_line_1
 shift_pattern_2:
        sla  de,0                       ; Shift (bit offset) bits into MSB
@@ -1892,17 +1880,17 @@ calc_vram_addr:
 ;RAM:D846 57                          ld      d, a
 ;RAM:D847 C9                          ret
 *      Reverse y
-       li   r1,>bf00
-       sb   b,r1
+       li   tmp1,>bf00
+       sb   b,tmp1
 *      Calculate address E/A manual way
-       movb r1,@e                      ; ????????yyyyyyyy
+       movb tmp1,@e                    ; ????????yyyyyyyy
        sla  de,5                       ; ???yyyyyyyy00000
-       socb r1,@e                      ; ???yyyyy???yyyyy
+       socb tmp1,@e                    ; ???yyyyy???yyyyy
        andi de,>1f07                   ; 000yyyyy00000yyy
        mov  @c,@r0lb                   ; yyyyyyyyxxxxxxxx
-       andi r0,7                       ; 0000000000000xxx
+       andi tmp0,7                     ; 0000000000000xxx
        ab   @c,@e                      ; 000yyyyyxxxxx???
-       s    r0,de                      ; 000yyyyyxxxxxyyy
+       s    tmp0,de                    ; 000yyyyyxxxxxyyy
        rt
 *
 * End of function calc_vram_addr
@@ -1924,9 +1912,9 @@ calc_attrib_addr:
 ;RAM:D84C CB 3C                       srl     h                                       ; divide Y by 8
 ;RAM:D84E CB 3C                       srl     h
 ;RAM:D850 CB 3C                       srl     h
-       movb h,r0
-       srl  r0,3
-       movb r0,h
+       movb h,tmp0
+       srl  tmp0,3
+       movb tmp0,h
 ;RAM:D852 CB 3C                       srl     h                                       ; divide by 8
 ;RAM:D854 CB 1D                       rr      l
 ;RAM:D856 CB 3C                       srl     h
@@ -1957,8 +1945,8 @@ vflip_sprite_data:                                                              
 ;RAM:D866 1A                          ld      a, (de)                                 ; width
        movb *de,a
 ;RAM:D867 DD AE 07                    xor     7(ix)                                   ; same Vflip as stored?
-       movb @7(ix),r0
-       xor  r0,a
+       movb @7(ix),tmp0
+       xor  tmp0,a
 ;RAM:D86A E6 80                       and     #0x80 ; '�'
        andi a,>8000
 ;RAM:D86C 28 34                       jr      Z, loc_D8A2                             ; yes, skip
@@ -1966,8 +1954,8 @@ vflip_sprite_data:                                                              
 ;RAM:D86E 1A                          ld      a, (de)                                 ; width
        movb *de,a
 ;RAM:D86F EE 80                       xor     #0x80 ; '�'                             ; toggle Vflip
-       li   r0,>8000
-       xor  r0,a
+       li   tmp0,>8000
+       xor  tmp0,a
 ;RAM:D871 12                          ld      (de), a                                 ; store updated flag
        movb a,*de
 ;RAM:D872 07                          rlca                                            ; *2
@@ -2008,9 +1996,9 @@ vflip_sprite_data:                                                              
 ;RAM:D889 2B                          dec     hl                                      ; (height+1) x width x 2 - 1
        dec  hl
 ;RAM:D88A CB 39                       srl     c                                       ; height / 2
-       movb @c,r0
-       srl  r0,1
-       movb r0,@c
+       movb @c,tmp0
+       srl  tmp0,1
+       movb tmp0,@c
 loc_D88C:
 ;RAM:D88C C5                          push    bc                                      ; B=widthx2, C=height/2
        mov  bc,*sp+
@@ -2056,8 +2044,8 @@ loc_D8A2:
 ;RAM:D8A4 1A                          ld      a, (de)                                 ; width (bytes)
        movb *de,a
 ;RAM:D8A5 DD AE 07                    xor     7(ix)                                   ; same Hflip as stored?
-       movb @7(ix),r0
-       xor  r0,a
+       movb @7(ix),tmp0
+       xor  tmp0,a
 ;RAM:D8A8 E6 40                       and     #0x40 ; '@'
        andi a,>4000
 ;RAM:D8AA 28 30                       jr      Z, loc_D8DC                             ; yes, skip
@@ -2065,8 +2053,8 @@ loc_D8A2:
 ;RAM:D8AC 1A                          ld      a, (de)                                 ; width
        movb *de,a
 ;RAM:D8AD EE 40                       xor     #0x40 ; '@'                             ; toggle Hflip flag
-       li   r0,>4000
-       xor  r0,a
+       li   tmp0,>4000
+       xor  tmp0,a
 ;RAM:D8AF 12                          ld      (de), a                                 ; store updated flag
        movb a,*de
 ;RAM:D8B0 E6 0F                       and     #0xF                                    ; width
@@ -2080,9 +2068,9 @@ loc_D8A2:
 ;RAM:D8B5 1A                          ld      a, (de)                                 ; height
        movb *de,a
 ;RAM:D8B6 08                          ex      af, af'
-       mov  af,r0
+       mov  af,tmp0
        mov  af_,af
-       mov r0,af_
+       mov tmp0,af_
 ;RAM:D8B7 13                          inc     de                                      ; sprite data
        inc  de
 ;RAM:D8B8 EB                          ex      de, hl                                  ; HL=sprite data
@@ -2095,8 +2083,8 @@ loc_D8A2:
        dect sp
        mov  *sp,hl
 ;RAM:D8BC 06 F1                       ld      b, #0xF1 ; '�'
-       li   r0,reverse_bytes_lookup_table
-       movb r0,b
+       li   tmp0,reverse_bytes_lookup_table
+       movb tmp0,b
 ;RAM:D8BE D9                          exx
        bl   @exx
 loc_D8BF:
@@ -2141,17 +2129,17 @@ loc_D8CD:
        sb   one,b
        jne  loc_D8CD
 ;RAM:D8D4 08                          ex      af, af'
-       mov  af,r0
+       mov  af,tmp0
        mov  af_,af
-       mov r0,af_
+       mov tmp0,af_
 ;RAM:D8D5 3D                          dec     a
        sb   one,a
 ;RAM:D8D6 28 04                       jr      Z, loc_D8DC
        jeq  loc_D8DC
 ;RAM:D8D8 08                          ex      af, af'
-       mov  af,r0
+       mov  af,tmp0
        mov  af_,af
-       mov r0,af_
+       mov tmp0,af_
 ;RAM:D8D9 41                          ld      b, c
        movb @c,b
 ;RAM:D8DA 18 E3                       jr      loc_D8BF
@@ -2181,6 +2169,7 @@ ti_99_4a_init:
        li   sp,STACK+2
        movb @RNDSD,@rand_no
        li   one,>0100
+       li   mone,>ff00
        bl   @gmode
        dect sp
        mov  *sp,r11
@@ -2454,21 +2443,21 @@ vsbw:
 * Emulation of Z80 instructions
 *
 exx:
-       mov  bc,r0
+       mov  bc,tmp0
        mov  bc_,bc
-       mov  r0,bc_
-       mov  hl,r0
+       mov  tmp0,bc_
+       mov  hl,tmp0
        mov  hl_,hl
-       mov  r0,hl_
-       mov  de,r0
+       mov  tmp0,hl_
+       mov  de,tmp0
        mov  de_,de
-       mov  r0,de_
+       mov  tmp0,de_
        rt
 
 ex_de_hl:
-       mov  de,r0
+       mov  de,tmp0
        mov  hl,de
-       mov  r0,hl
+       mov  tmp0,hl
        rt
 
 ldir:
@@ -2481,16 +2470,16 @@ ldir:
 * or the H flag is set, then $06 is added to the register. Then the four most significant bits are checked.
 * If this more significant digit also happens to be greater than 9 or the C flag is set, then $60 is added.
 daa:
-       mov  a,r0
-       andi r0,>0f00
-       cb   r0,@b09h
+       mov  a,tmp0
+       andi tmp0,>0f00
+       cb   tmp0,@b09h
        jle  daa1
        ab   @b06h,a
 daa1:
-       mov  a,r0
-       andi r0,>f000
-       srl  r0,4
-       cb   r0,@b09h
+       mov  a,tmp0
+       andi tmp0,>f000
+       srl  tmp0,4
+       cb   tmp0,@b09h
        jle  daa2
        ab   @b60h,a
 daa2:
@@ -2498,13 +2487,13 @@ daa2:
 
 * Random number generator
 ld_a_r:
-       mov  @rand_no,r0
-       li   r1,28643                  ; A prime number to multiply by
-       mpy  r1,r0
-       ai   r0,31873                  ; Add a prime number
-       src  r0,7                      ; Shift to break odd/even pattern
-       mov  r0,@rand_no
-       movb r0,a
+       mov  @rand_no,tmp0
+       li   tmp1,28643                  ; A prime number to multiply by
+       mpy  tmp1,tmp0
+       ai   tmp0,31873                  ; Add a prime number
+       src  tmp0,7                      ; Shift to break odd/even pattern
+       mov  tmp0,@rand_no
+       movb tmp0,a
        rt
 rand_no:
        data 0
@@ -2513,7 +2502,7 @@ rand_no:
 *
 * Check key
 *
-* R0: Column in MSB: >0000 - >0700, Row in LSB: >0006 - >0014
+* tmp0: Column in MSB: >0000 - >0700, Row in LSB: >0006 - >0014
 *
 *       Column   0      1    2    3    4    5     6       7
 *     Row
@@ -2577,10 +2566,11 @@ KEY_SH EQU  >0010
 KEY_CT EQU  >0012
 *
 chkkey:
+;      Note: r12 = af_
        li   r12,>0024                  ; CRU address of the column decoder
-       ldcr r0,3                       ; Select column
-       andi r0,>00ff
-       mov  r0,r12                     ; Select row
+       ldcr tmp0,3                     ; Select column
+       andi tmp0,>00ff
+       mov  tmp0,r12                   ; Select row
        tb   0                          ; Test key, EQ if not pressed
        rt
 *// CHKKEY

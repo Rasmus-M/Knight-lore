@@ -73,7 +73,10 @@ PADVAR EQU  STACK+>80
 **
 * Z80 register mapping
 *
-one    equ  3
+tmp0   equ  0
+tmp1   equ  1
+one    equ  2
+mone   equ  3
 af     equ  4
 a      equ  4
 bc     equ  5
