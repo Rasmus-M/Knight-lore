@@ -797,16 +797,15 @@ fill_DE:
 *
 * =============== S U B R O U T I N E =======================================
 *
-; TODO: optimize
+; Note: only works with words on TI
 clr_mem:
 ;RAM:D53A 1E 00                       ld      e, #0
-       clr  de
 clr_byte:
 ;RAM:D53C 73                          ld      (hl), e                                 ; zero location
 ;RAM:D53D 23                          inc     hl                                      ; next location
-       movb d,*hl+
+       clr  *hl+
 ;RAM:D53E 0B                          dec     bc
-       dec  bc
+       dect  bc
 ;RAM:D53F 78                          ld      a, b
 ;RAM:D540 B1                          or      c                                       ; done?
 ;RAM:D541 20 F9                       jr      NZ, clr_byte                            ; no, loop
@@ -1126,6 +1125,7 @@ blit3:
 * Note that line length is fixed at 32.
 *
 fill_window:
+;      TODO: optimize
 ;RAM:C515 11 20 00                    ld      de, #32                                 ; Line length
        li   de,32
 loc_C518:
