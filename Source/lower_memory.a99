@@ -568,12 +568,12 @@ upd_182_183:
 ;RAM:B61E FE 20                       cp      #0x20 ; ' '                             ; wulf?
 ;RAM:B620 3E 30                       ld      a, #0x30 ; '0'                          ; jr nc,___
 ;RAM:B622 30 02                       jr      NC, loc_B626                            ; yes, skip
-       cb   a,@b20h
-       jhe  loc_B626
+       cb   a,@b20h                   ; Wulf?
+       jhe  !
        movb @b14h,a                  ; jhe
        jmp  loc_B626
 ;RAM:B624 C6 08                       add     a, #8                                   ; jr,c___
-!      movb @b1Ah,a                  ; jl
+!      movb @b1ah,a                  ; jl
 loc_B626:
 ;RAM:B626 32 5D B6                    ld      (loc_B65D), a                           ; self-modifying code
        movb a,@loc_B65D
