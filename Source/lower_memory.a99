@@ -613,13 +613,13 @@ loc_B63C:
 ;      TODO
 loc_B64F:
 ;RAM:B64F ED 5F                       ld      a, r                                    ; random
-        bl   @ld_a_r
+       bl   @ld_a_r
 ;RAM:B651 E6 01                       and     #1
        andi a,>0100
 ;RAM:B653 28 19                       jr      Z, loc_B66E
        jeq  loc_B66E
 ;RAM:B655 3A 0A 5C                    ld      a, (graphic_objs_tbl+2)                 ; plyr_spr_1 Y
-       movb a,@graphic_objs_tbl+2
+       movb @graphic_objs_tbl+2,a
 ;RAM:B658 DD BE 02                    cp      2(ix)                                   ; <objY?
 ;RAM:B65B 3E 02                       ld      a, #2
        cb   a,@2(ix)
@@ -5493,9 +5493,9 @@ plyr_spr_init_data:
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
 * ---------------------------------------------------------------------------
 start_locations:
-       byte >2F, >44, >B3, >8F         ; Standard
+;       byte >2F, >44, >B3, >8F         ; Standard
 ;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
-;       byte >01,>01,>01,>01
+       byte >B3,>B3,>B3,>B3
 ;       byte 136,136,136,136            ; Cauldron room
 * ---------------------------------------------------------------------------
 *
