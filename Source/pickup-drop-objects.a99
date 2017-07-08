@@ -251,8 +251,11 @@
 *
 is_obj_moving:
 ;RAM:C1A1 DD 7E 09                    ld      a, 9(ix)                                ; dX
+       mov  @9(ix),a
 ;RAM:C1A4 DD B6 0A                    or      10(ix)                                  ; dY
+       socb @10(ix),a
 ;RAM:C1A7 DD B6 0B                    or      11(ix)                                  ; dZ
+       socb @11(ix),a
 ;RAM:C1AA C9                          ret
        rt
 *

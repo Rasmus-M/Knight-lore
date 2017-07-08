@@ -488,9 +488,11 @@ upd_131_to_133:
 ;RAM:B5A9 DD 7E 03                    ld      a, 3(ix)
 ;RAM:B5AC 32 C5 5B                    ld      (rising_blocks_z), a
 ;RAM:B5AF
-;RAM:B5AF             dec_dZ_wipe_and_draw:
+dec_dZ_wipe_and_draw:
 ;RAM:B5AF CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:B5B2 C3 92 C6                    jp      set_wipe_and_draw_flags
+       b    @set_wipe_and_draw_flags
 ;RAM:B5B5             ; ---------------------------------------------------------------------------
 ;RAM:B5B5
 ;RAM:B5B5             p4_p4:                                                          ; +4, +4
@@ -2252,41 +2254,58 @@ init_obj_loop:
 *
 * End of function init_special_objects
 *
-;RAM:C4AA             ; ---------------------------------------------------------------------------
-;RAM:C4AA             ; block
-;RAM:C4AA
+* ---------------------------------------------------------------------------
+* block
+*
 upd_62:
-       b    @no_update
 ;RAM:C4AA CD E3 C4                    call    upd_6_7
+       bl   @upd_6_7_0
 ;RAM:C4AD CD F3 C9                    call    clear_dX_dY
+       bl   @clear_dX_dY
 ;RAM:C4B0 CD E9 B3                    call    audio_B3E9
+;      TODO
 ;RAM:C4B3 C3 AF B5                    jp      dec_dZ_wipe_and_draw
-;RAM:C4B6             ; ---------------------------------------------------------------------------
-;RAM:C4B6             ; chest
-;RAM:C4B6
+       b    @dec_dZ_wipe_and_draw
+* ---------------------------------------------------------------------------
+* chest
+*
 upd_85:
-       b    @no_update
 ;RAM:C4B6 CD E3 C4                    call    upd_6_7
+       bl   @upd_6_7_0
 ;RAM:C4B9 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:C4BC CD A1 C1                    call    is_obj_moving
+       bl   @is_obj_moving
 ;RAM:C4BF C8                          ret     Z                                       ; no, return
+       jeq  upd_84_85_return
 ;RAM:C4C0 C3 32 C2                    jp      audio_B467_wipe_and_draw
-;RAM:C4C3             ; ---------------------------------------------------------------------------
-;RAM:C4C3             ; table
-;RAM:C4C3
+       b    @audio_B467_wipe_and_draw
+* ---------------------------------------------------------------------------
+* table
+*
 upd_84:
-       b    @no_update
 ;RAM:C4C3 CD E3 C4                    call    upd_6_7
-;RAM:C4C6
-;RAM:C4C6             dec_dZ_upd_XYZ_wipe_if_moving:
+       bl   @upd_6_7_0
+dec_dZ_upd_XYZ_wipe_if_moving:
 ;RAM:C4C6 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:C4C9 CD A1 C1                    call    is_obj_moving
+       bl   @is_obj_moving
 ;RAM:C4CC C8                          ret     Z
+       jeq  upd_84_85_return
 ;RAM:C4CD CD F3 C9                    call    clear_dX_dY
+       bl   @clear_dX_dY
 ;RAM:C4D0 C3 32 C2                    jp      audio_B467_wipe_and_draw
-;RAM:C4D3             ; tree wall
-;RAM:C4D3
+       b    @audio_B467_wipe_and_draw
+* ---------------------------------------------------------------------------
+upd_84_85_return:
+       dect sp
+       mov  *sp,r11
+       b    *r11
 * =============== S U B R O U T I N E =======================================
+*
+* tree wall
+*
 upd_128_to_130:
 ;RAM:C4D3 21 F8 FE                    ld      hl, #0xFEF8                             ; -2, -8
        li   hl,>fef8
@@ -3733,23 +3752,18 @@ loc_C9CD:
        movb @12(ix),tmp0
        andi tmp0,>0400
 ;RAM:C9E6 28 0B                       jr      Z, clear_dX_dY                          ; no, go
-       jeq  clear_dX_dY
+       jeq  call_clear_dX_dY
 ;RAM:C9E8 3A C1 5B                    ld      a, (tmp_dZ)
        movb @tmp_dZ,a
 ;RAM:C9EB A7                          and     a
        andi a,>ff00
 ;RAM:C9EC F2 F3 C9                    jp      P, clear_dX_dY
-       jgt  clear_dX_dY
-       jeq  clear_dX_dY
+       jgt  call_clear_dX_dY
+       jeq  call_clear_dX_dY
 ;RAM:C9EF DD CB 0C 9E                 res     3, 12(ix)                               ; clear jumping flag
        szcb @b08h,@12(ix)
-clear_dX_dY:
-;RAM:C9F3 AF                          xor     a
-       clr  a
-;RAM:C9F4 DD 77 09                    ld      9(ix), a                                ; dX=0
-       movb a,@9(ix)
-;RAM:C9F7 DD 77 0A                    ld      10(ix), a                               ; dY=0
-       movb a,@10(ix)
+call_clear_dX_dY:
+       bl   @clear_dX_dY
 ;RAM:C9FA C9                          ret
 move_player_return:
        dect sp
@@ -3757,6 +3771,22 @@ move_player_return:
        rt
 *
 * End of function move_player
+*
+* =============== S U B R O U T I N E =======================================
+*
+* Extracted from move_player
+*
+clear_dX_dY:
+;RAM:C9F3 AF                          xor     a
+       clr  a
+;RAM:C9F4 DD 77 09                    ld      9(ix), a                                ; dX=0
+       movb a,@9(ix)
+;RAM:C9F7 DD 77 0A                    ld      10(ix), a                               ; dY=0
+       movb a,@10(ix)
+*      Return
+       rt
+*
+* End of function clear_dX_dY
 *
 * =============== S U B R O U T I N E =======================================
 *
