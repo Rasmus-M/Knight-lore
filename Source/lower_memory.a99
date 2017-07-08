@@ -121,10 +121,15 @@ jump_to_tbl_entry:
 *
 ret_from_tbl_jp:
 ;RAM:AFE4 ED 5F                       ld      a, r
+       bl   @ld_a_r
 ;RAM:AFE6 4F                          ld      c, a
+       movb a,@c
 ;RAM:AFE7 3A A5 5B                    ld      a, (seed_3)
+       movb @seed_3,a
 ;RAM:AFEA 81                          add     a, c
+       ab   @c,a
 ;RAM:AFEB 32 A5 5B                    ld      (seed_3), a                             ; update seed #3
+       movb a,@seed_3
 ;RAM:AFEE 01 20 00                    ld      bc, #32
        li   bc,32
 ;RAM:AFF1 DD 09                       add     ix, bc                                  ; next sprite to render
@@ -391,6 +396,50 @@ loc_B555:
 *
 * End of function shuffle_objects_required
 *
+* =============== S U B R O U T I N E =======================================
+*
+init_cauldron_bubbles:
+       mov  r11,*sp+
+;RAM:B8A9 3A 10 5C                    ld      a, (graphic_objs_tbl+8)                 ; plyr_spr_1 screen
+       movb @graphic_objs_tbl+8,a
+;RAM:B8AC FE 88                       cp      #136                                    ; cauldron room?
+       cb   a,@b5ch
+;RAM:B8AE C0                          ret     NZ                                      ; no, exit
+       jne  init_cauldron_bubbles_return
+;RAM:B8AF 11 68 5C                    ld      de, #special_objs_here_1                ; special_objs_here[1]
+       li   de,special_objs_here_1
+;RAM:B8B2 1A                          ld      a, (de)                                 ; graphic no.
+       movb *de,a
+;RAM:B8B3 A7                          and     a                                       ; null?
+;RAM:B8B4 C0                          ret     NZ                                      ; no, return
+       jne  init_cauldron_bubbles_return
+;RAM:B8B5 3A C3 5B                    ld      a, (all_objs_in_cauldron)
+       movb @all_objs_in_cauldron,a
+;RAM:B8B8 A7                          and     a
+;RAM:B8B9 C0                          ret     NZ
+       jne  init_cauldron_bubbles_return
+;RAM:B8BA 21 C8 B8                    ld      hl, #cauldron_bubbles                   ; source data
+       li   hl,cauldron_bubbles
+;RAM:B8BD 01 12 00                    ld      bc, #18                                 ; 18 bytes to copy
+       li   bc,18
+;RAM:B8C0 D5                          push    de
+;RAM:B8C1 DD E1                       pop     ix                                      ; save destination
+       mov  de,ix
+;RAM:B8C3 ED B0                       ldir                                            ; copy
+       bl   @ldir
+;RAM:B8C5 C3 D8 C4                    jp      adj_m4_m12
+       bl    @adj_m4_m12
+init_cauldron_bubbles_return:
+       dect sp
+       movb *sp,r11
+       rt
+*
+cauldron_bubbles:
+       byte >A0, >80, >80, >80, >05, >05, >0C, >10, >B4
+       byte >00, >00, >00, >00, >A0, >00, >00, >00, >00
+*
+* End of function init_cauldron_bubbles
+*
 * ---------------------------------------------------------------------------
 * sparkles from the blocks in the cauldron room at the end of the game
 *
@@ -485,86 +534,135 @@ upd_131_to_133:
 ;RAM:B5F2 CD 65 B9                    call    move_towards_plyr
 ;RAM:B5F5 18 B2                       jr      loc_B5A9
 ;RAM:B5F7
-;RAM:B5FF             ; ---------------------------------------------------------------------------
-;RAM:B5FF             ; ball (bouncing around)
-;RAM:B5FF             ; - bounces towards wulf
-;RAM:B5FF             ; - bounces away from sabreman
-;RAM:B5FF
-upd_182_183:                                                    ; adj(-4,-8)
-       b    @no_update
-;RAM:B5FF CD F2 C4                    call    upd_12_to_15
+* ---------------------------------------------------------------------------
+* ball (bouncing around)
+* - bounces towards wulf
+* - bounces away from sabreman
+*
+upd_182_183:
+;RAM:B5FF CD F2 C4                    call    upd_12_to_15                            ; adj(-4,-8)
+       bl   @upd_12_to_15_0
 ;RAM:B602 DD 6E 09                    ld      l, 9(ix)                                ; dX
+       movb @9(ix),@l
 ;RAM:B605 DD 66 0A                    ld      h, 10(ix)                               ; dY
+       movb @10(ix),h
 ;RAM:B608 E5                          push    hl
+       mov  hl,*sp+
 ;RAM:B609 DD 7E 0B                    ld      a, 11(ix)                               ; dZ
+       movb @11(ix),a
 ;RAM:B60C 32 C2 5B                    ld      (tmp_bouncing_ball_dZ), a               ; tmp store
+       movb a,@tmp_bouncing_ball_dZ
 ;RAM:B60F CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:B612 E1                          pop     hl
+       dect sp
+       mov  *sp,hl
 ;RAM:B613 DD 75 09                    ld      9(ix), l                                ; preserve old dX
+       movb @l,@9(ix)
 ;RAM:B616 DD 74 0A                    ld      10(ix), h                               ; preserve old dY
+       movb h,@10(ix)
 ;RAM:B619 3A 08 5C                    ld      a, (graphic_objs_tbl)                   ; plyr graphic_no
+       movb @graphic_objs_tbl,a
 ;RAM:B61C D6 10                       sub     #0x10
+       sb   @b10h,a
 ;RAM:B61E FE 20                       cp      #0x20 ; ' '                             ; wulf?
 ;RAM:B620 3E 30                       ld      a, #0x30 ; '0'                          ; jr nc,___
 ;RAM:B622 30 02                       jr      NC, loc_B626                            ; yes, skip
+       cb   a,@b20h
+       jhe  loc_B626
+       movb @b14h,a                  ; jhe
+       jmp  loc_B626
 ;RAM:B624 C6 08                       add     a, #8                                   ; jr,c___
-;RAM:B626
-;RAM:B626             loc_B626:                                                       ; self-modifying code
-;RAM:B626 32 5D B6                    ld      (loc_B65D), a
+!      movb @b1Ah,a                  ; jl
+loc_B626:
+;RAM:B626 32 5D B6                    ld      (loc_B65D), a                           ; self-modifying code
+       movb a,@loc_B65D
 ;RAM:B629 32 76 B6                    ld      (loc_B676), a                           ; self-modifying code
+       movb a,@loc_B676
 ;RAM:B62C 3A 10 5C                    ld      a, (graphic_objs_tbl+8)                 ; plyr_spr_1 screen
+       movb @graphic_objs_tbl+8,r0
 ;RAM:B62F E6 01                       and     #1
 ;RAM:B631 3E 04                       ld      a, #4
+       movb @b04h,a
+       andi r0,>0100
 ;RAM:B633 28 07                       jr      Z, loc_B63C
+       jeq  loc_B63C
 ;RAM:B635 47                          ld      b, a
+       movb a,b
 ;RAM:B636 3A A5 5B                    ld      a, (seed_3)
+       movb @seed_3,a
 ;RAM:B639 E6 03                       and     #3
+       andi a,>0300
 ;RAM:B63B 80                          add     a, b
-;RAM:B63C
-;RAM:B63C             loc_B63C:                                                       ; Z OOB?
-;RAM:B63C DD CB 0C 56                 bit     2, 12(ix)
+       ab   b,a
+loc_B63C:
+;RAM:B63C DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB?
+       movb @12(ix),r0
+       andi r0,>0400
 ;RAM:B640 28 26                       jr      Z, loc_B668                             ; no, skip
+       jeq  loc_B668
 ;RAM:B642 DD 77 0B                    ld      11(ix), a                               ; new dZ
+       movb a,@11(ix)
 ;RAM:B645 3A C2 5B                    ld      a, (tmp_bouncing_ball_dZ)               ; old dZ
+       movb @tmp_bouncing_ball_dZ,a
 ;RAM:B648 A7                          and     a                                       ; >=0?
 ;RAM:B649 F2 4F B6                    jp      P, loc_B64F                             ; yes, skip
+       jgt  loc_B64F
+       jeq  loc_B64F
 ;RAM:B64C CD 2E B4                    call    audio_B42E
-;RAM:B64F
-;RAM:B64F             loc_B64F:                                                       ; random
-;RAM:B64F ED 5F                       ld      a, r
+;      TODO
+loc_B64F:
+;RAM:B64F ED 5F                       ld      a, r                                    ; random
+        bl   @ld_a_r
 ;RAM:B651 E6 01                       and     #1
+       andi a,>0100
 ;RAM:B653 28 19                       jr      Z, loc_B66E
+       jeq  loc_B66E
 ;RAM:B655 3A 0A 5C                    ld      a, (graphic_objs_tbl+2)                 ; plyr_spr_1 Y
+       movb a,@graphic_objs_tbl+2
 ;RAM:B658 DD BE 02                    cp      2(ix)                                   ; <objY?
 ;RAM:B65B 3E 02                       ld      a, #2
-;RAM:B65D
-;RAM:B65D             loc_B65D:                                                       ; no, skip
-;RAM:B65D 30 02                       jr      NC, loc_B661
+       cb   a,@2(ix)
+loc_B65D:
+;RAM:B65D 30 02                       jr      NC, loc_B661                            ; no, skip (self-modifying)
+       jhe  loc_B661
 ;RAM:B65F ED 44                       neg                                             ; towards player
-;RAM:B661
-;RAM:B661             loc_B661:                                                       ; new dY
-;RAM:B661 DD 77 0A                    ld      10(ix), a
+       movb @bfeh,a                   ; a=-2
+       jmp  !
+loc_B661:
+       movb @b02h,a                   ; a=2
+;RAM:B661 DD 77 0A                    ld      10(ix), a                               ; new dY
+!      movb a,@10(ix)
 ;RAM:B664 DD 36 09 00                 ld      9(ix), #0                               ; new dX=0
-;RAM:B668
-;RAM:B668             loc_B668:
+       szcb one,@9(ix)
+loc_B668:
 ;RAM:B668 CD 85 B9                    call    toggle_next_prev_sprite
+       bl   @toggle_next_prev_sprite
 ;RAM:B66B C3 56 B8                    jp      set_deadly_wipe_and_draw_flags
-;RAM:B66E             ; ---------------------------------------------------------------------------
-;RAM:B66E
-;RAM:B66E             loc_B66E:                                                       ; plyr_spr_1 X
-;RAM:B66E 3A 09 5C                    ld      a, (graphic_objs_tbl+1)
+       b    @set_deadly_wipe_and_draw_flags
+* ---------------------------------------------------------------------------
+loc_B66E:
+;RAM:B66E 3A 09 5C                    ld      a, (graphic_objs_tbl+1)                 ; plyr_spr_1 X
+       movb @graphic_objs_tbl+1,a
 ;RAM:B671 DD BE 01                    cp      1(ix)                                   ; < objX?
+       cb   a,@1(ix)
 ;RAM:B674 3E 02                       ld      a, #2
-;RAM:B676
-;RAM:B676             loc_B676:
-;RAM:B676 30 02                       jr      NC, loc_B67A
+loc_B676:
+;RAM:B676 30 02                       jr      NC, loc_B67A                            ; (self-modifying)
+       jhe  loc_B67A
 ;RAM:B678 ED 44                       neg                                             ; towards player
-;RAM:B67A
-;RAM:B67A             loc_B67A:                                                       ; new dX
-;RAM:B67A DD 77 09                    ld      9(ix), a
+       movb @bfeh,a                   ; a=-2
+       jmp  !
+loc_B67A:
+       movb @b02h,a                   ; a=2
+;RAM:B67A DD 77 09                    ld      9(ix), a                                ; new dX
+!      movb a,@9(ix)
 ;RAM:B67D DD 36 0A 00                 ld      10(ix), #0                              ; new dY=0
+       szcb one,@10(ix)
 ;RAM:B681 18 E5                       jr      loc_B668
-;RAM:B683             ; ---------------------------------------------------------------------------
+       jmp  loc_B668
+*
+* ---------------------------------------------------------------------------
 ;RAM:B683             ; block (dropping)
 ;RAM:B683
 upd_91:
@@ -973,51 +1071,8 @@ upd_178_179:                                                    ; adjust (-4,-8)
 ;RAM:B8A1 30 EF                       jr      NC, loc_B892                            ; yes, go
 ;RAM:B8A3 DD CB 0D 96                 res     2, 13(ix)                               ; set dir=down
 ;RAM:B8A7 18 E9                       jr      loc_B892
-*
-* =============== S U B R O U T I N E =======================================
-*
-init_cauldron_bubbles:
-       mov  r11,*sp+
-;RAM:B8A9 3A 10 5C                    ld      a, (graphic_objs_tbl+8)                 ; plyr_spr_1 screen
-       movb @graphic_objs_tbl+8,a
-;RAM:B8AC FE 88                       cp      #136                                    ; cauldron room?
-       cb   a,@b5ch
-;RAM:B8AE C0                          ret     NZ                                      ; no, exit
-       jne  init_cauldron_bubbles_return
-;RAM:B8AF 11 68 5C                    ld      de, #special_objs_here_1                ; special_objs_here[1]
-       li   de,special_objs_here_1
-;RAM:B8B2 1A                          ld      a, (de)                                 ; graphic no.
-       movb *de,a
-;RAM:B8B3 A7                          and     a                                       ; null?
-;RAM:B8B4 C0                          ret     NZ                                      ; no, return
-       jne  init_cauldron_bubbles_return
-;RAM:B8B5 3A C3 5B                    ld      a, (all_objs_in_cauldron)
-       movb @all_objs_in_cauldron,a
-;RAM:B8B8 A7                          and     a
-;RAM:B8B9 C0                          ret     NZ
-       jne  init_cauldron_bubbles_return
-;RAM:B8BA 21 C8 B8                    ld      hl, #cauldron_bubbles                   ; source data
-       li   hl,cauldron_bubbles
-;RAM:B8BD 01 12 00                    ld      bc, #18                                 ; 18 bytes to copy
-       li   bc,18
-;RAM:B8C0 D5                          push    de
-;RAM:B8C1 DD E1                       pop     ix                                      ; save destination
-       mov  de,ix
-;RAM:B8C3 ED B0                       ldir                                            ; copy
-       bl   @ldir
-;RAM:B8C5 C3 D8 C4                    jp      adj_m4_m12
-       bl    @adj_m4_m12
-init_cauldron_bubbles_return:
-       dect sp
-       movb *sp,r11
-       rt
-*
-cauldron_bubbles:
-       byte >A0, >80, >80, >80, >05, >05, >0C, >10, >B4
-       byte >00, >00, >00, >00, >A0, >00, >00, >00, >00
-*
-* End of function init_cauldron_bubbles
-*
+
+
 * ---------------------------------------------------------------------------
 ;RAM:B8DA             ; ---------------------------------------------------------------------------
 ;RAM:B8DA             ; even more sparkles (showing next object required)
@@ -1565,279 +1620,6 @@ object_attributes:
 *
 * End of function display_objects
 *
-;RAM:BFFB             ; =============== S U B R O U T I N E =======================================
-;RAM:BFFB
-;RAM:BFFB
-;RAM:BFFB             chk_pickup_drop:
-;RAM:BFFB 21 A4 5B                    ld      hl, #user_input_method
-;RAM:BFFE 7E                          ld      a, (hl)
-;RAM:BFFF E6 06                       and     #6                                      ; keybd/joystick bits only
-;RAM:C001 3A B5 5B                    ld      a, (user_input)
-;RAM:C004 28 05                       jr      Z, loc_C00B                             ; keybd? yes, skip
-;RAM:C006 CB 5E                       bit     3, (hl)                                 ; directional?
-;RAM:C008 28 01                       jr      Z, loc_C00B
-;RAM:C00A 0F                          rrca
-;RAM:C00B
-;RAM:C00B             loc_C00B:
-;RAM:C00B E6 10                       and     #0x10
-;RAM:C00D C9                          ret
-;RAM:C00D             ; End of function chk_pickup_drop
-;RAM:C00D
-;RAM:C00E
-;RAM:C00E             ; =============== S U B R O U T I N E =======================================
-;RAM:C00E
-;RAM:C00E
-;RAM:C00E             handle_pickup_drop:
-;RAM:C00E 3A B3 5B                    ld      a, (pickup_drop_pressed)
-;RAM:C011 A7                          and     a                                       ; still registered as pressed?
-;RAM:C012 C2 A9 C0                    jp      NZ, loc_C0A9                            ; yes, go
-;RAM:C015 CD FB BF                    call    chk_pickup_drop                         ; actually pressed?
-;RAM:C018 C8                          ret     Z                                       ; no, exit
-;RAM:C019 CD 7A C8                    call    chk_plyr_OOB                            ; out of bounds?
-;RAM:C01C D0                          ret     NC                                      ; yes, exit
-;RAM:C01D DD CB 0C 5E                 bit     3, 12(ix)                               ; jumping?
-;RAM:C021 C0                          ret     NZ                                      ; yes, exit
-;RAM:C022 DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB?
-;RAM:C026 C8                          ret     Z                                       ; ???
-;RAM:C027 AF                          xor     a
-;RAM:C028 32 D3 5B                    ld      (cant_drop), a
-;RAM:C02B DD 7E 03                    ld      a, 3(ix)                                ; Z
-;RAM:C02E 47                          ld      b, a
-;RAM:C02F C6 0C                       add     a, #12                                  ; Z+12
-;RAM:C031 DD 77 03                    ld      3(ix), a
-;RAM:C034 CD FD B4                    call    do_any_objs_intersect
-;RAM:C037 DD 70 03                    ld      3(ix), b                                ; restore original Z
-;RAM:C03A 30 05                       jr      NC, loc_C041
-;RAM:C03C 3E 01                       ld      a, #1                                   ; we can't drop anything
-;RAM:C03E 32 D3 5B                    ld      (cant_drop), a
-;RAM:C041
-;RAM:C041             loc_C041:
-;RAM:C041 CD A3 B4                    call    toggle_audio_hw_x16
-;RAM:C044 3E 01                       ld      a, #1
-;RAM:C046 32 B3 5B                    ld      (pickup_drop_pressed), a
-;RAM:C049 32 B4 5B                    ld      (objects_carried_changed), a
-;RAM:C04C 06 02                       ld      b, #2
-;RAM:C04E DD 6E 04                    ld      l, 4(ix)                                ; width
-;RAM:C051 7D                          ld      a, l
-;RAM:C052 C6 04                       add     a, #4                                   ; width+4
-;RAM:C054 DD 77 04                    ld      4(ix), a
-;RAM:C057 DD 66 05                    ld      h, 5(ix)                                ; depth
-;RAM:C05A 7C                          ld      a, h
-;RAM:C05B C6 04                       add     a, #4                                   ; depth+4
-;RAM:C05D DD 77 05                    ld      5(ix), a
-;RAM:C060 E5                          push    hl
-;RAM:C061 DD 6E 06                    ld      l, 6(ix)                                ; height
-;RAM:C064 7D                          ld      a, l
-;RAM:C065 C6 04                       add     a, #4                                   ; height+4
-;RAM:C067 DD 77 06                    ld      6(ix), a
-;RAM:C06A E5                          push    hl
-;RAM:C06B FD 21 48 5C                 ld      iy, #special_objs_here
-;RAM:C06F
-;RAM:C06F             loc_C06F:
-;RAM:C06F CD 72 C1                    call    can_pickup_spec_obj
-;RAM:C072 DA 41 C1                    jp      C, pickup_object                        ; yes, go
-;RAM:C075 11 20 00                    ld      de, #32                                 ; entry size
-;RAM:C078 FD 19                       add     iy, de                                  ; next entry
-;RAM:C07A 10 F3                       djnz    loc_C06F
-;RAM:C07C CD FB BF                    call    chk_pickup_drop
-;RAM:C07F 28 1C                       jr      Z, done_pickup_drop
-;RAM:C081 06 02                       ld      b, #2
-;RAM:C083 DD 7E 08                    ld      a, 8(ix)                                ; plyr_spr_1 screen
-;RAM:C086 FE 88                       cp      #136                                    ; cauldron room?
-;RAM:C088 20 02                       jr      NZ, loc_C08C                            ; no, skip
-;RAM:C08A 06 01                       ld      b, #1                                   ; only check 1st special object
-;RAM:C08C
-;RAM:C08C             loc_C08C:
-;RAM:C08C FD 21 48 5C                 ld      iy, #special_objs_here
-;RAM:C090 11 20 00                    ld      de, #32                                 ; entry size
-;RAM:C093
-;RAM:C093             loc_C093:                                                       ; graphic no.
-;RAM:C093 FD 7E 00                    ld      a, 0(iy)
-;RAM:C096 A7                          and     a                                       ; null?
-;RAM:C097 28 19                       jr      Z, room_to_drop                         ; yes, skip
-;RAM:C099 FD 19                       add     iy, de                                  ; next entry
-;RAM:C09B 10 F6                       djnz    loc_C093                                ; loop
-;RAM:C09D
-;RAM:C09D             done_pickup_drop:
-;RAM:C09D E1                          pop     hl
-;RAM:C09E DD 75 06                    ld      6(ix), l                                ; height
-;RAM:C0A1 E1                          pop     hl
-;RAM:C0A2 DD 75 04                    ld      4(ix), l                                ; depth
-;RAM:C0A5 DD 74 05                    ld      5(ix), h                                ; width
-;RAM:C0A8 C9                          ret
-;RAM:C0A9             ; ---------------------------------------------------------------------------
-;RAM:C0A9
-;RAM:C0A9             loc_C0A9:                                                       ; still held down?
-;RAM:C0A9 CD FB BF                    call    chk_pickup_drop
-;RAM:C0AC C0                          ret     NZ                                      ; yes, exit
-;RAM:C0AD AF                          xor     a                                       ; clear flag
-;RAM:C0AE 32 B3 5B                    ld      (pickup_drop_pressed), a
-;RAM:C0B1 C9                          ret
-;RAM:C0B2             ; ---------------------------------------------------------------------------
-;RAM:C0B2
-;RAM:C0B2             room_to_drop:
-;RAM:C0B2 21 E4 5B                    ld      hl, #object_carried_2
-;RAM:C0B5 7E                          ld      a, (hl)
-;RAM:C0B6 23                          inc     hl
-;RAM:C0B7 A7                          and     a
-;RAM:C0B8 28 71                       jr      Z, adjust_carried
-;RAM:C0BA 3A D3 5B                    ld      a, (cant_drop)
-;RAM:C0BD A7                          and     a
-;RAM:C0BE 20 DD                       jr      NZ, done_pickup_drop
-;RAM:C0C0 2B                          dec     hl
-;RAM:C0C1 7E                          ld      a, (hl)
-;RAM:C0C2 23                          inc     hl
-;RAM:C0C3 FD 77 00                    ld      0(iy), a                                ; graphic_no
-;RAM:C0C6 DD 7E 08                    ld      a, 8(ix)                                ; plyr_spr_1 screen
-;RAM:C0C9 FE 88                       cp      #136                                    ; cauldron room?
-;RAM:C0CB 20 10                       jr      NZ, loc_C0DD                            ; no, skip
-;RAM:C0CD DD 7E 03                    ld      a, 3(ix)                                ; plyr_spr_1 Z
-;RAM:C0D0 FE 98                       cp      #152
-;RAM:C0D2 38 09                       jr      C, loc_C0DD
-;RAM:C0D4 FD CB 00 DE                 set     3, 0(iy)                                ; graphic_no
-;RAM:C0D8 3E 01                       ld      a, #1
-;RAM:C0DA 32 C4 5B                    ld      (obj_dropping_into_cauldron), a
-;RAM:C0DD
-;RAM:C0DD             loc_C0DD:
-;RAM:C0DD E5                          push    hl
-;RAM:C0DE 01 03 00                    ld      bc, #3
-;RAM:C0E1 DD E5                       push    ix
-;RAM:C0E3 E1                          pop     hl
-;RAM:C0E4 FD E5                       push    iy
-;RAM:C0E6 D1                          pop     de
-;RAM:C0E7 13                          inc     de
-;RAM:C0E8 23                          inc     hl
-;RAM:C0E9 ED B0                       ldir                                            ; copy x,y,z coordinates of player
-;RAM:C0EB DD 7E 03                    ld      a, 3(ix)                                ; Z
-;RAM:C0EE C6 0C                       add     a, #12
-;RAM:C0F0 DD 77 03                    ld      3(ix), a                                ; update Z
-;RAM:C0F3 DD 7E 23                    ld      a, 0x23(ix)                             ; Z of next sprite
-;RAM:C0F6 C6 0C                       add     a, #12
-;RAM:C0F8 DD 77 23                    ld      0x23(ix), a                             ; update Z of next sprite
-;RAM:C0FB DD E5                       push    ix
-;RAM:C0FD FD E5                       push    iy
-;RAM:C0FF DD E1                       pop     ix
-;RAM:C101 CD C9 D6                    call    calc_pixel_XY
-;RAM:C104 DD E1                       pop     ix
-;RAM:C106
-;RAM:C106             drop_object:                                                    ; width=5
-;RAM:C106 FD 36 04 05                 ld      4(iy), #5
-;RAM:C10A FD 36 05 05                 ld      5(iy), #5                               ; depth=5
-;RAM:C10E FD 36 06 0C                 ld      6(iy), #12                              ; height=12
-;RAM:C112 E1                          pop     hl
-;RAM:C113 7E                          ld      a, (hl)
-;RAM:C114 23                          inc     hl
-;RAM:C115 FD 77 07                    ld      7(iy), a                                ; flags7
-;RAM:C118 DD 7E 08                    ld      a, 8(ix)                                ; scrn
-;RAM:C11B FD 77 08                    ld      8(iy), a
-;RAM:C11E 7E                          ld      a, (hl)
-;RAM:C11F 23                          inc     hl
-;RAM:C120 FD 77 10                    ld      16(iy), a
-;RAM:C123 7E                          ld      a, (hl)
-;RAM:C124 FD 77 11                    ld      17(iy), a                               ; set ptr to obj_tbl entry
-;RAM:C127 FD CB 0D C6                 set     0, 13(iy)                               ; flag just dropped
-;RAM:C12B
-;RAM:C12B             adjust_carried:                                                 ; 2nd-to-last entry
-;RAM:C12B 21 E3 5B                    ld      hl, #unk_5BE3
-;RAM:C12E 11 E7 5B                    ld      de, #end_of_objects_carried             ; 3 entries (@4 bytes) to shift
-;RAM:C131 01 0C 00                    ld      bc, #12
-;RAM:C134 ED B8                       lddr                                            ; shift down by 1 entry
-;RAM:C136 11 D8 5B                    ld      de, #inventory
-;RAM:C139 06 04                       ld      b, #4
-;RAM:C13B CD 08 D5                    call    zero_DE                                 ; zap extra slot
-;RAM:C13E C3 9D C0                    jp      done_pickup_drop
-;RAM:C141             ; ---------------------------------------------------------------------------
-;RAM:C141
-;RAM:C141             pickup_object:
-;RAM:C141 21 D8 5B                    ld      hl, #inventory
-;RAM:C144 AF                          xor     a
-;RAM:C145 32 C0 5B                    ld      (disable_spike_ball_drop), a
-;RAM:C148 FD 7E 00                    ld      a, 0(iy)                                ; graphic_no
-;RAM:C14B 77                          ld      (hl), a
-;RAM:C14C 23                          inc     hl
-;RAM:C14D FD 7E 07                    ld      a, 7(iy)                                ; flags7
-;RAM:C150 77                          ld      (hl), a
-;RAM:C151 23                          inc     hl
-;RAM:C152 FD 5E 10                    ld      e, 16(iy)
-;RAM:C155 FD 56 11                    ld      d, 17(iy)                               ; ptr graphic object
-;RAM:C158 AF                          xor     a
-;RAM:C159 12                          ld      (de), a                                 ; zap special_objs_tbl.graphic_no
-;RAM:C15A 73                          ld      (hl), e
-;RAM:C15B 23                          inc     hl
-;RAM:C15C 72                          ld      (hl), d                                 ; store ptr
-;RAM:C15D CD 9D C6                    call    set_wipe_and_draw_IY
-;RAM:C160 FD 36 00 01                 ld      0(iy), #1
-;RAM:C164 21 E4 5B                    ld      hl, #object_carried_2                   ; object_carried[2].graphic_no
-;RAM:C167 7E                          ld      a, (hl)
-;RAM:C168 23                          inc     hl
-;RAM:C169 A7                          and     a                                       ; empty slot?
-;RAM:C16A 28 BF                       jr      Z, adjust_carried
-;RAM:C16C FD 77 00                    ld      0(iy), a
-;RAM:C16F E5                          push    hl
-;RAM:C170 18 94                       jr      drop_object
-;RAM:C170             ; End of function handle_pickup_drop
-;RAM:C170
-;RAM:C172             ; returns C flag set if special object
-;RAM:C172             ; and close enough to pick up
-;RAM:C172
-;RAM:C172             ; =============== S U B R O U T I N E =======================================
-;RAM:C172
-;RAM:C172
-;RAM:C172             can_pickup_spec_obj:
-;RAM:C172 FD 7E 00                    ld      a, 0(iy)                                ; graphic no.
-;RAM:C175 D6 60                       sub     #0x60 ; '`'                             ; special objects base no.
-;RAM:C177 FE 07                       cp      #7                                      ; special object?
-;RAM:C179 D0                          ret     NC                                      ; no, exit
-;RAM:C17A
-;RAM:C17A             is_on_or_near_obj:
-;RAM:C17A C5                          push    bc
-;RAM:C17B 01 00 00                    ld      bc, #0
-;RAM:C17E 69                          ld      l, c
-;RAM:C17F 61                          ld      h, c
-;RAM:C180 CD 9D CC                    call    do_objs_intersect_on_x
-;RAM:C183 30 1A                       jr      NC, loc_C19F
-;RAM:C185 CD B2 CC                    call    do_objs_intersect_on_y
-;RAM:C188 30 15                       jr      NC, loc_C19F
-;RAM:C18A DD 7E 03                    ld      a, 3(ix)                                ; Z
-;RAM:C18D D6 04                       sub     #4                                      ; Z-4
-;RAM:C18F DD 77 03                    ld      3(ix), a
-;RAM:C192 CD C7 CC                    call    do_objs_intersect_on_z
-;RAM:C195 F5                          push    af
-;RAM:C196 DD 7E 03                    ld      a, 3(ix)
-;RAM:C199 C6 04                       add     a, #4
-;RAM:C19B DD 77 03                    ld      3(ix), a
-;RAM:C19E F1                          pop     af
-;RAM:C19F
-;RAM:C19F             loc_C19F:
-;RAM:C19F C1                          pop     bc
-;RAM:C1A0 C9                          ret
-;RAM:C1A0             ; End of function can_pickup_spec_obj
-;RAM:C1A0
-*
-* =============== S U B R O U T I N E =======================================
-*
-is_obj_moving:
-;RAM:C1A1 DD 7E 09                    ld      a, 9(ix)                                ; dX
-;RAM:C1A4 DD B6 0A                    or      10(ix)                                  ; dY
-;RAM:C1A7 DD B6 0B                    or      11(ix)                                  ; dZ
-;RAM:C1AA C9                          ret
-       rt
-*
-* End of function is_obj_moving
-*
-* =============== S U B R O U T I N E =======================================
-*
-set_wipe_and_draw_IY:
-;RAM:C69D FD E5                       push    iy
-;RAM:C69F DD E5                       push    ix
-;RAM:C6A1 FD E5                       push    iy
-;RAM:C6A3 DD E1                       pop     ix
-;RAM:C6A5 CD 92 C6                    call    set_wipe_and_draw_flags
-;RAM:C6A8 DD E1                       pop     ix
-;RAM:C6AA FD E1                       pop     iy
-;RAM:C6AC C9                          ret
-       rt
-* End of function set_wipe_and_draw_IY
 *
 * ---------------------------------------------------------------------------
 *
@@ -2149,7 +1931,7 @@ loc_C349:
        jeq  loc_C377
 rand_legs_sprite:
 ;RAM:C357 ED 5F                       ld      a, r                                    ; RANDOM
-       li   a,>9500                   ; TODO
+       bl   @ld_a_r
 ;RAM:C359 4F                          ld      c, a
        movb a,@c
 ;RAM:C35A 3A A5 5B                    ld      a, (seed_3)
@@ -2394,8 +2176,7 @@ init_special_objects:
 ;RAM:C484 5F                          ld      e, a
        movb a,@e
 ;RAM:C485 ED 5F                       ld      a, r
-;      TODO
-       li   a,>9e00
+       bl   @ld_a_r
 ;RAM:C487 83                          add     a, e
        ab   @e,a
 ;RAM:C488 5F                          ld      e, a
@@ -2538,6 +2319,8 @@ upd_11:
 * End of function upd_11
 * bricks
 * =============== S U B R O U T I N E =======================================
+upd_12_to_15_0:
+       mov  r11,*sp+
 upd_12_to_15:
 ;RAM:C4F2 21 F8 FC                    ld      hl, #0xFCF8                             ; -4, -8
        li   hl,>fcf8
@@ -5713,7 +5496,7 @@ start_locations:
        byte >2F, >44, >B3, >8F         ; Standard
 ;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
 ;       byte >01,>01,>01,>01
-;        byte 136,136,136,136            ; Cauldron room
+;       byte 136,136,136,136            ; Cauldron room
 * ---------------------------------------------------------------------------
 *
 * End of function init_start_location

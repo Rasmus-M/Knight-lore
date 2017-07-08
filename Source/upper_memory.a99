@@ -35,7 +35,8 @@ render_list:
        even
 * ---------------------------------------------------------------------------
 
-*
+       copy "pickup-drop-objects.a99"
+
 * =============== S U B R O U T I N E =======================================
 *
 print_days:
@@ -2174,16 +2175,16 @@ loc_D8DC:
 *********************************************************************************
 
 ti_99_4a_init:
-       mov  r11,@ret_from_init
+       mov  r11,@STACK
        limi 0
        lwpi WRKSP
-       li   sp,STACK
+       li   sp,STACK+2
+       movb @RNDSD,@rand_no
        li   one,>0100
        bl   @gmode
-       mov  @ret_from_init,r11
+       dect sp
+       mov  *sp,r11
        rt
-ret_from_init:
-       data 0
 
 *********************************************************************************
 *
@@ -2488,6 +2489,19 @@ daa1:
 daa2:
        rt
 
+* Random number generator
+ld_a_r:
+       mov  @rand_no,r0
+       li   r1,28643                  ; A prime number to multiply by
+       mpy  r1,r0
+       ai   r0,31873                  ; Add a prime number
+       src  r0,7                      ; Shift to break odd/even pattern
+       mov  r0,@rand_no
+       movb r0,a
+       rt
+rand_no:
+       data 0
+
 ***************************************************************************
 *
 * Check key
@@ -2586,6 +2600,7 @@ b10h   byte >10
 b12h   byte >12
 b14h   byte >14
 b17h   byte >17
+b1ah   byte >1a
 b1fh   byte >1f
 b20h   byte >20
 b22h   byte >22
