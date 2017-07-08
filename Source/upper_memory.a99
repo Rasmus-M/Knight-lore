@@ -823,9 +823,9 @@ clr_bitmap_memory:
 ;RAM:D544 21 00 40                    ld      hl, #zx_vram                            ; screen memory
 ;RAM:D547 01 00 18                    ld      bc, #0x1800                             ; # bytes to clear
 ;RAM:D54A 18 EE                       jr      clr_mem
-       li   r0,PTRNTB
-       clr  r1
-       li   r2,>1800
+       li   hl,PTRNTB
+       clr  de
+       li   bc,>1800
        bl   @vdpwr
 * Return
        dect sp
@@ -841,9 +841,9 @@ clr_attribute_memory:
 ;RAM:D54F 01 00 03                    ld      bc, #0x300                              ; # bytes to clear
 ;RAM:D552 1E 46                       ld      e, #0x46 ; 'F'                          ; bright yellow on black
 ;RAM:D554 18 E6                       jr      clr_byte
-       li   r0,COLRTB
-       li   r1,>b100                  ; bright yellow on black
-       li   r2,>1800
+       li   hl,COLRTB
+       li   de,>b100                  ; bright yellow on black
+       li   bc,>1800
        bl   @vdpwr
 * Return
        dect sp
@@ -861,9 +861,9 @@ fill_attr:
 ;RAM:D55C 5F                          ld      e, a                                    ; attribute to set
 ;RAM:D55D 18 DD                       jr      clr_byte                                ; fill
        bl   @ti_color
-       li   r0,COLRTB
-       movb af_,r1
-       li   r2,>1800
+       li   hl,COLRTB
+       mov  af_,de
+       li   bc,>1800
        bl   @vdpwr
 *      Return
        dect sp
@@ -1531,7 +1531,7 @@ print_sprite_1:
 *      On the TI we use a loop
        clr  r1
        movb a,@r1lb                   ; width
-       mov  r1,r2                     ; width
+       mov  r1,r0                     ; width
        clr  a
 loc_D73C:                                                                             ; self-modifying code
 ;RAM:D73C 32 AD D7                    ld      (loc_D7AC+1), a                         ; set jump offset
@@ -1680,7 +1680,7 @@ loc_D7AC:
        jmp  loc_D790
 * ---------------------------------------------------------------------------
 * For sprites with bit offset
-       mov  r1,r2
+       mov  r0,r1
        clr  de
        clr  hl
 plot_shifted_line:
@@ -1692,7 +1692,7 @@ shift_mask_1:
        sla  hl,0                       ; Actual shift values inserted by self-modiyfying code
        szcb d,*bc
        socb h,*bc+
-       dec  r2
+       dec  r1
        jeq  plot_shifted_line_1
 shift_pattern_2:
        sla  de,0                       ; Shift (bit offset) bits into MSB
@@ -2258,38 +2258,45 @@ set_attribute:
 * C = height (lines)
 * A = attribute
 *
-       data 0
 fill_color_window:
        mov  r11,*sp+
        bl   @ti_color
-       mov  hl,r0
+       mov  hl,@wrksp2                  hl -> r0
+       movb af_,@wrksp2+2               af_ -> r1
+       mov  bc,@wrksp2+4                bc -> r2
+       lwpi wrksp2
        ai   r0,-zx_aram
-       mov  r0,r1
+       mov  r0,r3
        srl  r0,5                       ; Divide by 32 to get row
        swpb r0                         ; Multiply by 256, this is the row offset
-       andi r1,>1f                     ; Column
-       sla  r1,3                       ; Multiply by 8, this is the column offset
-       a    r1,r0                      ; Add to row offset
+       andi r3,>001f                   ; Column
+       sla  r3,3                       ; Multiply by 8, this is the column offset
+       a    r3,r0                      ; Add to row offset
        ai   r0,COLRTB
-       li   r1,VDPWD
-       mov  bc,r2
+       mov  r2,r3
+       swpb r2
+       andi r2,>00ff
+       andi r3,>00ff
+       mov  r2,r4
+       li   r5,VDPWD
 fill_color_window_1:
        bl   @vwad
-       movb r2,b
+       mov  r4,r2
 fill_color_window_2:
-       movb af_,*r1
-       movb af_,*r1
-       movb af_,*r1
-       movb af_,*r1
-       movb af_,*r1
-       movb af_,*r1
-       movb af_,*r1
-       movb af_,*r1
-       sb   one,b
+       movb r1,*r5
+       movb r1,*r5
+       movb r1,*r5
+       movb r1,*r5
+       movb r1,*r5
+       movb r1,*r5
+       movb r1,*r5
+       movb r1,*r5
+       dec  r2
        jne  fill_color_window_2
        ai   r0,256
-       sb   one,@c
+       dec  r3
        jne  fill_color_window_1
+       lwpi wrksp
        dect sp
        mov  *sp,r11
        rt
@@ -2359,9 +2366,9 @@ tipal  byte 1,4,6,13,12,7,10,14,1,5,8,13,2,7,11,15
 * R2: Number of bytes to copy
 *
 vdpwr:
-       mov  r0,@wrksp2
-       mov  r1,@wrksp2+2
-       mov  r2,@wrksp2+4
+       mov  hl,@wrksp2                 ; hl -> r0
+       mov  de,@wrksp2+2               ; de -> r1
+       mov  bc,@wrksp2+4               ; bc -> r2
        lwpi wrksp2
        bl   @vwad
        li   r0,vdpwd
