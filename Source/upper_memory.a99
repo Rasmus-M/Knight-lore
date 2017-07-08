@@ -1125,31 +1125,30 @@ blit3:
 * Note that line length is fixed at 32.
 *
 fill_window:
-;      TODO: optimize
+       mov  bc,tmp0
+       swpb tmp0
+       andi tmp0,>00ff                ; tmp0=width
+       swpb bc
 ;RAM:C515 11 20 00                    ld      de, #32                                 ; Line length
        li   de,32
 loc_C518:
 ;RAM:C518 C5                          push    bc
-       mov  bc,*sp+
 ;RAM:C519 E5                          push    hl
-       mov  hl,*sp+
+       mov  tmp0,tmp1
 loc_C51A:
 ;RAM:C51A 77                          ld      (hl), a                                 ; set byte
 ;RAM:C51B 23                          inc     hl                                      ; next location
        movb a,*hl+
 ;RAM:C51C 10 FC                       djnz    loc_C51A                                ; loop for 1 line
-       sb   one,b
+       dec  tmp1
        jne  loc_C51A
 ;RAM:C51E E1                          pop     hl
-       dect sp
-       mov  *sp,hl
 ;RAM:C51F 19                          add     hl, de                                  ; next line
+       s    tmp0,hl
        a    de,hl
 ;RAM:C520 C1                          pop     bc
-       dect sp
-       mov  *sp,bc
 ;RAM:C521 0D                          dec     c                                       ; done all lines?
-       sb   one,@c
+       sb   one,b
 ;RAM:C522 20 F4                       jr      NZ, loc_C518                            ; no, loop
        jne  loc_C518
 ;RAM:C524 C9                          ret
