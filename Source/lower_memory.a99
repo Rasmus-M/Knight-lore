@@ -913,42 +913,66 @@ upd_22:
 ;RAM:B7A9             ; spiked ball
 ;RAM:B7A9
 upd_63:
-       b    @no_update
 ;RAM:B7A9 CD 5C B8                    call    set_both_deadly_flags
+       bl   @set_both_deadly_flags
 ;RAM:B7AC CD E3 C4                    call    upd_6_7
-;       bl   @upd_6_7
+       bl   @upd_6_7_0
 ;RAM:B7AF 3A C0 5B                    ld      a, (disable_spike_ball_drop)
+       movb @disable_spike_ball_drop,a
 ;RAM:B7B2 A7                          and     a
 ;RAM:B7B3 C0                          ret     NZ
+       jeq  upd_63_return
 ;RAM:B7B4 DD CB 0D 56                 bit     2, 13(ix)                               ; is this one dropping?
+       mov  @13(ix),tmp0
+       andi tmp0,>0400
 ;RAM:B7B8 20 13                       jr      NZ, spiked_ball_drop                    ; yes, go
+;       jne  spiked_ball_drop
 ;RAM:B7BA 21 BF 5B                    ld      hl, #is_spike_ball_dropping
+       li   hl,is_spike_ball_dropping
 ;RAM:B7BD 7E                          ld      a, (hl)
+       movb *hl,a
 ;RAM:B7BE A7                          and     a                                       ; is another ball already dropping?
 ;RAM:B7BF C0                          ret     NZ                                      ; yes, exit
+       jne  upd_63_return
 ;RAM:B7C0 3A A5 5B                    ld      a, (seed_3)
+       movb @seed_3,a
 ;RAM:B7C3 FE 10                       cp      #16                                     ; 1-in-16 chance
+       cb   a,@b10h
 ;RAM:B7C5 D0                          ret     NC
+       jhe  upd_63_return
 ;RAM:B7C6 DD CB 0D D6                 set     2, 13(ix)                               ; flag this one as dropping
+       socb @b04h,@13(ix)
 ;RAM:B7CA 36 01                       ld      (hl), #1                                ; flag a spike ball dropping
+       movb one,*hl
 ;RAM:B7CC C9                          ret
-;RAM:B7CD             ; ---------------------------------------------------------------------------
-;RAM:B7CD
-;RAM:B7CD             spiked_ball_drop:
+upd_63_return:
+       dect sp
+       mov  *sp,r11
+       b    *r11
+* ---------------------------------------------------------------------------
+spiked_ball_drop:
 ;RAM:B7CD CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:B7D0 DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB? (hit the floor?)
+       mov  @12(ix),tmp0
+       andi tmp0,>0400
 ;RAM:B7D4 20 06                       jr      NZ, loc_B7DC                            ; yes, go
+       jne  loc_B7DC
 ;RAM:B7D6 CD 51 B4                    call    audio_B451
-;RAM:B7D9
-;RAM:B7D9             draw_spiked_ball:
+;      TODO
+draw_spiked_ball:
 ;RAM:B7D9 C3 92 C6                    jp      set_wipe_and_draw_flags
-;RAM:B7DC             ; ---------------------------------------------------------------------------
-;RAM:B7DC
-;RAM:B7DC             loc_B7DC:                                                       ; flag this no longer dropping
-;RAM:B7DC DD CB 0D 96                 res     2, 13(ix)
+       b    @set_wipe_and_draw_flags
+* ---------------------------------------------------------------------------
+loc_B7DC:
+;RAM:B7DC DD CB 0D 96                 res     2, 13(ix)                               ; flag this no longer dropping
+       szcb @b04h,@12(ix)
 ;RAM:B7E0 21 BF 5B                    ld      hl, #is_spike_ball_dropping
+       li   hl,is_spike_ball_dropping
 ;RAM:B7E3 36 00                       ld      (hl), #0                                ; flag no spiked balls dropping
+       szcb mone,*hl
 ;RAM:B7E5 18 F2                       jr      draw_spiked_ball
+       jmp  draw_spiked_ball
 * ---------------------------------------------------------------------------
 * spikes
 upd_23:
@@ -2292,8 +2316,10 @@ jp_set_pixel_adj:
 *
 * rock and block
 *
-upd_6_7:
+upd_6_7_0:
+       mov  r11,*sp+
 ;RAM:C4E3 21 F0 F8                    ld      hl, #0xF8F0                             ; -8, -16
+upd_6_7:
        li   hl,>f8f0
 ;RAM:C4E6 18 F8                       jr      jp_set_pixel_adj
        jmp  jp_set_pixel_adj
