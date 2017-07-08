@@ -1692,23 +1692,23 @@ plot_shifted_line_1:
        szcb d,*bc
        socb h,*bc
 * 16 bytes per routine
-* -- 1st byte --
+* -- 1st byte --                                                                      ; a holds the screen byte
 ;RAM:D7AE D1                          pop     de                                      ; get pattern d and mask e
-;RAM:D7AF 6B                          ld      l, e
-;RAM:D7B0 A6                          and     (hl)
-;RAM:D7B1 6A                          ld      l, d
-;RAM:D7B2 AE                          xor     (hl)
-;RAM:D7B3 2F                          cpl
-;RAM:D7B4 02                          ld      (bc), a
-;RAM:D7B5 03                          inc     bc
-;RAM:D7B6 24                          inc     h
-;RAM:D7B7 6B                          ld      l, e
-;RAM:D7B8 0A                          ld      a, (bc)
-;RAM:D7B9 A6                          and     (hl)
-;RAM:D7BA 6A                          ld      l, d
-;RAM:D7BB AE                          xor     (hl)
-;RAM:D7BC 2F                          cpl
-;RAM:D7BD 25                          dec     h
+;RAM:D7AF 6B                          ld      l, e                                    ; index of mask in byte shift table
+;RAM:D7B0 A6                          and     (hl)                                    ; apply mask
+;RAM:D7B1 6A                          ld      l, d                                    ; index of pattern in byte shift table
+;RAM:D7B2 AE                          xor     (hl)                                    ; apply pattern inverted?
+;RAM:D7B3 2F                          cpl                                             ; invert
+;RAM:D7B4 02                          ld      (bc), a                                 ; store byte
+;RAM:D7B5 03                          inc     bc                                      ; next source address
+;RAM:D7B6 24                          inc     h                                       ; to second byte of shift table
+;RAM:D7B7 6B                          ld      l, e                                    ; index of mask in byte shift table
+;RAM:D7B8 0A                          ld      a, (bc)                                 ; get source byte
+;RAM:D7B9 A6                          and     (hl)                                    ; apply mask
+;RAM:D7BA 6A                          ld      l, d                                    ; index of pattern in byte shift table
+;RAM:D7BB AE                          xor     (hl)                                    ; apply pattern inverted?
+;RAM:D7BC 2F                          cpl                                             ; invert
+;RAM:D7BD 25                          dec     h                                       ; back to first byte of shift table
 * -- 2nd byte --
 ;RAM:D7BE D1                          pop     de
 ;RAM:D7BF 6B                          ld      l, e
@@ -1778,7 +1778,7 @@ plot_shifted_line_1:
 ;RAM:D7FC 2F                          cpl
 ;RAM:D7FD 25                          dec     h
 * -- remaining bits --
-;RAM:D7FE 02                          ld      (bc), a
+;RAM:D7FE 02                          ld      (bc), a                                 ; store last byte
 ;RAM:D7FF
 loc_D7FF:
 * Next line
@@ -1790,7 +1790,7 @@ loc_D800:
 ;RAM:D803 78                          ld      a, b
 ;RAM:D804 CE 00                       adc     a, #0                                   ; add carry
 ;RAM:D806 47                          ld      b, a
-       ai   bc,>001e
+       ai   bc,>001e                  ; patched
 ;RAM:D807 08                          ex      af, af'                                 ; restore height
        mov  af_,af
 ;RAM:D808 3D                          dec     a
