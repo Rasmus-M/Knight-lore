@@ -634,7 +634,7 @@ loc_B661:
 ;RAM:B661 DD 77 0A                    ld      10(ix), a                               ; new dY
 !      movb a,@10(ix)
 ;RAM:B664 DD 36 09 00                 ld      9(ix), #0                               ; new dX=0
-       szcb one,@9(ix)
+       movb @b00h,@9(ix)
 loc_B668:
 ;RAM:B668 CD 85 B9                    call    toggle_next_prev_sprite
        bl   @toggle_next_prev_sprite
@@ -658,7 +658,7 @@ loc_B67A:
 ;RAM:B67A DD 77 09                    ld      9(ix), a                                ; new dX
 !      movb a,@9(ix)
 ;RAM:B67D DD 36 0A 00                 ld      10(ix), #0                              ; new dY=0
-       szcb one,@10(ix)
+       movb @b00h,@10(ix)
 ;RAM:B681 18 E5                       jr      loc_B668
        jmp  loc_B668
 *
