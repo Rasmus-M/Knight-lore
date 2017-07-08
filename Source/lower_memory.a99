@@ -103,7 +103,7 @@ jump_to_upd_object:
 * This jump table routine is used in many places
 jump_to_tbl_entry:
 ;RAM:AFDB 26 00                       ld      h, #0
-       movb @b00h,h
+       szcb mone,h
 ;RAM:AFDD 29                          add     hl, hl                                  ; word offset
        a    hl,hl
 ;RAM:AFDE 09                          add     hl, bc                                  ; get ptr jump entry
@@ -634,7 +634,7 @@ loc_B661:
 ;RAM:B661 DD 77 0A                    ld      10(ix), a                               ; new dY
 !      movb a,@10(ix)
 ;RAM:B664 DD 36 09 00                 ld      9(ix), #0                               ; new dX=0
-       movb @b00h,@9(ix)
+       szcb mone,@9(ix)
 loc_B668:
 ;RAM:B668 CD 85 B9                    call    toggle_next_prev_sprite
        bl   @toggle_next_prev_sprite
@@ -658,7 +658,7 @@ loc_B67A:
 ;RAM:B67A DD 77 09                    ld      9(ix), a                                ; new dX
 !      movb a,@9(ix)
 ;RAM:B67D DD 36 0A 00                 ld      10(ix), #0                              ; new dY=0
-       movb @b00h,@10(ix)
+       szcb mone,@10(ix)
 ;RAM:B681 18 E5                       jr      loc_B668
        jmp  loc_B668
 *
@@ -1439,7 +1439,7 @@ upd_185_187:
 ;RAM:BF3D             ; BUG VERIFIED! on the Spectrum under MESS
 ;RAM:BF3D             ;
 ;RAM:BF3D 36 00                       ld      (hl), #0                                ; zap graphic_no in special_objs_tbl
-       movb @b00h,*hl
+       szcb mone,*hl
 * last death sparkle
 upd_119:
 ;RAM:BF3F CD D8 C4                    call    adj_m4_m12
@@ -1503,7 +1503,7 @@ display_object:
 ;RAM:BF6C DD 77 1A                    ld      26(ix), a                               ; pixel X
        movb a,@26(ix)
 ;RAM:BF6F DD 36 1B 00                 ld      27(ix), #0                              ; pixel Y
-       movb @b00h,@27(ix)
+       szcb mone,@27(ix)
 ;RAM:BF73 DD 4E 1A                    ld      c, 26(ix)                               ; pixel X
        movb @26(ix),@c
 ;RAM:BF76 DD 46 1B                    ld      b, 27(ix)                               ; pixel Y
@@ -2063,13 +2063,13 @@ display_frame:
 ;RAM:C3D5 DD 21 DB BF                 ld      ix, #sprite_scratchpad
        li   ix,sprite_scratchpad
 ;RAM:C3D9 DD 36 07 00                 ld      7(ix), #0                               ; clear flags
-       movb @b00h,@7(ix)
+       szcb mone,@7(ix)
 ;RAM:C3DD DD 36 00 5A                 ld      0(ix), #0x5A ; 'Z'                      ; sun/moon frame left
        movb @b5ah,*ix
 ;RAM:C3E1 DD 36 1A B8                 ld      26(ix), #184                            ; pixel X
        movb @bb8h,@26(ix)
 ;RAM:C3E5 DD 36 1B 00                 ld      27(ix), #0                              ; pixel Y
-       movb @b00h,@27(ix)
+       szcb mone,@27(ix)
 ;RAM:C3E9 CD 18 D7                    call    print_sprite
        bl   @print_sprite
 ;RAM:C3EC DD 36 1A D0                 ld      26(ix), #208                            ; pixel X
@@ -2756,7 +2756,7 @@ init_portcullis_down:
 ;RAM:C689 DD CB 00 C6                 set     0, 0(ix)                                ; graphic_no=9
        socb one,*ix
 ;RAM:C68D DD 36 0B FF                 ld      11(ix), #0xFF                           ; dZ=-1 (down)
-       movb @bffh,@11(ix)
+       movb mone,@11(ix)
 loc_C691:
 ;RAM:C691 34                          inc     (hl)                                    ; flag portculis moving
        ab   one,*hl
@@ -3037,7 +3037,7 @@ adj_ew:
        jmp  loc_C7BF
 ;RAM:C7BB 30 02                       jr      NC, loc_C7BF
 ;RAM:C7BD ED 44                       neg
-!      movb @bffh,a
+!      movb mone,a
 loc_C7BF:
 ;RAM:C7BF FD 77 0F                    ld      15(iy), a
        movb a,@15(iy)
@@ -3057,7 +3057,7 @@ adj_ns:
        jmp  loc_C7D2
 ;RAM:C7CE 30 02                       jr      NC, loc_C7D2
 ;RAM:C7D0 ED 44                       neg
-!      movb @bffh,a
+!      movb mone,a
 loc_C7D2:
 ;RAM:C7D2 FD 77 0E                    ld      14(iy), a
        movb a,@14(iy)
@@ -3956,7 +3956,7 @@ screen_west:
 ;RAM:CAA9 D0                          ret     NC
        jhe  handle_exit_screen_return
 ;RAM:CAAA DD 36 01 00                 ld      1(ix), #0                               ; X
-       movb @b00h,@1(ix)
+       szcb mone,@1(ix)
 ;RAM:CAAE DD 7E 08                    ld      a, 8(ix)                                ; screen
        movb @8(ix),a
 ;RAM:CAB1 6F                          ld      l, a
@@ -4038,7 +4038,7 @@ screen_east:
 ;RAM:CB02 D8                          ret     C
        jl   handle_exit_screen_return
 ;RAM:CB03 DD 36 01 FF                 ld      1(ix), #0xFF                            ; X
-       movb @bffh,@1(ix)
+       movb mone,@1(ix)
 ;RAM:CB07 DD 7E 08                    ld      a, 8(ix)                                ; screen
        movb @8(ix),a
 ;RAM:CB0A 6F                          ld      l, a
@@ -4067,7 +4067,7 @@ screen_north:
 ;RAM:CB1D D8                          ret     C
        jl   handle_exit_screen_return
 ;RAM:CB1E DD 36 02 FF                 ld      2(ix), #0xFF                            ; Y
-       movb @bffh,@2(ix)
+       movb mone,@2(ix)
 ;RAM:CB22 DD 7E 08                    ld      a, 8(ix)                                ; screen
        movb @8(ix),a
 ;RAM:CB25 C6 10                       add     a, #16                                  ; screen to the north
@@ -4097,7 +4097,7 @@ screen_south:
        jl   !
        b    @handle_exit_screen_return
 ;RAM:CB39 DD 36 02 00                 ld      2(ix), #0                               ; Y
-!      movb @b00h,@2(ix)
+!      szcb mone,@2(ix)
 ;RAM:CB3D DD 7E 08                    ld      a, 8(ix)                                ; screen
        movb @8(ix),a
 ;RAM:CB40 D6 10                       sub     #16                                     ; screen to the south
@@ -4125,7 +4125,7 @@ adj_for_out_of_bounds:
 ;RAM:CB53 DD 77 0C                    ld      12(ix), a
        movb a,@12(ix)
 ;RAM:CB56 2E 00                       ld      l, #0
-       movb @b00h,@l
+       szcb mone,@l
 ;RAM:CB58 4D                          ld      c, l
        movb @l,@c
 ;RAM:CB59 DD 7E 0B                    ld      a, 11(ix)                               ; dZ
@@ -4890,7 +4890,7 @@ loc_CDEF:
 ;RAM:CDFE ED B0                       ldir                                            ; copy x,y,z,w,d,h,flags
        bl   @ldir
 ;RAM:CE00 DD 36 06 00                 ld      6(ix), #0                               ; height (top)
-       movb @b00h,@6(ix)
+       szcb mone,@6(ix)
 ;RAM:CE04 DD CB 07 CE                 set     1, 7(ix)                                ; ignore in 3D calcs
        socb @b02h,@7(ix)
 ;RAM:CE08 DD 7E 0D                    ld      a, 13(ix)                               ; flags13
@@ -4993,7 +4993,7 @@ list_objects_to_draw:
 ;RAM:CE6D 21 8B CE                    ld      hl, #objects_to_draw
        li   hl,objects_to_draw
 ;RAM:CE70 0E 00                       ld      c, #0                                   ; init object index
-       movb @b00h,@c
+       szcb mone,@c
 loc_CE72:
 ;RAM:CE72 DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
        movb *ix,a
@@ -5048,7 +5048,7 @@ loc_CEC6:
 ;RAM:CEC7 13                          inc     de
        movb *de+,a
 ;RAM:CEC8 FE FF                       cp      #0xFF                                   ; end of list?
-       cb   a,@bffh
+       cb   a,mone
 ;RAM:CECA CA 15 D0                    jp      Z, render_done                          ; yes, exit
        jne  !
        b    @render_done
@@ -5069,7 +5069,7 @@ loc_CEDB:
 ;RAM:CEDC 13                          inc     de
        movb *de+,a
 ;RAM:CEDD FE FF                       cp      #0xFF                                   ; end of list?
-       cb   a,@bffh
+       cb   a,mone
 ;RAM:CEDF CA 00 D0                    jp      Z, render_obj_no1
        jne  !
        b    @render_obj_no1
@@ -5094,7 +5094,7 @@ loc_CEDB:
 ;RAM:CEF6 28 E3                       jr      Z, loc_CEDB                             ; yes, loop
        jeq  loc_CEDB
 ;RAM:CEF8 0E 00                       ld      c, #0
-       movb @b00h,@c
+       szcb mone,@c
 ;RAM:CEFA FD 7E 03                    ld      a, 3(iy)                                ; Z2
        movb @3(iy),a
 ;RAM:CEFD FD 86 06                    add     a, 6(iy)                                ; add height(H2)
@@ -5260,7 +5260,7 @@ loc_CFAD:
 ;RAM:CFAD 1A                          ld      a, (de)
        movb *de,a
 ;RAM:CFAE FE FF                       cp      #0xFF                                   ; empty entry?
-       cb   a,@bffh
+       cb   a,mone
 ;RAM:CFB0 28 06                       jr      Z, loc_CFB8                             ; yes, go
        jeq  loc_CFB8
 ;RAM:CFB2 B9                          cp      c                                       ; already listed?
@@ -5279,7 +5279,7 @@ loc_CFB8:
 ;RAM:CFBA 13                          inc     de                                      ; next entry
        movb a,*de+
 ;RAM:CFBB 3E FF                       ld      a, #0xFF
-       movb @bffh,a
+       movb mone,a
 ;RAM:CFBD 12                          ld      (de), a                                 ; flag empty
        movb a,*de
 ;RAM:CFBE FD E5                       push    iy
@@ -5302,7 +5302,7 @@ loc_CFD1:
 ;RAM:CFD2 23                          inc     hl
        movb *hl+,a
 ;RAM:CFD3 FE FF                       cp      #0xFF                                   ; end of list?
-       cb   a,@bffh
+       cb   a,mone
 ;RAM:CFD5 CA C3 CE                    jp      Z, process_remaining_objs               ; yes, exit
        jne  !
        b    @process_remaining_objs
@@ -5354,7 +5354,7 @@ render_obj:
 ;RAM:D004 CB FE                       set     7, (hl)                                 ; flag as rendered
        socb @b80h,*hl
 ;RAM:D006 3E FF                       ld      a, #0xFF
-       movb @bffh,a
+       movb mone,a
 ;RAM:D008 32 1A D0                    ld      (render_list), a                        ; set entry to empty
        movb a,@render_list
 ;RAM:D00B 21 BE 5B                    ld      hl, #rendered_objs_cnt
@@ -5472,7 +5472,7 @@ init_start_location:
 ;RAM:D1D3 6F                          ld      l, a
        movb a,@l
 ;RAM:D1D4 26 00                       ld      h, #0
-       movb @b00h,h
+       szcb mone,h
 ;RAM:D1D6 01 E2 D1                    ld      bc, #start_locations
        li   bc,start_locations
 ;RAM:D1D9 09                          add     hl, bc                                  ; offset to random entry
@@ -5893,7 +5893,7 @@ next_bg_obj:
 ;RAM:D41F 23                          inc     hl                                      ; next entry
        movb *hl+,a
 ;RAM:D420 FE FF                       cp      #0xFF                                   ; done all background types?
-       cb   a,@bffh
+       cb   a,mone
 ;RAM:D422 28 28                       jr      Z, find_fg_objs                         ; yes, exit
        jeq  find_fg_objs
 ;RAM:D424 C5                          push    bc
@@ -6101,7 +6101,7 @@ next_fg_obj_sprite:                                                             
 loc_D4CD:
 ;RAM:D4CD FD 36 00 00                 ld      0(iy), #0                               ; zero byte
 ;RAM:D4D1 FD 23                       inc     iy
-       movb @b00h,*iy+
+       szcb mone,*iy+
 ;RAM:D4D3 10 F8                       djnz    loc_D4CD
        sb   one,b
        jne  loc_D4CD
@@ -6180,7 +6180,7 @@ wipe_next_object:
 ;RAM:D5B7 22 CB 5B                    ld      (tmp_objects_to_draw), hl               ; store
        mov  hl,@tmp_objects_to_draw
 ;RAM:D5BA FE FF                       cp      #0xFF                                   ; end of list?
-       cb   a,@bffh
+       cb   a,mone
 ;RAM:D5BC CA 53 D6                    jp      Z, loc_D653                             ; yes, skip
        jeq  loc_D653
 ;RAM:D5BF CD B5 D3                    call    get_ptr_object

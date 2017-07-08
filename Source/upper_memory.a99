@@ -73,7 +73,7 @@ print_lives_gfx:
 ;RAM:BC7E DD 36 00 8C                 ld      0(ix), #0x8C ; '�'                      ; sprite index
        movb @b8ch,*ix
 ;RAM:BC82 DD 36 07 00                 ld      7(ix), #0                               ; clear flags
-       movb @b00h,@7(ix)
+       szcb mone,@7(ix)
 ;RAM:BC86 DD 36 1A 10                 ld      26(ix), #16                             ; pixel X
        movb @b10h,@26(ix)
 ;RAM:BC8A DD 36 1B 20                 ld      27(ix), #32                             ; pixel Y
@@ -475,10 +475,10 @@ check_user_input:
 ;RAM:D02A 0E 00                       ld      c, #0
 ;RAM:D02C C2 11 D1                    jp      NZ, finished_input
        jeq  !
-       movb @b00h,@c
+       szcb mone,@c
        b    @finished_input
 ;RAM:D02F 3A A4 5B                    ld      a, (user_input_method)
-!      movb @b00h,@c
+!      szcb mone,@c
        movb @user_input_method,a
 ;RAM:D032 0F                          rrca
        srl  a,1
@@ -548,7 +548,7 @@ kempston:
        ldcr tmp0,3                      ; Select it
        li   r12,>0006                 , Base CRU address for joystick 1
 ;RAM:D079 0E 00                       ld      c, #0
-       movb @b00h,@c
+       szcb mone,@c
 ;RAM:D07B CB 47                       bit     0, a                                    ; right?
        tb   2
 ;RAM:D07D 28 02                       jr      Z, loc_D081
@@ -1200,7 +1200,7 @@ loc_D6BB:
        movb @l,d
 ;RAM:D6BC 06 08                       ld      b, #8                                   ; 8 bits
        movb @b08h,b
-       movb @b00h,de_
+       szcb mone,de_
 loc_D6BE:
 ;RAM:D6BE CB 3A                       srl     d
 ;RAM:D6C0 CB 13                       rl      e                                       ; reverse bits
@@ -1305,7 +1305,7 @@ flip_sprite:
 ;RAM:D6EF DD 6E 00                    ld      l, 0(ix)                                ; sprite index
        movb *ix,@l
 ;RAM:D6F2 26 00                       ld      h, #0
-       movb @b00h,h
+       szcb mone,h
 ;RAM:D6F4 29                          add     hl, hl                                  ; word offset
        a    hl,hl
 ;RAM:D6F5 01 12 71                    ld      bc, #sprite_tbl
@@ -1437,7 +1437,7 @@ calc_pixel_XY_and_render:
 ;RAM:D709 20 05                       jr      NZ, loc_D710                            ; no, continue
        jne  loc_D710
 ;RAM:D70B DD 36 00 00                 ld      0(ix), #0                               ; set to null
-       movb @b00h,*ix
+       szcb mone,*ix
 ;RAM:D70F C9                          ret
        dect sp
        mov  *sp,r11
@@ -1977,7 +1977,7 @@ vflip_sprite_data:                                                              
 ;RAM:D87B 58                          ld      e, b
        movb b,@e
 ;RAM:D87C 16 00                       ld      d, #0                                   ; DE = width x 2
-       movb @b00h,d
+       szcb mone,d
 ;RAM:D87E CD F9 D4                    call    HL_equals_DE_x_A                        ; HL = width x 2 x height
        bl   @HL_equals_DE_x_A
 ;RAM:D881 D1                          pop     de                                      ; sprite data
