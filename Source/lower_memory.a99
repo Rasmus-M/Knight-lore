@@ -3227,7 +3227,7 @@ loc_C83E:
 ;RAM:C841 CD 22 D0                    call    check_user_input
        bl   @check_user_input
 ;RAM:C844 CD 0E C0                    call    handle_pickup_drop
-;      bl   @handle_pickup_drop       ; TODO
+       bl   @handle_pickup_drop
 ;RAM:C847 CD 9F C8                    call    handle_left_right
        bl   @handle_left_right
 ;RAM:C84A CD 48 C9                    call    handle_jump

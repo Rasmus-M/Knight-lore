@@ -9,8 +9,11 @@ chk_pickup_drop:
 ;RAM:C001 3A B5 5B                    ld      a, (user_input)
        mov  @user_input,a
 ;RAM:C004 28 05                       jr      Z, loc_C00B                             ; keybd? yes, skip
+       andi tmp0,>0600
+       jeq  loc_C00B
 ;RAM:C006 CB 5E                       bit     3, (hl)                                 ; directional?
-       andi tmp0,>0e00
+       movb *hl,tmp0
+       andi tmp0,>0800
 ;RAM:C008 28 01                       jr      Z, loc_C00B
        jeq  loc_C00B
 ;RAM:C00A 0F                          rrca
