@@ -1404,7 +1404,7 @@ loc_BF31:
 upd_185_187:
        b    @no_update
 ;RAM:BF37 DD 6E 10                    ld      l, 16(ix)
-       movb @16(ix),@l
+       movb @16(ix),@l                ; TODO: Little endian!
 ;RAM:BF3A DD 66 11                    ld      h, 17(ix)
        movb @17(ix),h
 ;RAM:BF3D             ;
@@ -1804,7 +1804,7 @@ no_update:
 ;RAM:C2DC C5                          push    bc
 ;RAM:C2DD D5                          push    de
 ;RAM:C2DE CD 92 C6                    call    set_wipe_and_draw_flags
-;RAM:C2E1 D1                          pop     de
+;RAM:C2E1 D1                           pop     de
 ;RAM:C2E2 C1                          pop     bc
 ;RAM:C2E3 DD 36 00 01                 ld      0(ix), #1                               ; set graphic no. = INVALID
 ;RAM:C2E7 DD 19                       add     ix, de                                  ; next entry
@@ -2534,8 +2534,9 @@ loc_C595:
 ;RAM:C599 28 1C                       jr      Z, loc_C5B7                             ; yes, skip
        jeq  loc_C5B7
 ;RAM:C59B FD 5E 10                    ld      e, 16(iy)
+       mov  @16(iy),@e                ; TODO: Little endian!
 ;RAM:C59E FD 56 11                    ld      d, 17(iy)                               ; DE=ptr object table entry
-       mov  @16(iy),de                ; TODO: Little endian!
+       mov  @17(iy),d
        jeq  loc_C5B7                  ; Bug fix?
 ;RAM:C5A1 FD 7E 00                    ld      a, 0(iy)                                ; get graphic no.
 ;RAM:C5A4 12                          ld      (de), a                                 ; store
