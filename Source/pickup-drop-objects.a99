@@ -1,50 +1,74 @@
-;RAM:BFFB             ; =============== S U B R O U T I N E =======================================
-;RAM:BFFB
-;RAM:BFFB
-;RAM:BFFB             chk_pickup_drop:
+* =============== S U B R O U T I N E =======================================
+chk_pickup_drop:
 ;RAM:BFFB 21 A4 5B                    ld      hl, #user_input_method
+       li   hl,user_input_method
 ;RAM:BFFE 7E                          ld      a, (hl)
+       movb *hl,tmp0
 ;RAM:BFFF E6 06                       and     #6                                      ; keybd/joystick bits only
+;      Do later
 ;RAM:C001 3A B5 5B                    ld      a, (user_input)
+       mov  @user_input,a
 ;RAM:C004 28 05                       jr      Z, loc_C00B                             ; keybd? yes, skip
 ;RAM:C006 CB 5E                       bit     3, (hl)                                 ; directional?
+       andi tmp0,>0e00
 ;RAM:C008 28 01                       jr      Z, loc_C00B
+       jeq  loc_C00B
 ;RAM:C00A 0F                          rrca
-;RAM:C00B
-;RAM:C00B             loc_C00B:
+       srl  a,1
+loc_C00B:
 ;RAM:C00B E6 10                       and     #0x10
+       andi a,>1000
 ;RAM:C00D C9                          ret
-;RAM:C00D             ; End of function chk_pickup_drop
-;RAM:C00D
-;RAM:C00E
-;RAM:C00E             ; =============== S U B R O U T I N E =======================================
-;RAM:C00E
-;RAM:C00E
-;RAM:C00E             handle_pickup_drop:
+       rt
+*
+* End of function chk_pickup_drop
+*
+* =============== S U B R O U T I N E =======================================
+*
+handle_pickup_drop:
+       mov  r11,*sp+
 ;RAM:C00E 3A B3 5B                    ld      a, (pickup_drop_pressed)
+       movb @pickup_drop_pressed,a
 ;RAM:C011 A7                          and     a                                       ; still registered as pressed?
 ;RAM:C012 C2 A9 C0                    jp      NZ, loc_C0A9                            ; yes, go
+       jne  loc_C0A9
 ;RAM:C015 CD FB BF                    call    chk_pickup_drop                         ; actually pressed?
+       bl   @chk_pickup_drop
 ;RAM:C018 C8                          ret     Z                                       ; no, exit
+       jeq  handle_pickup_drop_return
 ;RAM:C019 CD 7A C8                    call    chk_plyr_OOB                            ; out of bounds?
+       bl   @chk_plyr_OOB
 ;RAM:C01C D0                          ret     NC                                      ; yes, exit
+       jhe  handle_pickup_drop_return
 ;RAM:C01D DD CB 0C 5E                 bit     3, 12(ix)                               ; jumping?
+       movb @12(ix),tmp0
+       andi tmp0,>0800
 ;RAM:C021 C0                          ret     NZ                                      ; yes, exit
+       jne handle_pickup_drop_return
 ;RAM:C022 DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB?
+       movb @12(ix),tmp0
+       andi tmp0,>0400
 ;RAM:C026 C8                          ret     Z                                       ; ???
+       jeq handle_pickup_drop_return
 ;RAM:C027 AF                          xor     a
 ;RAM:C028 32 D3 5B                    ld      (cant_drop), a
+       szcb mone,@cant_drop
 ;RAM:C02B DD 7E 03                    ld      a, 3(ix)                                ; Z
+       movb @3(ix),a
 ;RAM:C02E 47                          ld      b, a
+       movb a,b
 ;RAM:C02F C6 0C                       add     a, #12                                  ; Z+12
+       ab   @b0ch,a
 ;RAM:C031 DD 77 03                    ld      3(ix), a
+       movb a,@3(ix)
 ;RAM:C034 CD FD B4                    call    do_any_objs_intersect
+       bl   @do_any_objs_intersect
 ;RAM:C037 DD 70 03                    ld      3(ix), b                                ; restore original Z
+       movb b,@3(ix)
 ;RAM:C03A 30 05                       jr      NC, loc_C041
 ;RAM:C03C 3E 01                       ld      a, #1                                   ; we can't drop anything
 ;RAM:C03E 32 D3 5B                    ld      (cant_drop), a
-;RAM:C041
-;RAM:C041             loc_C041:
+loc_C041:
 ;RAM:C041 CD A3 B4                    call    toggle_audio_hw_x16
 ;RAM:C044 3E 01                       ld      a, #1
 ;RAM:C046 32 B3 5B                    ld      (pickup_drop_pressed), a
@@ -65,8 +89,7 @@
 ;RAM:C067 DD 77 06                    ld      6(ix), a
 ;RAM:C06A E5                          push    hl
 ;RAM:C06B FD 21 48 5C                 ld      iy, #special_objs_here
-;RAM:C06F
-;RAM:C06F             loc_C06F:
+loc_C06F:
 ;RAM:C06F CD 72 C1                    call    can_pickup_spec_obj
 ;RAM:C072 DA 41 C1                    jp      C, pickup_object                        ; yes, go
 ;RAM:C075 11 20 00                    ld      de, #32                                 ; entry size
@@ -79,36 +102,36 @@
 ;RAM:C086 FE 88                       cp      #136                                    ; cauldron room?
 ;RAM:C088 20 02                       jr      NZ, loc_C08C                            ; no, skip
 ;RAM:C08A 06 01                       ld      b, #1                                   ; only check 1st special object
-;RAM:C08C
-;RAM:C08C             loc_C08C:
+loc_C08C:
 ;RAM:C08C FD 21 48 5C                 ld      iy, #special_objs_here
 ;RAM:C090 11 20 00                    ld      de, #32                                 ; entry size
-;RAM:C093
-;RAM:C093             loc_C093:                                                       ; graphic no.
-;RAM:C093 FD 7E 00                    ld      a, 0(iy)
+loc_C093:
+;RAM:C093 FD 7E 00                    ld      a, 0(iy)                                ; graphic no.
 ;RAM:C096 A7                          and     a                                       ; null?
 ;RAM:C097 28 19                       jr      Z, room_to_drop                         ; yes, skip
 ;RAM:C099 FD 19                       add     iy, de                                  ; next entry
 ;RAM:C09B 10 F6                       djnz    loc_C093                                ; loop
-;RAM:C09D
-;RAM:C09D             done_pickup_drop:
+done_pickup_drop:
 ;RAM:C09D E1                          pop     hl
 ;RAM:C09E DD 75 06                    ld      6(ix), l                                ; height
 ;RAM:C0A1 E1                          pop     hl
 ;RAM:C0A2 DD 75 04                    ld      4(ix), l                                ; depth
 ;RAM:C0A5 DD 74 05                    ld      5(ix), h                                ; width
+handle_pickup_drop_return:
 ;RAM:C0A8 C9                          ret
-;RAM:C0A9             ; ---------------------------------------------------------------------------
-;RAM:C0A9
-;RAM:C0A9             loc_C0A9:                                                       ; still held down?
-;RAM:C0A9 CD FB BF                    call    chk_pickup_drop
+       dect sp
+       mov  *sp,r11
+       b    *r11
+* ---------------------------------------------------------------------------
+loc_C0A9:
+;RAM:C0A9 CD FB BF                    call    chk_pickup_drop                         ; still held down?
 ;RAM:C0AC C0                          ret     NZ                                      ; yes, exit
 ;RAM:C0AD AF                          xor     a                                       ; clear flag
 ;RAM:C0AE 32 B3 5B                    ld      (pickup_drop_pressed), a
 ;RAM:C0B1 C9                          ret
-;RAM:C0B2             ; ---------------------------------------------------------------------------
-;RAM:C0B2
-;RAM:C0B2             room_to_drop:
+       jmp  handle_pickup_drop_return
+* ---------------------------------------------------------------------------
+room_to_drop:
 ;RAM:C0B2 21 E4 5B                    ld      hl, #object_carried_2
 ;RAM:C0B5 7E                          ld      a, (hl)
 ;RAM:C0B6 23                          inc     hl
@@ -130,8 +153,7 @@
 ;RAM:C0D4 FD CB 00 DE                 set     3, 0(iy)                                ; graphic_no
 ;RAM:C0D8 3E 01                       ld      a, #1
 ;RAM:C0DA 32 C4 5B                    ld      (obj_dropping_into_cauldron), a
-;RAM:C0DD
-;RAM:C0DD             loc_C0DD:
+loc_C0DD:
 ;RAM:C0DD E5                          push    hl
 ;RAM:C0DE 01 03 00                    ld      bc, #3
 ;RAM:C0E1 DD E5                       push    ix
@@ -153,8 +175,8 @@
 ;RAM:C101 CD C9 D6                    call    calc_pixel_XY
 ;RAM:C104 DD E1                       pop     ix
 ;RAM:C106
-;RAM:C106             drop_object:                                                    ; width=5
-;RAM:C106 FD 36 04 05                 ld      4(iy), #5
+drop_object:
+;RAM:C106 FD 36 04 05                 ld      4(iy), #5                               ; width=5
 ;RAM:C10A FD 36 05 05                 ld      5(iy), #5                               ; depth=5
 ;RAM:C10E FD 36 06 0C                 ld      6(iy), #12                              ; height=12
 ;RAM:C112 E1                          pop     hl
@@ -170,8 +192,8 @@
 ;RAM:C124 FD 77 11                    ld      17(iy), a                               ; set ptr to obj_tbl entry
 ;RAM:C127 FD CB 0D C6                 set     0, 13(iy)                               ; flag just dropped
 ;RAM:C12B
-;RAM:C12B             adjust_carried:                                                 ; 2nd-to-last entry
-;RAM:C12B 21 E3 5B                    ld      hl, #unk_5BE3
+adjust_carried:
+;RAM:C12B 21 E3 5B                    ld      hl, #unk_5BE3                           ; 2nd-to-last entry
 ;RAM:C12E 11 E7 5B                    ld      de, #end_of_objects_carried             ; 3 entries (@4 bytes) to shift
 ;RAM:C131 01 0C 00                    ld      bc, #12
 ;RAM:C134 ED B8                       lddr                                            ; shift down by 1 entry
@@ -179,9 +201,8 @@
 ;RAM:C139 06 04                       ld      b, #4
 ;RAM:C13B CD 08 D5                    call    zero_DE                                 ; zap extra slot
 ;RAM:C13E C3 9D C0                    jp      done_pickup_drop
-;RAM:C141             ; ---------------------------------------------------------------------------
-;RAM:C141
-;RAM:C141             pickup_object:
+* ---------------------------------------------------------------------------
+pickup_object:
 ;RAM:C141 21 D8 5B                    ld      hl, #inventory
 ;RAM:C144 AF                          xor     a
 ;RAM:C145 32 C0 5B                    ld      (disable_spike_ball_drop), a
@@ -208,44 +229,65 @@
 ;RAM:C16C FD 77 00                    ld      0(iy), a
 ;RAM:C16F E5                          push    hl
 ;RAM:C170 18 94                       jr      drop_object
-;RAM:C170             ; End of function handle_pickup_drop
-;RAM:C170
-;RAM:C172             ; returns C flag set if special object
-;RAM:C172             ; and close enough to pick up
-;RAM:C172
-;RAM:C172             ; =============== S U B R O U T I N E =======================================
-;RAM:C172
-;RAM:C172
-;RAM:C172             can_pickup_spec_obj:
+*
+* End of function handle_pickup_drop
+*
+* =============== S U B R O U T I N E =======================================
+*
+* returns C flag set if special object
+* and close enough to pick up
+*
+can_pickup_spec_obj:
+       mov  r11,*sp+
 ;RAM:C172 FD 7E 00                    ld      a, 0(iy)                                ; graphic no.
+       movb *iy,a
 ;RAM:C175 D6 60                       sub     #0x60 ; '`'                             ; special objects base no.
+       sb   @b60h,a
 ;RAM:C177 FE 07                       cp      #7                                      ; special object?
+       cb   a,@b07h
 ;RAM:C179 D0                          ret     NC                                      ; no, exit
-;RAM:C17A
-;RAM:C17A             is_on_or_near_obj:
+       jhe  can_pickup_spec_obj_return
+is_on_or_near_obj:
 ;RAM:C17A C5                          push    bc
+       mov  bc,*sp+
 ;RAM:C17B 01 00 00                    ld      bc, #0
+       li   bc,0
 ;RAM:C17E 69                          ld      l, c
 ;RAM:C17F 61                          ld      h, c
+       mov  bc,hl
 ;RAM:C180 CD 9D CC                    call    do_objs_intersect_on_x
+       bl   @do_objs_intersect_on_x
 ;RAM:C183 30 1A                       jr      NC, loc_C19F
+       jhe  loc_C19F
 ;RAM:C185 CD B2 CC                    call    do_objs_intersect_on_y
+       bl   @do_objs_intersect_on_y
 ;RAM:C188 30 15                       jr      NC, loc_C19F
+       jhe  loc_C19F
 ;RAM:C18A DD 7E 03                    ld      a, 3(ix)                                ; Z
+       movb @3(ix),a
 ;RAM:C18D D6 04                       sub     #4                                      ; Z-4
+       sb   @b04h,a
 ;RAM:C18F DD 77 03                    ld      3(ix), a
+       movb a,@3(ix)
 ;RAM:C192 CD C7 CC                    call    do_objs_intersect_on_z
+       bl   @do_objs_intersect_on_z
 ;RAM:C195 F5                          push    af
 ;RAM:C196 DD 7E 03                    ld      a, 3(ix)
 ;RAM:C199 C6 04                       add     a, #4
 ;RAM:C19B DD 77 03                    ld      3(ix), a
 ;RAM:C19E F1                          pop     af
-;RAM:C19F
-;RAM:C19F             loc_C19F:
+       ab   @b04h,@3(ix)
+loc_C19F:
 ;RAM:C19F C1                          pop     bc
+       dect sp
+       mov *sp,bc
+can_pickup_spec_obj_return:
 ;RAM:C1A0 C9                          ret
-;RAM:C1A0             ; End of function can_pickup_spec_obj
-;RAM:C1A0
+       dect sp
+       mov *sp,r11
+       b    *r11
+*
+* End of function can_pickup_spec_obj
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -264,13 +306,98 @@ is_obj_moving:
 * =============== S U B R O U T I N E =======================================
 *
 set_wipe_and_draw_IY:
+       mov  r11,*sp+
 ;RAM:C69D FD E5                       push    iy
+       mov  iy,*sp+
 ;RAM:C69F DD E5                       push    ix
+       mov  ix,*sp+
 ;RAM:C6A1 FD E5                       push    iy
 ;RAM:C6A3 DD E1                       pop     ix
+       mov  iy,ix
 ;RAM:C6A5 CD 92 C6                    call    set_wipe_and_draw_flags
+       bl   @set_wipe_and_draw_flags_0
 ;RAM:C6A8 DD E1                       pop     ix
+       dect sp
+       mov  *sp,ix
 ;RAM:C6AA FD E1                       pop     iy
+       dect sp
+       mov  *sp,iy
 ;RAM:C6AC C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
+*
 * End of function set_wipe_and_draw_IY
+*
+* =============== S U B R O U T I N E =======================================
+*
+* returns C flag set if any other object intersects with this one
+*
+do_any_objs_intersect:
+       mov  r11,*sp+
+;RAM:B4FD C5                          push    bc
+       mov  bc,*sp+
+;RAM:B4FE D5                          push    de
+       mov  de,*sp+
+;RAM:B4FF E5                          push    hl
+       mov  hl,*sp+
+;RAM:B500 FD E5                       push    iy
+       mov  iy,*sp+
+;RAM:B502 FD 21 08 5C                 ld      iy, #graphic_objs_tbl
+       li   iy,graphic_objs_tbl
+;RAM:B506 06 28                       ld      b, #40                                  ; max objects
+;RAM:B508 0E 00                       ld      c, #0                                   ; dX=0
+       li   bc,>4000
+;RAM:B50A 69                          ld      l, c                                    ; dY=0
+       movb @c,@l
+;RAM:B50B 61                          ld      h, c                                    ; dZ=0
+       movb @c,h
+;RAM:B50C DD CB 07 CE                 set     1, 7(ix)                                ; ignore this object
+       socb @b02h,@7(ix)
+loc_B510:
+;RAM:B510 CD 38 B5                    call    is_object_not_ignored
+       bl   @is_object_not_ignored
+;RAM:B513 28 19                       jr      Z, loc_B52E                             ; no, skip
+       jeq  loc_B52E
+;RAM:B515 CD 9D CC                    call    do_objs_intersect_on_x
+       bl   @do_objs_intersect_on_x
+;RAM:B518 30 14                       jr      NC, loc_B52E                            ; no, skip
+       jhe  loc_B52E
+;RAM:B51A CD B2 CC                    call    do_objs_intersect_on_y
+       bl   @do_objs_intersect_on_y
+;RAM:B51D 30 0F                       jr      NC, loc_B52E                            ; no, skip
+       jhe  loc_B52E
+;RAM:B51F CD C7 CC                    call    do_objs_intersect_on_z
+       bl   @do_objs_intersect_on_z
+;RAM:B522 30 0A                       jr      NC, loc_B52E                            ; no, skip
+       jhe  loc_B52E
+loc_B524:
+;RAM:B524 FD E1                       pop     iy
+       dect sp
+       mov *sp,iy
+;RAM:B526 E1                          pop     hl
+       dect sp
+       mov *sp,hl
+;RAM:B527 D1                          pop     de
+       dect sp
+       mov *sp,de
+;RAM:B528 C1                          pop     bc
+       dect sp
+       mov *sp,bc
+;RAM:B529 DD CB 07 8E                 res     1, 7(ix)                                ; reset ignore flag
+       szcb @b02h,@7(ix)
+;RAM:B52D C9                          ret                                             ; C flag set indicates intersection
+       dect sp
+       mov *sp,r11
+       rt
+* ---------------------------------------------------------------------------
+loc_B52E:
+;RAM:B52E 11 20 00                    ld      de, #32                                 ; entry size
+;RAM:B531 FD 19                       add     iy, de                                  ; next entry
+;RAM:B533 10 DB                       djnz    loc_B510                                ; loop through object table
+;RAM:B535 A7                          and     a
+;RAM:B536 18 EC                       jr      loc_B524
+       jmp  loc_B524
+*
+* End of function do_any_objs_intersect
+*

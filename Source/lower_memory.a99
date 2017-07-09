@@ -293,50 +293,6 @@ loc_B090:
 *
 * =============== S U B R O U T I N E =======================================
 *
-* returns C flag set if any other object intersects with this one
-*
-;RAM:B4FD             do_any_objs_intersect:
-;RAM:B4FD C5                          push    bc
-;RAM:B4FE D5                          push    de
-;RAM:B4FF E5                          push    hl
-;RAM:B500 FD E5                       push    iy
-;RAM:B502 FD 21 08 5C                 ld      iy, #graphic_objs_tbl
-;RAM:B506 06 28                       ld      b, #40                                  ; max objects
-;RAM:B508 0E 00                       ld      c, #0                                   ; dX=0
-;RAM:B50A 69                          ld      l, c                                    ; dY=0
-;RAM:B50B 61                          ld      h, c                                    ; dZ=0
-;RAM:B50C DD CB 07 CE                 set     1, 7(ix)                                ; ignore this object
-;RAM:B510
-;RAM:B510             loc_B510:
-;RAM:B510 CD 38 B5                    call    is_object_not_ignored
-;RAM:B513 28 19                       jr      Z, loc_B52E                             ; no, skip
-;RAM:B515 CD 9D CC                    call    do_objs_intersect_on_x
-;RAM:B518 30 14                       jr      NC, loc_B52E                            ; no, skip
-;RAM:B51A CD B2 CC                    call    do_objs_intersect_on_y
-;RAM:B51D 30 0F                       jr      NC, loc_B52E                            ; no, skip
-;RAM:B51F CD C7 CC                    call    do_objs_intersect_on_z
-;RAM:B522 30 0A                       jr      NC, loc_B52E                            ; no, skip
-;RAM:B524
-;RAM:B524             loc_B524:
-;RAM:B524 FD E1                       pop     iy
-;RAM:B526 E1                          pop     hl
-;RAM:B527 D1                          pop     de
-;RAM:B528 C1                          pop     bc
-;RAM:B529 DD CB 07 8E                 res     1, 7(ix)                                ; reset ignore flag
-;RAM:B52D C9                          ret                                             ; C flag set indicates intersection
-* ---------------------------------------------------------------------------
-;RAM:B52E
-;RAM:B52E             loc_B52E:                                                       ; entry size
-;RAM:B52E 11 20 00                    ld      de, #32
-;RAM:B531 FD 19                       add     iy, de                                  ; next entry
-;RAM:B533 10 DB                       djnz    loc_B510                                ; loop through object table
-;RAM:B535 A7                          and     a
-;RAM:B536 18 EC                       jr      loc_B524
-*
-* End of function do_any_objs_intersect
-*
-* =============== S U B R O U T I N E =======================================
-*
 * Sets zero flag if object is ignored
 *
 is_object_not_ignored:

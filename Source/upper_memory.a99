@@ -676,7 +676,7 @@ finished_input:
 ;RAM:D121 28 02                       jr      Z, loc_D125
        jeq  loc_D125
 ;RAM:D123 CB E9                       set     5, c                                    ; flag PICKUP/DROP (directional)
-       socb @b10h,@c
+       socb @b20h,@c
 loc_D125:
 ;RAM:D125 79                          ld      a, c
        movb @c,a
