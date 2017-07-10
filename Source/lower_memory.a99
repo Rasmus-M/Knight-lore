@@ -262,7 +262,7 @@ loc_B074:
 ;RAM:B07C DD 7E 00                    ld      a, 0(ix)                                ; player sprite half
        movb *ix,a
 ;RAM:B07F DD B6 20                    or      0x20(ix)                                ; player other sprite half
-       soc  @20(ix),a
+       soc  @>20(ix),a
 ;RAM:B082 CA B7 AF                    jp      Z, player_dies                          ; both null? yes, lose a life
        jne  !
        b    @player_dies
@@ -1439,7 +1439,7 @@ display_objects_carried:
        jne  !
        rt
 ;RAM:BF4A AF                          xor     a                                       ; clear changed flag
- RAM:BF4B 32 B4 5B                    ld      (objects_carried_changed), a
+;RAM:BF4B 32 B4 5B                    ld      (objects_carried_changed), a
 !      szcb mone,@objects_carried_changed
 *
 * End of function display_objects_carried
@@ -3218,7 +3218,7 @@ upd_player_bottom:
 ;RAM:C837 DD CB 2D F6                 set     6, 0x2D(ix)                             ; set dead top half
        socb @b40h,@>2d(ix)
 ;RAM:C83B C3 21 BF                    jp      init_death_sparkles
-;      b    @init_death_sparkles
+       b    @init_death_sparkles
 * ---------------------------------------------------------------------------
 loc_C83E:
 ;RAM:C83E CD 06 C3                    call    chk_and_init_transform                  ; returns to caller if transforming
@@ -4881,7 +4881,7 @@ upd_player_top:
        andi tmp0,>4000
 ;RAM:CDEC C2 21 BF                    jp      NZ, init_death_sparkles
        jeq  loc_CDEF
-;       b    @init_death_sparkles
+       b    @init_death_sparkles
 loc_CDEF:
 ;RAM:CDEF DD E5                       push    ix
 ;RAM:CDF1 D1                          pop     de                                      ; DE=top
@@ -5408,15 +5408,15 @@ lose_life:
 ;RAM:D136 ED B0                       ldir                                            ; copy scratchpad back to object table
        bl   @ldir
 ;RAM:D138 AF                          xor     a
-       clr  a
 ;RAM:D139 32 B1 5B                    ld      (transform_flag_graphic), a
-       movb a,@transform_flag_graphic
+       szcb mone,@transform_flag_graphic
 ;RAM:D13C 21 BA 5B                    ld      hl, #lives
        li   hl,lives
 ;RAM:D13F 35                          dec     (hl)                                    ; decrement life
-       dec  *hl
+       sb   one,*hl
 ;RAM:D140 FA 22 BA                    jp      M, game_over                            ; any left? no, exit
-       jne  !
+       jgt  !
+       jeq  !
        b    @game_over
 ;RAM:D143 3A 4D C4                    ld      a, (sun_moon_scratchpad)                ; sprite index
 !      movb @sun_moon_scratchpad,a
@@ -5436,8 +5436,8 @@ lose_life:
        ab   @c,a
 ;RAM:D152 DD 77 10                    ld      16(ix), a
        movb a,@16(ix)
-;RAM:D155 DD 7E 30                    ld      a, 0x30(ix)                             ; top half playr graphic no
-       movb @30(ix),a
+;RAM:D155 DD 7E 30                    ld      a, 0x30(ix)                             ; top half player graphic no
+       movb @>30(ix),a
 ;RAM:D158 E6 0F                       and     #0xF
        andi a,>0f00
 ;RAM:D15A 81                          add     a, c
@@ -5445,7 +5445,7 @@ lose_life:
 ;RAM:D15B C6 20                       add     a, #32                                  ; top half human/wulf
        ab   @b20h,a
 ;RAM:D15D DD 77 30                    ld      0x30(ix), a
-       movb a,@30(ix)
+       movb a,@>30(ix)
 ;RAM:D160 C9                          ret
        dect sp
        mov  *sp,r11
