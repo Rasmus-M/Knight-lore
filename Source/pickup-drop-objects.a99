@@ -7,7 +7,7 @@ chk_pickup_drop:
 ;RAM:BFFF E6 06                       and     #6                                      ; keybd/joystick bits only
 ;      Do later
 ;RAM:C001 3A B5 5B                    ld      a, (user_input)
-       mov  @user_input,a
+       movb @user_input,a
 ;RAM:C004 28 05                       jr      Z, loc_C00B                             ; keybd? yes, skip
        andi tmp0,>0600
        jeq  loc_C00B
@@ -128,7 +128,7 @@ loc_C06F:
        sb   one,b
        jne  loc_C06F
 ;RAM:C07C CD FB BF                    call    chk_pickup_drop
-       bl   @can_pickup_spec_obj
+       bl   @chk_pickup_drop
 ;RAM:C07F 28 1C                       jr      Z, done_pickup_drop
        jeq  done_pickup_drop
 ;RAM:C081 06 02                       ld      b, #2
@@ -248,7 +248,7 @@ loc_C0DD:
 ;RAM:C0F3 DD 7E 23                    ld      a, 0x23(ix)                             ; Z of next sprite
 ;RAM:C0F6 C6 0C                       add     a, #12
 ;RAM:C0F8 DD 77 23                    ld      0x23(ix), a                             ; update Z of next sprite
-       ab   @b0ch,@23(ix)
+       ab   @b0ch,@>23(ix)
 ;RAM:C0FB DD E5                       push    ix
        mov  ix,*sp+
 ;RAM:C0FD FD E5                       push    iy
@@ -272,7 +272,7 @@ drop_object:
 ;RAM:C113 7E                          ld      a, (hl)
 ;RAM:C114 23                          inc     hl
 ;RAM:C115 FD 77 07                    ld      7(iy), a                                ; flags7
-       movb *hl+,@7(ix)
+       movb *hl+,@7(iy)
 ;RAM:C118 DD 7E 08                    ld      a, 8(ix)                                ; scrn
 ;RAM:C11B FD 77 08                    ld      8(iy), a
        movb @8(ix),@8(iy)
@@ -326,7 +326,7 @@ pickup_object:
 ;RAM:C155 FD 56 11                    ld      d, 17(iy)                               ; ptr graphic object
        movb @17(iy),d
 ;RAM:C158 AF                          xor     a
-       szcb mone,a
+       clr  a
 ;RAM:C159 12                          ld      (de), a                                 ; zap special_objs_tbl.graphic_no
        movb a,*de
 ;RAM:C15A 73                          ld      (hl), e
@@ -357,7 +357,7 @@ pickup_object:
 *
 * =============== S U B R O U T I N E =======================================
 *
-* returns C flag set if special object
+* returns C flag set (jl on TI) if special object
 * and close enough to pick up
 *
 can_pickup_spec_obj:
@@ -374,10 +374,10 @@ is_on_or_near_obj:
 ;RAM:C17A C5                          push    bc
        mov  bc,*sp+
 ;RAM:C17B 01 00 00                    ld      bc, #0
-       li   bc,0
+       clr  bc
 ;RAM:C17E 69                          ld      l, c
 ;RAM:C17F 61                          ld      h, c
-       mov  bc,hl
+       clr  hl
 ;RAM:C180 CD 9D CC                    call    do_objs_intersect_on_x
        bl   @do_objs_intersect_on_x
 ;RAM:C183 30 1A                       jr      NC, loc_C19F
@@ -394,20 +394,28 @@ is_on_or_near_obj:
        movb a,@3(ix)
 ;RAM:C192 CD C7 CC                    call    do_objs_intersect_on_z
        bl   @do_objs_intersect_on_z
-;RAM:C195 F5                          push    af
+       jhe  !
+       seto tmp0                      ; flag carry
+       jmp  !!
+!      clr  tmp0                      ; flag no carry
+;RAM:C195 F5                          push    af                                      ; preserve carry flag
 ;RAM:C196 DD 7E 03                    ld      a, 3(ix)
 ;RAM:C199 C6 04                       add     a, #4
 ;RAM:C19B DD 77 03                    ld      3(ix), a
-;RAM:C19E F1                          pop     af
-       ab   @b04h,@3(ix)
+!!     ab   @b04h,@3(ix)
+;RAM:C19E F1                          pop     af                                      ; restore carry flag
+       jmp  !
 loc_C19F:
+       clr tmp0                      ; flag no carry
 ;RAM:C19F C1                          pop     bc
-       dect sp
+!      dect sp
        mov *sp,bc
 can_pickup_spec_obj_return:
 ;RAM:C1A0 C9                          ret
        dect sp
        mov *sp,r11
+       inc  tmp0                      ; -1 -> 0 0 -> 1
+       ci   tmp0,1                    ; Flag carry=jl if tmp0=0 / no carry=jhe if tmp0=1
        b    *r11
 *
 * End of function can_pickup_spec_obj
@@ -454,7 +462,7 @@ set_wipe_and_draw_IY:
 *
 * =============== S U B R O U T I N E =======================================
 *
-* returns C flag set if any other object intersects with this one
+* returns C flag set (jl on TI) if any other object intersects with this one
 *
 do_any_objs_intersect:
        mov  r11,*sp+
@@ -470,11 +478,10 @@ do_any_objs_intersect:
        li   iy,graphic_objs_tbl
 ;RAM:B506 06 28                       ld      b, #40                                  ; max objects
 ;RAM:B508 0E 00                       ld      c, #0                                   ; dX=0
-       li   bc,>4000
+       li   bc,>2800
 ;RAM:B50A 69                          ld      l, c                                    ; dY=0
-       movb @c,@l
 ;RAM:B50B 61                          ld      h, c                                    ; dZ=0
-       movb @c,h
+       clr  hl
 ;RAM:B50C DD CB 07 CE                 set     1, 7(ix)                                ; ignore this object
        socb @b02h,@7(ix)
 loc_B510:
@@ -494,6 +501,7 @@ loc_B510:
        bl   @do_objs_intersect_on_z
 ;RAM:B522 30 0A                       jr      NC, loc_B52E                            ; no, skip
        jhe  loc_B52E
+       seto  tmp0                     ; flag carry
 loc_B524:
 ;RAM:B524 FD E1                       pop     iy
        dect sp
@@ -512,13 +520,20 @@ loc_B524:
 ;RAM:B52D C9                          ret                                             ; C flag set indicates intersection
        dect sp
        mov *sp,r11
+       inc  tmp0                      ; -1 -> 0 0 -> 1
+       ci   tmp0,1                    ; Flag carry=jl if tmp0=0 / no carry=jhe if tmp0=1
        rt
 * ---------------------------------------------------------------------------
 loc_B52E:
 ;RAM:B52E 11 20 00                    ld      de, #32                                 ; entry size
+       li   de,32
 ;RAM:B531 FD 19                       add     iy, de                                  ; next entry
+       a    de,iy
 ;RAM:B533 10 DB                       djnz    loc_B510                                ; loop through object table
-;RAM:B535 A7                          and     a
+       sb   one,b
+       jne  loc_B510
+;RAM:B535 A7                          and     a                                       ; set/reset carry flag
+       clr  tmp0                      ; flag no carry
 ;RAM:B536 18 EC                       jr      loc_B524
        jmp  loc_B524
 *

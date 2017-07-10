@@ -1439,9 +1439,8 @@ display_objects_carried:
        jne  !
        rt
 ;RAM:BF4A AF                          xor     a                                       ; clear changed flag
-!      clr  a
-;RAM:BF4B 32 B4 5B                    ld      (objects_carried_changed), a
-       movb a,@objects_carried_changed
+ RAM:BF4B 32 B4 5B                    ld      (objects_carried_changed), a
+!      szcb mone,@objects_carried_changed
 *
 * End of function display_objects_carried
 *
