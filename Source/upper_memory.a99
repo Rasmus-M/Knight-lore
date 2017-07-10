@@ -1244,6 +1244,7 @@ fill_window:
        swpb bc
 ;RAM:C515 11 20 00                    ld      de, #32                                 ; Line length
        li   de,32
+       s    tmp0,de
 loc_C518:
 ;RAM:C518 C5                          push    bc
 ;RAM:C519 E5                          push    hl
@@ -1257,7 +1258,6 @@ loc_C51A:
        jne  loc_C51A
 ;RAM:C51E E1                          pop     hl
 ;RAM:C51F 19                          add     hl, de                                  ; next line
-       s    tmp0,hl
        a    de,hl
 ;RAM:C520 C1                          pop     bc
 ;RAM:C521 0D                          dec     c                                       ; done all lines?
