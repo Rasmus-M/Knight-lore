@@ -884,7 +884,7 @@ upd_63:
        mov  @13(ix),tmp0
        andi tmp0,>0400
 ;RAM:B7B8 20 13                       jr      NZ, spiked_ball_drop                    ; yes, go
-;       jne  spiked_ball_drop
+       jne  spiked_ball_drop
 ;RAM:B7BA 21 BF 5B                    ld      hl, #is_spike_ball_dropping
        li   hl,is_spike_ball_dropping
 ;RAM:B7BD 7E                          ld      a, (hl)
@@ -924,7 +924,7 @@ draw_spiked_ball:
 * ---------------------------------------------------------------------------
 loc_B7DC:
 ;RAM:B7DC DD CB 0D 96                 res     2, 13(ix)                               ; flag this no longer dropping
-       szcb @b04h,@12(ix)
+       szcb @b04h,@13(ix)
 ;RAM:B7E0 21 BF 5B                    ld      hl, #is_spike_ball_dropping
        li   hl,is_spike_ball_dropping
 ;RAM:B7E3 36 00                       ld      (hl), #0                                ; flag no spiked balls dropping
@@ -4262,17 +4262,15 @@ loc_CBAF:
 ;RAM:CBBC E6 40                       and     #0x40 ; '@'                             ; bit 7->6
        andi a,>4000
 ;RAM:CBBE FD B6 0D                    or      13(iy)                                  ; obj2 destroyed?
-       socb @13(iy),a
 ;RAM:CBC1 FD 77 0D                    ld      13(iy), a
-       movb a,@13(iy)
+       socb a,@13(iy)
 ;RAM:CBC4 07                          rlca
        sla  a,1
 ;RAM:CBC5 E6 40                       and     #0x40 ; '@'                             ; bit 5->6
        andi a,>4000
 ;RAM:CBC7 DD B6 0D                    or      13(ix)                                  ; obj1 destroyed?
-       socb @13(ix),a
 ;RAM:CBCA DD 77 0D                    ld      13(ix), a
-       movb a,@13(ix)
+       socb a,@13(ix)
 ;RAM:CBCD FD CB 07 56                 bit     2, 7(iy)                                ; moveable?
        movb @7(iy),tmp0
        andi tmp0,>0400
@@ -4295,9 +4293,8 @@ loc_CBD9:
 * ---------------------------------------------------------------------------
 loc_CBE1:
 ;RAM:CBE1 11 20 00                    ld      de, #32                                 ; entry size
-       li   de,32
 ;RAM:CBE4 FD 19                       add     iy, de                                  ; next entry
-       a    de,iy
+       ai   iy,32
 ;RAM:CBE6 10 B8                       djnz    loc_CBA0
        sb   one,b
        jne  loc_CBA0
@@ -4344,17 +4341,15 @@ loc_CBFE:
 ;RAM:CC0B E6 40                       and     #0x40 ; '@'                             ; bit 7->6
        andi a,>4000
 ;RAM:CC0D FD B6 0D                    or      13(iy)                                  ; obj2 destroyed?
-       soc  @13(iy),a
 ;RAM:CC10 FD 77 0D                    ld      13(iy), a
-       movb a,@13(iy)
+       socb a,@13(iy)
 ;RAM:CC13 07                          rlca
        sla  a,1
 ;RAM:CC14 E6 40                       and     #0x40 ; '@'                             ; bit 5->6
        andi a,>4000
 ;RAM:CC16 DD B6 0D                    or      13(ix)                                  ; obj1 destroyed?
-       socb @13(ix),a
 ;RAM:CC19 DD 77 0D                    ld      13(ix), a
-       movb a,@13(ix)
+       socb a,@13(ix)
 ;RAM:CC1C FD CB 07 56                 bit     2, 7(iy)                                ; moveable?
        movb @7(iy),tmp0
        andi tmp0,>0400
@@ -4377,9 +4372,8 @@ loc_CC28:
 * ---------------------------------------------------------------------------
 loc_CC30:
 ;RAM:CC30 11 20 00                    ld      de, #32                                 ; entry size
-       li   de,32
 ;RAM:CC33 FD 19                       add     iy, de                                  ; next entry
-       a    de,iy
+       ai   iy,32
 ;RAM:CC35 10 B8                       djnz    loc_CBEF                                ; loop through table
        sb   one,b
        jne  loc_CBEF
@@ -4426,17 +4420,15 @@ loc_CC4D:
 ;RAM:CC5A E6 40                       and     #0x40 ; '@'                             ; bit 7->6
        andi a,>4000
 ;RAM:CC5C FD B6 0D                    or      13(iy)                                  ; obj2 destroyed?
-       socb @13(iy),a
 ;RAM:CC5F FD 77 0D                    ld      13(iy), a
-       movb a,@13(iy)
+       socb a,@13(iy)
 ;RAM:CC62 07                          rlca
        sla  a,1
 ;RAM:CC63 E6 40                       and     #0x40 ; '@'                             ; bit 5->6
        andi a,>4000
 ;RAM:CC65 DD B6 0D                    or      13(ix)                                  ; obj1 destroyed?
-       socb @13(ix),a
 ;RAM:CC68 DD 77 0D                    ld      13(ix), a
-       movb a,@13(ix)
+       socb a,@13(ix)
 ;RAM:CC6B FD CB 0D DE                 set     3, 13(iy)                               ; triggered (falling, collapsing blocks)
        socb @b08h,@13(iy)
 ;RAM:CC6F DD CB 07 56                 bit     2, 7(ix)                                ; moveable?
@@ -4475,9 +4467,8 @@ loc_CC8D:
 * ---------------------------------------------------------------------------
 loc_CC95:
 ;RAM:CC95 11 20 00                    ld      de, #32                                 ; entry size
-       li   de,32
 ;RAM:CC98 FD 19                       add     iy, de                                  ; next entry
-       a    de,iy
+       ai   iy,32
 ;RAM:CC9A 10 A2                       djnz    loc_CC3E                                ; loop through table
        sb   one,b
        jne  loc_CC3E
@@ -5521,8 +5512,8 @@ plyr_spr_init_data:
 start_locations:
 ;       byte >2F, >44, >B3, >8F         ; Standard
 ;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
-       byte >B3,>B3,>B3,>B3
-;       byte 136,136,136,136            ; Cauldron room
+;       byte >B3,>B3,>B3,>B3
+       byte >8a,>8a,>8a,>8a            ; Cauldron room
 * ---------------------------------------------------------------------------
 *
 * End of function init_start_location
