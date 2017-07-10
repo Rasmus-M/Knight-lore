@@ -6186,9 +6186,8 @@ loc_D4EA:
 render_dynamic_objects:
        mov  r11,*sp+
 ;RAM:D59F AF                          xor     a
-       clr  a
 ;RAM:D5A0 32 A8 5B                    ld      (objs_wiped_cnt), a                     ; zero count of wiped objects
-       movb a,@objs_wiped_cnt
+       szcb mone,@objs_wiped_cnt
 ;RAM:D5A3 DD E5                       push    ix
        mov  ix,*sp+
 ;RAM:D5A5 3A B7 5B                    ld      a, (render_status_info)
@@ -6344,11 +6343,9 @@ loc_D62C:
        mov  bc,hl
        mov  tmp0,bc
 ;RAM:D638 3A A8 5B                    ld      a, (objs_wiped_cnt)
-       movb @objs_wiped_cnt,a
 ;RAM:D63B 3C                          inc     a
-       ab   one,a
 ;RAM:D63C 32 A8 5B                    ld      (objs_wiped_cnt), a
-       movb a,@objs_wiped_cnt
+       ab   one,@objs_wiped_cnt
 ;RAM:D63F C5                          push    bc
        mov  bc,*sp+
 ;RAM:D640 D5                          push    de

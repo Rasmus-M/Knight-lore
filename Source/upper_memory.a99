@@ -1089,6 +1089,7 @@ blit2:
 blit3:
        ci   r2,8
        jlt  blit5
+blit3a:
        andi r0,>FFF8                   ; Move dest to top of character row
        bl   @vwad                      ; Set VDP write address
        li   r4,32
@@ -1123,7 +1124,7 @@ blit4:
        ai   r0,-256                    ; Move dest one row up
        ai   r2,-8                      ; Subtract 8 lines from total
        ci   r2,7
-       jgt  blit3
+       jgt  blit3a
 *      Section 3: lines in top character row
 blit5:
        mov  r2,r6                      ; Remaining lines n
