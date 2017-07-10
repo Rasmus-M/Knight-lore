@@ -5063,9 +5063,8 @@ loc_CE80:
 calc_display_order_and_render:
        mov  r11,*sp+
 ;RAM:CEBB AF                          xor     a
-       clr  a
 ;RAM:CEBC 32 BE 5B                    ld      (rendered_objs_cnt), a
-       movb a,@rendered_objs_cnt
+       szcb mone,@rendered_objs_cnt
 ;RAM:CEBF DD E5                       push    ix
        mov  ix,*sp+
 ;RAM:CEC1 FD E5                       push    iy
@@ -5180,8 +5179,8 @@ loc_CF16:
 ;RAM:CF30 FD 96 05                    sub     5(iy)                                   ; sub D2
        sb   @5(iy),a
 ;RAM:CF33 95                          sub     l                                       ; Y2-D2-(Y1+D1)
-       movb a,tmp0                      ; TODO: is this correct?
 ;RAM:CF34 79                          ld      a, c
+       movb a,tmp0                      ; TODO: is this correct?
        movb @c,a
        cb   tmp0,@l
 ;RAM:CF35 38 02                       jr      C, loc_CF39                             ; overlap (C+=3)
@@ -5219,8 +5218,8 @@ loc_CF3C:
 ;RAM:CF56 FD 96 04                    sub     4(iy)                                   ; sub W2
        sb   @4(iy),a
 ;RAM:CF59 95                          sub     l                                       ; X2-W2-(X1+W1)
-       movb a,tmp0
 ;RAM:CF5A 79                          ld      a, c
+       movb a,tmp0
        movb @c,a
        cb   tmp0,@l
 ;RAM:CF5B 38 02                       jr      C, loc_CF5F                             ; overlap (C+=9)
@@ -5304,14 +5303,12 @@ loc_CFAD:
 * ---------------------------------------------------------------------------
 loc_CFB8:
 ;RAM:CFB8 79                          ld      a, c                                    ; index
-       movb @c,a
 ;RAM:CFB9 12                          ld      (de), a                                 ; add to list
 ;RAM:CFBA 13                          inc     de                                      ; next entry
-       movb a,*de+
+       movb @c,*de+
 ;RAM:CFBB 3E FF                       ld      a, #0xFF
-       movb mone,a
 ;RAM:CFBD 12                          ld      (de), a                                 ; flag empty
-       movb a,*de
+       movb mone,*de
 ;RAM:CFBE FD E5                       push    iy
 ;RAM:CFC0 DD E1                       pop     ix                                      ; obj#2=obj#1
        mov  iy,ix
@@ -5384,9 +5381,8 @@ render_obj:
 ;RAM:D004 CB FE                       set     7, (hl)                                 ; flag as rendered
        socb @b80h,*hl
 ;RAM:D006 3E FF                       ld      a, #0xFF
-       movb mone,a
 ;RAM:D008 32 1A D0                    ld      (render_list), a                        ; set entry to empty
-       movb a,@render_list
+       movb mone,@render_list
 ;RAM:D00B 21 BE 5B                    ld      hl, #rendered_objs_cnt
        li   hl,rendered_objs_cnt
 ;RAM:D00E 34                          inc     (hl)
