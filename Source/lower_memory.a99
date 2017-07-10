@@ -3318,10 +3318,8 @@ chk_plyr_OOB:
        sb   @b80h,a
 ;RAM:C88C F2 91 C8                    jp      P, loc_C891
        jgt  loc_C891
-       jeq  loc_C891
 ;RAM:C88F ED 44                       neg
-       inv  a
-       ab   one,a
+       abs  a
 loc_C891:
 ;RAM:C891 BD                          cp      l
        cb   a,@l
@@ -3333,10 +3331,8 @@ loc_C891:
        sb   @b80h,a
 ;RAM:C898 F2 9D C8                    jp      P, loc_C89D
        jgt  loc_C89D
-       jeq  loc_C89D
 ;RAM:C89B ED 44                       neg
-       inv  a
-       ab   one,a
+       abs  a
 loc_C89D:
 ;RAM:C89D BC                          cp      h                                       ; set/clr carry
        cb   a,h
@@ -4860,8 +4856,7 @@ next_overlap_obj:
 * ---------------------------------------------------------------------------
 loc_CDCC:
 ;RAM:CDCC ED 44                       neg
-       inv  a
-       ab   one,a
+       abs  a
 ;RAM:CDCE FD BE 18                    cp      24(iy)                                  ; data width (bytes)
        cb   a,@24(iy)
 ;RAM:CDD1 18 E0                       jr      loc_CDB3
@@ -4869,8 +4864,7 @@ loc_CDCC:
 * ---------------------------------------------------------------------------
 loc_CDD3:
 ;RAM:CDD3 ED 44                       neg
-       inv  a
-       ab   one,a
+       abs  a
 ;RAM:CDD5 FD BE 19                    cp      25(iy)                                  ; data height (lines)
        cb   a,@25(iy)
 ;RAM:CDD8 18 E2                       jr      loc_CDBC
