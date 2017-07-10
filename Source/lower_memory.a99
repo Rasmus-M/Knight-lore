@@ -5512,8 +5512,8 @@ plyr_spr_init_data:
 start_locations:
 ;       byte >2F, >44, >B3, >8F         ; Standard
 ;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
-;       byte >B3,>B3,>B3,>B3
-       byte >8a,>8a,>8a,>8a            ; Cauldron room
+       byte >B3,>B3,>B3,>B3
+;       byte >8a,>8a,>8a,>8a            ; Cauldron room
 * ---------------------------------------------------------------------------
 *
 * End of function init_start_location
@@ -6216,7 +6216,7 @@ wipe_next_object:
 ;RAM:D5D2 DD 96 1E                    sub     30(ix)                                  ; old pixel X
        cb   a,@30(ix)
 ;RAM:D5D5 DA 49 D6                    jp      C, loc_D649
-       jhe loc_D649                   ; TODO: test if this works
+       jl loc_D649                   ; TODO: test if this works
 ;RAM:D5D8 DD 4E 1E                    ld      c, 30(ix)                               ; old pixel X
        movb @30(ix),@c
 loc_D5DB:
@@ -6268,7 +6268,7 @@ loc_D5F6:
 ;RAM:D600 DD 7E 1B                    ld      a, 27(ix)                               ; pixel Y
        movb @27(ix),a
 ;RAM:D603 DD 96 1F                    sub     31(ix)                                  ; pixel Y < old pixel Y?
-       sb   @31(ix),a
+       cb   a,@31(ix)
 ;RAM:D606 38 46                       jr      C, loc_D64E                             ; yes, go
        jl   loc_D64E                  ; TODO: test if this works
 ;RAM:D608 DD 46 1F                    ld      b, 31(ix)                               ; old pixel Y
