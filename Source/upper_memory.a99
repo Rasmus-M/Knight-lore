@@ -1343,10 +1343,9 @@ calc_2d_info:
 ;RAM:CD36 CD EF D6                    call    flip_sprite
        bl   @flip_sprite
 ;RAM:CD39 DD 7E 1A                    ld      a, 26(ix)                               ; pixel X
-       movb @26(ix),a
+       movb @26(ix),tmp0              ; Use tmp0 to preserve value
 ;RAM:CD3C E6 07                       and     #7                                      ; bit offset
-       andi a,>0700
-       movb a,tmp0                    ; preserve flags
+       andi tmp0,>0700
 ;RAM:CD3E 1A                          ld      a, (de)                                 ; ptr sprite data (width)
 ;RAM:CD3F 13                          inc     de                                      ; ptr height
        movb *de+,a
@@ -1361,9 +1360,8 @@ loc_CD43:
 ;RAM:CD45 DD 77 18                    ld      24(ix), a                               ; sprite data width (bytes)
        movb a,@24(ix)
 ;RAM:CD48 1A                          ld      a, (de)
-       movb *de,a
 ;RAM:CD49 DD 77 19                    ld      25(ix), a                               ; sprite data height
-       movb a,@25(ix)
+       movb *de,@25(ix)
 ;RAM:CD4C C9                          ret
        dect sp
        mov  *sp,r11
