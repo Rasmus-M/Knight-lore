@@ -370,7 +370,7 @@ can_pickup_spec_obj:
        cb   a,@b07h
 ;RAM:C179 D0                          ret     NC                                      ; no, exit
        jhe  can_pickup_spec_obj_return
-is_on_or_near_obj:
+is_on_or_near_obj_1:
 ;RAM:C17A C5                          push    bc
        mov  bc,*sp+
 ;RAM:C17B 01 00 00                    ld      bc, #0
@@ -419,6 +419,12 @@ can_pickup_spec_obj_return:
        b    *r11
 *
 * End of function can_pickup_spec_obj
+*
+* =============== S U B R O U T I N E =======================================
+*
+is_on_or_near_obj:
+       mov  r11,*sp+
+       b    @is_on_or_near_obj_1
 *
 * =============== S U B R O U T I N E =======================================
 *

@@ -1607,39 +1607,61 @@ object_attributes:
 * extra life
 *
 upd_103:
-       b    @no_update
 ;RAM:C1AB CD D3 C4                    call    upd_128_to_130
+       bl   @upd_128_to_130_0
 ;RAM:C1AE DD E5                       push    ix
 ;RAM:C1B0 FD E1                       pop     iy                                      ; iy=extra life object
+       mov  ix,iy
 ;RAM:C1B2 DD 21 08 5C                 ld      ix, #graphic_objs_tbl                   ; ix = player
+       li   ix,graphic_objs_tbl
 ;RAM:C1B6 DD 34 04                    inc     4(ix)                                   ; width
+       ab   one,@4(ix)
 ;RAM:C1B9 DD 34 05                    inc     5(ix)                                   ; depth
+       ab   one,@5(ix)
 ;RAM:C1BC CD 7A C1                    call    is_on_or_near_obj
+       bl   @is_on_or_near_obj
+       stst tmp0                      ; store status
 ;RAM:C1BF DD 35 04                    dec     4(ix)                                   ; restore width
+       sb   one,@4(ix)
 ;RAM:C1C2 DD 35 05                    dec     5(ix)                                   ; restore depth
+       sb   one,@5(ix)
 ;RAM:C1C5 FD E5                       push    iy
 ;RAM:C1C7 DD E1                       pop     ix                                      ; restore ix (extra life object)
+       mov  iy,ix
 ;RAM:C1C9 30 23                       jr      NC, loc_C1EE                            ; not on/near, skip
+       andi tmp0,>A000                ; jhe = logical greater or equal bits
+       jne  loc_C1EE
 ;RAM:C1CB DD CB 00 DE                 set     3, 0(ix)                                ; graphic_no
+       socb @b08h,*ix
 ;RAM:C1CF CD D8 C4                    call    adj_m4_m12
+       bl   @adj_m4_m12
 ;RAM:C1D2 DD 6E 10                    ld      l, 16(ix)
+       movb @16(ix),@l
 ;RAM:C1D5 DD 66 11                    ld      h, 17(ix)
+       movb @17(ix),h
 ;RAM:C1D8 36 00                       ld      (hl), #0                                ; zap ptr object table entry
+       szcb mone,*hl
 ;RAM:C1DA 21 BA 5B                    ld      hl, #lives
 ;RAM:C1DD 34                          inc     (hl)                                    ; extra life!
+       ab   one,@lives
 ;RAM:C1DE AF                          xor     a
 ;RAM:C1DF 32 C0 5B                    ld      (disable_spike_ball_drop), a
+       szcb mone,@disable_spike_ball_drop
 ;RAM:C1E2 CD A3 B4                    call    toggle_audio_hw_x16
+;      TODO
 ;RAM:C1E5 CD A3 BC                    call    print_lives
+       bl   @print_lives
 ;RAM:C1E8 01 20 20                    ld      bc, #0x2020
+       li   bc,>2020
 ;RAM:C1EB CD 32 C4                    call    blit_2x8
+       bl   @blit_2x8
 ;RAM:C1EE
-;RAM:C1EE             loc_C1EE:
+loc_C1EE:
 ;RAM:C1EE C3 C6 C4                    jp      dec_dZ_upd_XYZ_wipe_if_moving
-
-;RAM:C1F1             ; ---------------------------------------------------------------------------
-;RAM:C1F1             ; special objects being put in cauldron
-;RAM:C1F1
+       b    @dec_dZ_upd_XYZ_wipe_if_moving
+* ---------------------------------------------------------------------------
+* special objects being put in cauldron
+*
 upd_104_to_110:
 ;RAM:C1F1 CD D8 C4                    call    adj_m4_m12
        b    @adj_m4_m12_1
@@ -2261,6 +2283,8 @@ upd_84_85_return:
 *
 * tree wall
 *
+upd_128_to_130_0:
+       mov  r11,*sp+
 upd_128_to_130:
 ;RAM:C4D3 21 F8 FE                    ld      hl, #0xFEF8                             ; -2, -8
        li   hl,>fef8

@@ -261,7 +261,6 @@ loc_D317:                                                                       
 print_BCD_number:
        mov  r11,*sp+
 ;RAM:BCAE E5                          push    hl
-print_BCD_number_1:
        mov  hl,*sp+
 ;RAM:BCAF 21 08 61                    ld      hl, #font
        li   hl,font
