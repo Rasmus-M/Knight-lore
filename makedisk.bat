@@ -5,7 +5,7 @@ xdm99.py knightlore.dsk --initialize DSSD -n KNIGHTLORE
 xas99.py -R -L knightlore.lst Source/knightlore.a99
 @IF %ERRORLEVEL% NEQ 0 GOTO :end
 
-xas99.py -R -i Source/knightlore.a99 -o kl1
+xas99.py -R -i Source-disk/knightlore.a99 -o kl1
 
 xdm99.py knightlore.dsk -a kl1 -n KL1
 xdm99.py knightlore.dsk -a kl2 -n KL2

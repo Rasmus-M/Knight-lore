@@ -109,38 +109,50 @@ zx_vram:
 zx_aram:
        equ  >5800
 
+* ===========================================================================
+*
+* Lower memory - main game code
+*
+       aorg >2000
+       copy "lower_memory.a99"
+*
+lower_memory_end:
+       data -1
 *
 *===========================================================================
 *
-* Upper memory
-*
-       aorg >A000
-       copy "lower_memory.a99"
-       copy "upper_memory.a99"
-       copy "start-menu.a99"
-       copy "game-over.a99"
-       copy "sound.a99"
-*
-upper_memory_end:
-       data -1
-* ===========================================================================
-*
-* Lower memory
+* Cartridge memory - requires Supercart
 *
 * Linear video memory buffer, length >1800
 *
 vidbuf:
-       equ >2800
-
-       aorg >2000
+       equ >6000
+*
+* Last 2 KiB
+*
+       aorg >7800
        copy "variables.a99"
+       copy "start-menu.a99"
+       copy "game-over.a99"
+       copy "sound.a99"
 *
 * Reverse bytes lookup table, >100 bytes
 *
 reverse_bytes_lookup_table equ >7F00
-*
-lower_memory_end:
+
+cartridge_memory_end:
        data -1
+*
+*===========================================================================
+*
+* Upper memory - data and support routines
+*
+       aorg >A000
+       copy "upper_memory.a99"
+*
+upper_memory_end:
+       data -1
+*
 * ===========================================================================
 *
 * End of file

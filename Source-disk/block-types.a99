@@ -1,0 +1,101 @@
+**
+* Block Types
+*
+block_type_tbl:
+       data block                      ; 0 block 07 block
+       data fire                       ; 1 sprite b0 (fire) (unused)
+       data ball_ud_y                  ; 2 sprite b2 (ball) [up/down]
+       data rock                       ; 3 block 06 rock
+       data gargoyle                   ; 4 block 16 gargoyle
+       data spike                      ; 5 block 17 spike
+       data chest                      ; 6 sprite 55 (chest)
+       data table                      ; 7 sprite 54 (table)
+       data guard_ew                   ; 8 sprite 96/90 (guard) [west/east]
+       data ghost                      ; 9 sprite 52 (ghost)
+       data fire_ns                    ; a sprite b5 (fire) [north/south]
+       data block_high                 ; b block 07 block high
+       data ball_ud_xy                 ; c sprite b2 (ball) [up/down]
+       data guard_square               ; d sprite 1e/90 (Guard) [square circuit]
+       data block_ew                   ; e block 36 [west/east]
+       data block_ns                   ; f block 37 [north/south]
+       data moveable_block             ; 10 block 3e
+       data spike_high                 ; 11 block Spike - high!!!
+       data spike_ball_fall            ; 12 sprite 3f (Spike Ball)
+       data spike_ball_high_fall       ; 13 sprite 3f (Spike Ball) [falling]
+       data fire_ew                    ; 14 sprite 56 Fire [west/east]
+       data dropping_block             ; 15 Block 5b
+       data collapsing_block           ; 16 block 8f [Collapse]
+       data ball_bounce                ; 17 sprite b6 (Ball)
+       data ball_ud                    ; 18 sprite b2 (Ball)
+       data repel_spell                ; 19 sprite a4 (Spell) [repel player]
+       data gate_ud_1                  ; 1a sprite 8 (Gate) [up/down]
+       data gate_ud_2                  ; 1b sprite 8 (Gate) [up/down]
+       data ball_ud_x                  ; 1c sprite b2 (Ball)
+**
+* Block type data
+*
+* +0 = sprite
+* +1 = width (x)
+* +2 = depth (y)
+* +3 = height (z)
+* +4 = flags (see code)
+* +5 = offsets (see code)
+*
+block:
+       byte 7, 8, 8, >C, >10, 0, 0
+block_high:
+       byte 7, 8, 8, >C, >10, >30, 0
+block_ew:
+       byte >36, 8, 8, >C, >10, 0, 0
+block_ns:
+       byte >37, 8, 8, >C, >10, 0, 0
+moveable_block:
+       byte >3E, 8, 8, >C, >14, 0, 0
+dropping_block:
+       byte >5B, 8, 8, >C, >10, 0, 0
+collapsing_block:
+       byte >8F, 8, 8, >C, >10, 0, 0
+fire:
+       byte >B0, 6, 6, >C, >10, 0, 0
+ball_ud_y:
+       byte >B2, 7, 7, >C, >10, 2, 0
+ball_ud_xy:
+       byte >B2, 7, 7, >C, >10, 3, 0
+ball_ud:
+       byte >B2, 7, 7, >C, >10, 0, 0
+ball_ud_x:
+       byte >B2, 7, 7, >C, >10, 1, 0
+ball_bounce:
+       byte >B6, 7, 7, >C, >10, 0, 0
+rock:
+       byte 6, 8, 8, >C, >10, 0, 0
+gargoyle:
+       byte >16, 6, 6, >C, >10, 0, 0
+spike:
+       byte >17, 6, 6, >C, >50, 0, 0
+spike_high:
+       byte >17, 6, 6, >C, >50, >30, 0
+spike_ball_fall:
+       byte >3F, 6, 6, >C, >10, 0, 0
+spike_ball_high_fall:
+       byte >3F, 6, 6, >C, >10, >30, 0
+chest:
+       byte >55, 9, 6, >C, >14, 0, 0
+table:
+       byte >54, 6, >A, >C, >14, 0, 0
+guard_ew:
+       byte >96, 6, 6, >18, >10, 2, >90, 6, 6, 0, >12, 2, 0
+guard_square:
+       byte >1E, 6, 6, >18, >10, 0, >90, 6, 6, 0, >12, 0, 0
+ghost:
+       byte >52, 6, 6, >C, >10, 0, 0
+fire_ns:
+       byte >B5, 6, 6, >C, >10, 0, 0
+fire_ew:
+       byte >56, 6, 6, >C, >10, 0, 0
+repel_spell:
+       byte >A4, 5, 5, >C, >10, 0, 0
+gate_ud_1:
+       byte 8, >C, 1, >20, >50, 1, 0
+gate_ud_2:
+       byte 8, 1, >C, >20, >10, 2, 0
