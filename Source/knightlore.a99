@@ -4,19 +4,20 @@
 *
 * For the TI-99/4A Home Computer (TMS9900 CPU)
 *
-* Converted from the ZX Spectrum version by
+* Converted from the ZX Spectrum (Z80) version by
 * Rasmus Moustgaard <rasmus.moustgaard@gmail.com>
-* June 2017
+* June-July 2017
 *
 * Based on:
 *
 * +--------------------------------------------------+
 * | ZX Spectrum Knight Lore Disassembly v1.00rc7     |
 * |    - by tcdev (msmcdoug@gmail.com)               |
+* | http://retroports.blogspot.dk/p/blog-page.html   |
+* |                                                  |
+* | Processor       : z80 []                         |
+* | Target assembler: ASxxxx by Alan R. Baldwin v1.5 |
 * +--------------------------------------------------+
-*
-* Processor       : z80 []
-* Target assembler: ASxxxx by Alan R. Baldwin v1.5
 *
 * ZX Spectrum Memory Map:
 *
