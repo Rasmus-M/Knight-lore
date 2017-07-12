@@ -1065,7 +1065,6 @@ loc_B83A:
 * ---------------------------------------------------------------------------
 * fire (stationary) (not used)
 upd_176_177:
-       b    @no_update
 ;RAM:B83F CD F2 C4                    call    upd_12_to_15
        bl   @upd_12_to_15_0
 ;RAM:B842 3A BC 5B                    ld      a, (fire_seed)
@@ -1107,120 +1106,177 @@ set_both_deadly_flags:
 * End of function set_both_deadly_flags
 *
 * ---------------------------------------------------------------------------
-;RAM:B865             ; ball up/down
-;RAM:B865
-upd_178_179:                                                    ; adjust (-4,-8)
-       b    @no_update
-;RAM:B865 CD F2 C4                    call    upd_12_to_15
+* ball up/down
+upd_178_179:
+;RAM:B865 CD F2 C4                    call    upd_12_to_15                            ; adjust (-4,-8)
+       bl   @upd_12_to_15_0
 ;RAM:B868 3A BD 5B                    ld      a, (ball_bounce_height)
+       movb @ball_bounce_height,a
 ;RAM:B86B A7                          and     a                                       ; bouncing?
 ;RAM:B86C 20 08                       jr      NZ, loc_B876                            ; yes, skip
+       jeq  loc_B876
 ;RAM:B86E DD 7E 03                    ld      a, 3(ix)                                ; Z
+       movb @3(ix),a
 ;RAM:B871 C6 20                       add     a, #32                                  ; calc bounce height
+       ab   @b20h,a
 ;RAM:B873 32 BD 5B                    ld      (ball_bounce_height), a
-;RAM:B876
-;RAM:B876             loc_B876:                                                       ; toggle 178/179
-;RAM:B876 CD 85 B9                    call    toggle_next_prev_sprite
+       movb a,@ball_bounce_height
+loc_B876:
+;RAM:B876 CD 85 B9                    call    toggle_next_prev_sprite                 ; toggle 178/179
+       bl   @toggle_next_prev_sprite
 ;RAM:B879 CD 51 B4                    call    audio_B451
+;      TODO
 ;RAM:B87C DD CB 0D 56                 bit     2, 13(ix)                               ; dir=up?
+       movb @13(ix),tmp0
+       andi tmp0,>0400
 ;RAM:B880 20 12                       jr      NZ, ball_up                             ; yes, skip
+       jne  ball_up
 ;RAM:B882 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:B885 DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB?
+       movb @12(ix),tmp0
+       andi tmp0,>0400
 ;RAM:B889 28 07                       jr      Z, loc_B892                             ; no, skip
+       jeq  loc_B892
 ;RAM:B88B DD CB 0D D6                 set     2, 13(ix)                               ; set dir=up
+       socb @b04h,@13(ix)
 ;RAM:B88F CD 2E B4                    call    audio_B42E
-;RAM:B892
-;RAM:B892             loc_B892:
+;      TODO
+loc_B892:
 ;RAM:B892 18 C2                       jr      set_deadly_wipe_and_draw_flags
-;RAM:B894             ; ---------------------------------------------------------------------------
-;RAM:B894
-;RAM:B894             ball_up:                                                        ; dZ=3
-;RAM:B894 DD 36 0B 03                 ld      11(ix), #3
-;RAM:B898 CD 00 C7                    call    dec_dZ_and_update_XYZ
-;RAM:B89B 3A BD 5B                    ld      a, (ball_bounce_height)
-;RAM:B89E DD BE 03                    cp      3(ix)                                   ; Z < ball_bounce_height?
-;RAM:B8A1 30 EF                       jr      NC, loc_B892                            ; yes, go
-;RAM:B8A3 DD CB 0D 96                 res     2, 13(ix)                               ; set dir=down
-;RAM:B8A7 18 E9                       jr      loc_B892
-
-
+       b    @set_deadly_wipe_and_draw_flags
 * ---------------------------------------------------------------------------
-;RAM:B8DA             ; ---------------------------------------------------------------------------
-;RAM:B8DA             ; even more sparkles (showing next object required)
-;RAM:B8DA
+ball_up:
+;RAM:B894 DD 36 0B 03                 ld      11(ix), #3                              ; dZ=3
+       movb @b03h,@11(ix)
+;RAM:B898 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl  @dec_dZ_and_update_XYZ
+;RAM:B89B 3A BD 5B                    ld      a, (ball_bounce_height)
+       movb @ball_bounce_height,a
+;RAM:B89E DD BE 03                    cp      3(ix)                                   ; Z < ball_bounce_height?
+       cb   a,@3(ix)
+;RAM:B8A1 30 EF                       jr      NC, loc_B892                            ; yes, go
+       jhe  loc_B892
+;RAM:B8A3 DD CB 0D 96                 res     2, 13(ix)                               ; set dir=down
+       szcb @b04h,@13(ix)
+;RAM:B8A7 18 E9                       jr      loc_B892
+       jmp  loc_B892
+* ---------------------------------------------------------------------------
+* even more sparkles (showing next object required)
 upd_160_to_163:
-       b    @no_update
 ;RAM:B8DA CD D8 C4                    call    adj_m4_m12
+       bl   @adj_m4_m12
 ;RAM:B8DD 3A 48 5C                    ld      a, (special_objs_here)
+       movb @special_objs_here,a
 ;RAM:B8E0 A7                          and     a                                       ; null?
 ;RAM:B8E1 C2 5E B9                    jp      NZ, upd_111                             ; no, skip
+       jne  upd_111
 ;RAM:B8E4 DD CB 07 CE                 set     1, 7(ix)                                ; ignore in 3D calcs
+       socb one,@7(ix)
 ;RAM:B8E8 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:B8EB CD 8C B9                    call    next_graphic_no_mod_4
+       bl   @next_graphic_no_mod_4
 ;RAM:B8EE DD 7E 03                    ld      a, 3(ix)                                ; Z
-;RAM:B8F1 FE A0                       cp      #160
 ;RAM:B8F3 DD 36 0B 02                 ld      11(ix), #2                              ; dZ=2
+;RAM:B8F1 FE A0                       cp      #160
+       movb @b02h,@11(ix)
+       movb @3(ix),a
+       cb   a,@ba0h
 ;RAM:B8F7 38 1D                       jr      C, loc_B916
+       jl   loc_B916
 ;RAM:B8F9 DD 36 0B 01                 ld      11(ix), #1                              ; dZ=1
+       movb one,@11(ix)
 ;RAM:B8FD 3A 08 5C                    ld      a, (graphic_objs_tbl)                   ; plyr_spr_1 (legs) graphic_no
+       movb @graphic_objs_tbl,a
 ;RAM:B900 D6 30                       sub     #0x30 ; '0'
+       sb   @b30h,a
 ;RAM:B902 FE 10                       cp      #0x10                                   ; wulf?
+       cb   a,@b10h
 ;RAM:B904 38 13                       jr      C, loc_B919                             ; yes, go
+       jl   loc_B919
 ;RAM:B906 DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
+       movb a,*ix
 ;RAM:B909 E6 03                       and     #3
+       andi a,>0300
 ;RAM:B90B 20 09                       jr      NZ, loc_B916
+       jne  loc_B916
 ;RAM:B90D CD 74 C2                    call    ret_next_obj_required
+       bl   @ret_next_obj_required
 ;RAM:B910 7E                          ld      a, (hl)
+       movb *hl,a
 ;RAM:B911 F6 A8                       or      #168
+       socb @ba8h,a
 ;RAM:B913 DD 77 00                    ld      0(ix), a                                ; show next object required
-;RAM:B916
-;RAM:B916             loc_B916:
+       movb a,*ix
+loc_B916:
 ;RAM:B916 C3 92 C6                    jp      set_wipe_and_draw_flags
-;RAM:B919             ; ---------------------------------------------------------------------------
-;RAM:B919             ; if wulf, no reveal of next object
-;RAM:B919
-;RAM:B919             loc_B919:                                                       ; graphic_no
-;RAM:B919 DD CB 00 D6                 set     2, 0(ix)
+       b    @set_wipe_and_draw_flags
+* ---------------------------------------------------------------------------
+* if wulf, no reveal of next object
+loc_B919:
+;RAM:B919 DD CB 00 D6                 set     2, 0(ix)                                ; graphic_no
+       socb @b04h,*ix
 ;RAM:B91D DD CB 07 8E                 res     1, 7(ix)                                ; don't ignore in 3D calcs
+       szcb @b02h,@7(ix)
 ;RAM:B921 18 F3                       jr      loc_B916
-;RAM:B923             ; ---------------------------------------------------------------------------
-;RAM:B923             ; special objs when 1st being put into cauldron
-;RAM:B923
+       jmp  loc_B916
+* ---------------------------------------------------------------------------
+* special objs when 1st being put into cauldron
 upd_168_to_175:
-       b    @no_update
 ;RAM:B923 CD D8 C4                    call    adj_m4_m12
+       bl   @adj_m4_m12
 ;RAM:B926 DD 36 00 A0                 ld      0(ix), #160                             ; graphic_no (sparkles)
+       movb @ba0h,*ix
 ;RAM:B92A 18 EA                       jr      loc_B916
-;RAM:B92C             ; ---------------------------------------------------------------------------
-;RAM:B92C             ; repel spell
-;RAM:B92C
+       jmp  loc_b916
+* ---------------------------------------------------------------------------
+* repel spell
 upd_164_to_167:
-       b    @no_update
 ;RAM:B92C CD D8 C4                    call    adj_m4_m12
+       bl   @adj_m4_m12
 ;RAM:B92F DD 7E 08                    ld      a, 8(ix)                                ; object screen
+       movb @8(ix),a
 ;RAM:B932 FE 88                       cp      #136                                    ; cauldron room?
+       cb   a,@b88h
 ;RAM:B934 28 0C                       jr      Z, loc_B942                             ; yes, go
+       jeq  loc_B942
 ;RAM:B936 3A 0F 5C                    ld      a, (graphic_objs_tbl+7)
+       movb @graphic_objs_tbl+7,a
 ;RAM:B939 CB 47                       bit     0, a                                    ; near arch?
+       movb a,tmp0
+       andi a,1
 ;RAM:B93B 28 05                       jr      Z, loc_B942                             ; no, go
+       jeq  loc_B942
 ;RAM:B93D 01 01 01                    ld      bc, #0x101                              ; dX,dY=1
+       li   bc,>0101
 ;RAM:B940 18 03                       jr      loc_B945
-;RAM:B942             ; ---------------------------------------------------------------------------
-;RAM:B942
-;RAM:B942             loc_B942:                                                       ; dX,dY=4
-;RAM:B942 01 04 04                    ld      bc, #0x404
-;RAM:B945
-;RAM:B945             loc_B945:
+       jmp  loc_B945
+* ---------------------------------------------------------------------------
+loc_B942:
+;RAM:B942 01 04 04                    ld      bc, #0x404                              ; dX,dY=4
+       li   bc,>0404
+loc_B945:
 ;RAM:B945 CD 65 B9                    call    move_towards_plyr
+       bl   @move_towards_plyr
 ;RAM:B948 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:B94B CD 8C B9                    call    next_graphic_no_mod_4
+       bl   @next_graphic_no_mod_4
 ;RAM:B94E DD 7E 08                    ld      a, 8(ix)                                ; object screen
+       movb @8(ix),a
 ;RAM:B951 FE 88                       cp      #136                                    ; cauldron room?
+       cb   a,@b88h
 ;RAM:B953 20 0D                       jr      NZ, loc_B962                            ; no, skip
+       jne  loc_B962
 ;RAM:B955 3A 08 5C                    ld      a, (graphic_objs_tbl)                   ; plyr_spr_1 graphic_no
+       movb @graphic_objs_tbl,a
 ;RAM:B958 D6 10                       sub     #0x10
+       sb   @b10h,a
 ;RAM:B95A FE 40                       cp      #0x40 ; '@'
+       cb   a,@b40h
 ;RAM:B95C 38 04                       jr      C, loc_B962
+       jl   loc_B962
 *
 * final sparkles in cauldron
 *
@@ -1231,33 +1287,46 @@ loc_B962:
 ;RAM:B962 C3 32 C2                    jp      audio_B467_wipe_and_draw
        b    @audio_B467_wipe_and_draw
 *
-;RAM:B965             ; =============== S U B R O U T I N E =======================================
-;RAM:B965
-;RAM:B965
-;RAM:B965             move_towards_plyr:
+* =============== S U B R O U T I N E =======================================
+*
+move_towards_plyr:
 ;RAM:B965 21 09 5C                    ld      hl, # graphic_objs_tbl+1                ; plyr_spr_1 X
+       li   hl,graphic_objs_tbl+1
 ;RAM:B968 DD 7E 01                    ld      a, 1(ix)                                ; object X
+       movb @1(ix),a
 ;RAM:B96B 96                          sub     (hl)                                    ; -plyrX
 ;RAM:B96C 23                          inc     hl                                      ; plyr_spr_1 Y
+       sb   one,*hl+
 ;RAM:B96D 79                          ld      a, c                                    ; 1or4
+       movb @c,a
 ;RAM:B96E FA 73 B9                    jp      M, loc_B973                             ; plyr E? yes, go
+       jlt  loc_B973
 ;RAM:B971 ED 44                       neg
-;RAM:B973
-;RAM:B973             loc_B973:                                                       ; dX (towards player)
-;RAM:B973 DD 77 09                    ld      9(ix), a
+       inv  a
+       ab   one,a
+loc_B973:
+;RAM:B973 DD 77 09                    ld      9(ix), a                                ; dX (towards player)
+       movb a,@9(ix)
 ;RAM:B976 DD 7E 02                    ld      a, 2(ix)                                ; object Y
+       movb @2(ix),a
 ;RAM:B979 96                          sub     (hl)                                    ; -plyrY
 ;RAM:B97A 23                          inc     hl                                      ; plyrZ
+       sb   one,*hl+
 ;RAM:B97B 78                          ld      a, b                                    ; 1or4
+       movb b,a
 ;RAM:B97C FA 81 B9                    jp      M, loc_B981                             ; plyr N? yes, go
+       jlt  loc_B981
 ;RAM:B97F ED 44                       neg
-;RAM:B981
-;RAM:B981             loc_B981:                                                       ; dY (towards player)
-;RAM:B981 DD 77 0A                    ld      10(ix), a
+       inv  a
+       ab   one,a
+loc_B981:
+;RAM:B981 DD 77 0A                    ld      10(ix), a                               ; dY (towards player)
+       movb a,@10(ix)
 ;RAM:B984 C9                          ret
-;RAM:B984             ; End of function move_towards_plyr
-;RAM:B984
-;RAM:B985
+       rt
+*
+* End of function move_towards_plyr
+*
 * =============== S U B R O U T I N E =======================================
 *
 toggle_next_prev_sprite:
@@ -1827,15 +1896,17 @@ audio_B467_wipe_and_draw:
 ;RAM:C26F 36 00                       ld      (hl), #0                                ; zap graphic no.
 ;RAM:C271 C3 5E B9                    jp      upd_111
 ;RAM:C274
-;RAM:C274             ; =============== S U B R O U T I N E =======================================
-;RAM:C274
-;RAM:C274
-;RAM:C274             ret_next_obj_required:
+* =============== S U B R O U T I N E =======================================
+ret_next_obj_required:
 ;RAM:C274 3A BB 5B                    ld      a, (objects_put_in_cauldron)
+       movb @objects_put_in_cauldron,a
 ;RAM:C277 21 7D C2                    ld      hl, #objects_required
+       li   hl,objects_required
 ;RAM:C27A C3 F2 D4                    jp      add_HL_A
-;RAM:C27A             ; End of function ret_next_obj_required
-;RAM:C27A
+       b    @add_HL_A
+*
+* End of function ret_next_obj_required
+*
 * ---------------------------------------------------------------------------
 ;RAM:C28B             ; special objects
 ;RAM:C28B
@@ -3044,7 +3115,6 @@ adj_m3_p1:
 ;* ---------------------------------------------------------------------------
 * arch (near side)
 upd_2_4:
-;       b    @no_update
 ;RAM:C73C DD CB 07 76                 bit     6, 7(ix)                                 ; hflip?
        movb @7(ix),tmp0
        andi tmp0,>4000

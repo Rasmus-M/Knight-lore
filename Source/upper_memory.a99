@@ -2695,6 +2695,7 @@ b88h   byte >88
 b8ch   byte >8c
 b98h   byte >98
 ba0h   byte >a0
+ba8h   byte >a8
 baeh   byte >ae
 bb0h   byte >b0
 bb8h   byte >b8
