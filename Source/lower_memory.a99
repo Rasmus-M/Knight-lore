@@ -359,7 +359,7 @@ init_cauldron_bubbles:
 ;RAM:B8A9 3A 10 5C                    ld      a, (graphic_objs_tbl+8)                 ; plyr_spr_1 screen
        movb @graphic_objs_tbl+8,a
 ;RAM:B8AC FE 88                       cp      #136                                    ; cauldron room?
-       cb   a,@b5ch
+       cb   a,@b88h
 ;RAM:B8AE C0                          ret     NZ                                      ; no, exit
        jne  init_cauldron_bubbles_return
 ;RAM:B8AF 11 68 5C                    ld      de, #special_objs_here_1                ; special_objs_here[1]
@@ -384,7 +384,7 @@ init_cauldron_bubbles:
 ;RAM:B8C3 ED B0                       ldir                                            ; copy
        bl   @ldir
 ;RAM:B8C5 C3 D8 C4                    jp      adj_m4_m12
-       bl    @adj_m4_m12
+       b     @adj_m4_m12_1
 init_cauldron_bubbles_return:
        dect sp
        movb *sp,r11
@@ -1822,80 +1822,123 @@ upd_104_to_110:
 ;RAM:C1F1 CD D8 C4                    call    adj_m4_m12
        b    @adj_m4_m12_1
 ;RAM:C1F4 DD 7E 01                    ld      a, 1(ix)                                ; X
+       movb @1(ix),a
 ;RAM:C1F7 D6 80                       sub     #128
+       cb   @b80h,a
 ;RAM:C1F9 28 07                       jr      Z, loc_C202
+       jeq  loc_C202
 ;RAM:C1FB 3E 01                       ld      a, #1
 ;RAM:C1FD FA 02 C2                    jp      M, loc_C202
 ;RAM:C200 ED 44                       neg
-;RAM:C202
-;RAM:C202             loc_C202:                                                       ; dX towards centre of room
-;RAM:C202 DD 77 09                    ld      9(ix), a
+       jlt  !
+       movb one,a
+       jmp  loc_C202
+       movb mone,a
+loc_C202:
+;RAM:C202 DD 77 09                    ld      9(ix), a                                ; dX towards centre of room
+       movb a,@9(ix)
 ;RAM:C205 DD 7E 02                    ld      a, 2(ix)                                ; Y
+       movb @2(ix),a
 ;RAM:C208 D6 80                       sub     #128
+       sb   @b80h,a
 ;RAM:C20A 28 07                       jr      Z, loc_C213
+       jeq  loc_C213
 ;RAM:C20C 3E 01                       ld      a, #1
 ;RAM:C20E FA 13 C2                    jp      M, loc_C213
 ;RAM:C211 ED 44                       neg
-;RAM:C213
-;RAM:C213             loc_C213:                                                       ; dY towards cente of room
-;RAM:C213 DD 77 0A                    ld      10(ix), a
+       jlt  !
+       movb one,a
+       jmp  loc_C213
+       movb mone,a
+loc_C213:
+;RAM:C213 DD 77 0A                    ld      10(ix), a                               ; dY towards cente of room
+       movb a,@10(ix)
 ;RAM:C216 DD 7E 01                    ld      a, 1(ix)                                ; X
+       movb @1(ix),a
 ;RAM:C219 FE 80                       cp      #128                                    ; centre of X-axis?
+       cb   @b80h,a
 ;RAM:C21B 20 05                       jr      NZ, loc_C222                            ; no, skip
+       jne  loc_C222
 ;RAM:C21D DD AE 02                    xor     2(ix)                                   ; centre of Y-axis?
+       movb @2(ix),tmp0
+       xor tmp0,a
 ;RAM:C220 28 16                       jr      Z, centre_of_room                       ; yes, skip
-;RAM:C222
-;RAM:C222             loc_C222:                                                       ; Z
-;RAM:C222 DD 7E 03                    ld      a, 3(ix)
+       jeq  centre_of_room
+loc_C222:
+;RAM:C222 DD 7E 03                    ld      a, 3(ix)                                ; Z
+       movb @3(ix),a
 ;RAM:C225 FE 98                       cp      #152
 ;RAM:C227 3E 01                       ld      a, #1
 ;RAM:C229 30 01                       jr      NC, loc_C22C
 ;RAM:C22B 3C                          inc     a
-;RAM:C22C
-;RAM:C22C             loc_C22C:                                                       ; dZ
-;RAM:C22C DD 77 0B                    ld      11(ix), a
-;RAM:C22F
-;RAM:C22F             loc_C22F:
+       cb   a,@b98h
+       jhe  !
+       movb @b02h,a
+       jmp  loc_C22C
+!      movb one,a
+loc_C22C:
+;RAM:C22C DD 77 0B                    ld      11(ix), a                               ; dZ
+       movb a,@11(ix)
+loc_C22F:
 ;RAM:C22F CD 00 C7                    call    dec_dZ_and_update_XYZ
-;RAM:C232
+       bl   @dec_dZ_and_update_XYZ
 audio_B467_wipe_and_draw:
 ;RAM:C232 CD 67 B4                    call    audio_B467                              ; audio?
 ;      TODO
 ;RAM:C235 C3 92 C6                    jp      set_wipe_and_draw_flags
        b    @set_wipe_and_draw_flags
-;RAM:C238             ; ---------------------------------------------------------------------------
-;RAM:C238
-;RAM:C238             centre_of_room:
+* ---------------------------------------------------------------------------
+centre_of_room:
 ;RAM:C238 3E 80                       ld      a, #128
+       li   a,>8000
 ;RAM:C23A DD BE 03                    cp      3(ix)                                   ; Z
+       cb   a,@3(ix)
 ;RAM:C23D 30 06                       jr      NC, add_obj_to_cauldron
+       jhe  add_obj_to_cauldron
 ;RAM:C23F DD CB 07 CE                 set     1, 7(ix)                                ; ignore in 3D calcs
+       socb @b02h,@7(ix)
 ;RAM:C243 18 EA                       jr      loc_C22F
-;RAM:C245             ; ---------------------------------------------------------------------------
-;RAM:C245
-;RAM:C245             add_obj_to_cauldron:                                            ; Z
-;RAM:C245 DD 36 03 80                 ld      3(ix), #128
+       jmp  loc_C22F
+* ---------------------------------------------------------------------------
+add_obj_to_cauldron:
+;RAM:C245 DD 36 03 80                 ld      3(ix), #128                             ; Z
+       movb @b80h,@3(ix)
 ;RAM:C249 CD 74 C2                    call    ret_next_obj_required
+       bl   @ret_next_obj_required
 ;RAM:C24C DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
+       movb *ix,a
 ;RAM:C24F E6 07                       and     #7                                      ; convert to secial object index
+       andi a,>0700
 ;RAM:C251 BE                          cp      (hl)                                    ; same as required?
+       cb   a,*hl
 ;RAM:C252 20 11                       jr      NZ, loc_C265                            ; no, skip
+       jne  loc_C265
 ;RAM:C254 21 BB 5B                    ld      hl, #objects_put_in_cauldron
+       li   hl,objects_put_in_cauldron
 ;RAM:C257 34                          inc     (hl)
+       ab   one,*hl
 ;RAM:C258 CD A5 C2                    call    cycle_colours_with_sound
+;      TODO
 ;RAM:C25B 3A BB 5B                    ld      a, (objects_put_in_cauldron)
+       movb @objects_put_in_cauldron,a
 ;RAM:C25E FE 0E                       cp      #14                                     ; got all objects?
+       cb   a,@b0eh
 ;RAM:C260 20 03                       jr      NZ, loc_C265                            ; no, skip
+       jne  loc_C265
 ;RAM:C262 CD CC C2                    call    prepare_final_animation
-;RAM:C265
-;RAM:C265             loc_C265:
+;      bl   @prepare_final_animation
+loc_C265:
 ;RAM:C265 AF                          xor     a
 ;RAM:C266 32 C4 5B                    ld      (obj_dropping_into_cauldron), a
+       szcb mone,@obj_dropping_into_cauldron
 ;RAM:C269 DD 6E 10                    ld      l, 16(ix)
+       movb @16(ix),@l
 ;RAM:C26C DD 66 11                    ld      h, 17(ix)                               ; ptr object table
+       movb @17(ix),h
 ;RAM:C26F 36 00                       ld      (hl), #0                                ; zap graphic no.
+       szcb mone,*hl
 ;RAM:C271 C3 5E B9                    jp      upd_111
-;RAM:C274
+       b    @upd_111
 * =============== S U B R O U T I N E =======================================
 ret_next_obj_required:
 ;RAM:C274 3A BB 5B                    ld      a, (objects_put_in_cauldron)
@@ -1908,8 +1951,7 @@ ret_next_obj_required:
 * End of function ret_next_obj_required
 *
 * ---------------------------------------------------------------------------
-;RAM:C28B             ; special objects
-;RAM:C28B
+* special objects
 upd_96_to_102:
 ;RAM:C28B CD D8 C4                    call    adj_m4_m12
        b    @adj_m4_m12_1
