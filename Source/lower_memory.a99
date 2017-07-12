@@ -621,84 +621,133 @@ loc_B67A:
        jmp  loc_B668
 *
 * ---------------------------------------------------------------------------
-;RAM:B683             ; block (dropping)
-;RAM:B683
+* block (dropping)
 upd_91:
-       b    @no_update
 ;RAM:B683 CD E3 C4                    call    upd_6_7
+       bl   @upd_6_7_0
 ;RAM:B686 DD CB 0D 5E                 bit     3, 13(ix)                               ; triggered?
+       movb  @13(ix),tmp0
+       andi tmp0,>0800
 ;RAM:B68A C8                          ret     Z                                       ; no, exit
+       jne  !
+       dect sp
+       mov  *sp,r11
+       rt
 ;RAM:B68B DD CB 0D 9E                 res     3, 13(ix)                               ; reset triggered
+!      szcb @b08h,@13(ix)
 ;RAM:B68F DD 36 0B 00                 ld      11(ix), #0                              ; dZ=0
+       szcb mone,@11(ix)
 ;RAM:B693 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:B696 DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB?
+       movb @12(ix),tmp0
+       andi tmp0,>0400
 ;RAM:B69A 20 03                       jr      NZ, loc_B69F                            ; yes, skip
+       jne  loc_B69F
 ;RAM:B69C CD 51 B4                    call    audio_B451
-;RAM:B69F
-;RAM:B69F             loc_B69F:
+;      TODO
+loc_B69F:
 ;RAM:B69F C3 92 C6                    jp      set_wipe_and_draw_flags
-;RAM:B6A2             ; ---------------------------------------------------------------------------
-;RAM:B6A2             ; collapsing block
-;RAM:B6A2
+       bl   @set_deadly_wipe_and_draw_flags
+* ---------------------------------------------------------------------------
+* collapsing block
 upd_143:
-       b    @no_update
 ;RAM:B6A2 CD E3 C4                    call    upd_6_7
+       bl   @upd_6_7_0
 ;RAM:B6A5 DD CB 0D 5E                 bit     3, 13(ix)                               ; triggered?
+       movb @13(ix),tmp0
+       andi tmp0,>0800
 ;RAM:B6A9 C8                          ret     Z                                       ; no, return
+       jne  !
+       dect sp
+       mov  *sp,r11
+       rt
 ;RAM:B6AA DD 36 00 B8                 ld      0(ix), #184                             ; graphic_no = sparkles
+       movb @bb8h,*ix
 ;RAM:B6AE C3 2B BF                    jp      upd_112_to_118_184
-;RAM:B6B1             ; ---------------------------------------------------------------------------
-;RAM:B6B1             ; block (moving NS)
-;RAM:B6B1
+       b    @upd_112_to_118_184
+* ---------------------------------------------------------------------------
+* block (moving NS)
 upd_55:
-       b    @no_update
 ;RAM:B6B1 CD 62 B4                    call    audio_B462
+;      TODO
 ;RAM:B6B4 21 0A 02                    ld      hl, #0x20A                              ; IX+2,IX+10 (Y,dY)
+       li   hl,>020a
 ;RAM:B6B7 18 06                       jr      loc_B6BF
-;RAM:B6B9             ; ---------------------------------------------------------------------------
-;RAM:B6B9             ; block (moving EW)
-;RAM:B6B9
+       jmp  loc_B6BF
+* ---------------------------------------------------------------------------
+* block (moving EW)
 upd_54:
-       b    @no_update
 ;RAM:B6B9 CD 5D B4                    call    audio_B45D
+;      TODO
 ;RAM:B6BC 21 09 01                    ld      hl, #0x109                              ; IX+1,IX+9 (X,dX)
-;RAM:B6BF
-;RAM:B6BF             loc_B6BF:
+       li   hl,>0109
+loc_B6BF:
 ;RAM:B6BF 7C                          ld      a, h
+       movb h,a
 ;RAM:B6C0 32 E0 B6                    ld      (loc_B6DE+2), a                         ; IX+2/1
+       movb a,@loc_B6DE+3             ; one more byte on TI
 ;RAM:B6C3 7D                          ld      a, l
+       movb @l,a
 ;RAM:B6C4 32 F1 B6                    ld      (loc_B6EF+2), a                         ; IX+10/9
+       movb a,@loc_B6EF+3             ; one more byte on TI
 ;RAM:B6C7 CD E3 C4                    call    upd_6_7                                 ; adj(-8,-16)
+       bl   @upd_6_7_0
 ;RAM:B6CA DD E5                       push    ix
 ;RAM:B6CC C1                          pop     bc
+       mov  ix,bc
 ;RAM:B6CD 79                          ld      a, c
+       movb @c,a
 ;RAM:B6CE 0F                          rrca
+       srl  a,1
 ;RAM:B6CF E6 10                       and     #0x10
+       andi a,>1000
 ;RAM:B6D1 4F                          ld      c, a
+       movb a,@c
 ;RAM:B6D2 3A A2 5B                    ld      a, (seed_2)
+       movb @seed_2,a
 ;RAM:B6D5 81                          add     a, c
+       ab   @c,a
 ;RAM:B6D6 CB 67                       bit     4, a
+       movb a,tmp0
+       andi tmp0,>1000
 ;RAM:B6D8 28 01                       jr      Z, loc_B6DB
+       jeq  loc_B6DB
 ;RAM:B6DA 2F                          cpl
-;RAM:B6DB
-;RAM:B6DB             loc_B6DB:
+       inv  a
+loc_B6DB:
 ;RAM:B6DB E6 0F                       and     #0xF
+       andi a,>0f00
 ;RAM:B6DD 4F                          ld      c, a
-;RAM:B6DE
-;RAM:B6DE             loc_B6DE:                                                       ; modified code - X/Y
-;RAM:B6DE DD 7E 01                    ld      a, 1(ix)
+       movb a,@c
+loc_B6DE:
+;RAM:B6DE DD 7E 01                    ld      a, 1(ix)                                ; modified code - X/Y
+       movb @1(ix),a
 ;RAM:B6E1 C6 08                       add     a, #8
+       ab   @b08h,a
 ;RAM:B6E3 E6 0F                       and     #0xF
+       andi a,>0f00
 ;RAM:B6E5 B9                          cp      c
+       movb a,tmp0
+       cb   a,@c
 ;RAM:B6E6 CA 92 C6                    jp      Z, set_wipe_and_draw_flags
+       jne  !
+       b    @set_wipe_and_draw_flags
 ;RAM:B6E9 3E 01                       ld      a, #1
+       movb one,a
 ;RAM:B6EB 38 02                       jr      C, loc_B6EF
+       cb   tmp0,@c
+       jl   loc_B6EF
 ;RAM:B6ED ED 44                       neg
-;RAM:B6EF
-;RAM:B6EF             loc_B6EF:                                                       ; modified code - dX/dY
-;RAM:B6EF DD 77 09                    ld      9(ix), a
+       inv  a
+       ab   one,a
+loc_B6EF:
+;RAM:B6EF DD 77 09                    ld      9(ix), a                                ; modified code - dX/dY
+       movb a,@9(ix)
 ;RAM:B6F2 DD 36 0B 01                 ld      11(ix), #1                              ; pre-load dZ=1 (no falling)
+       movb one,@11(ix)
 ;RAM:B6F6 C3 AF B5                    jp      dec_dZ_wipe_and_draw
+       b    @dec_dZ_wipe_and_draw
 * ---------------------------------------------------------------------------
 * guard and wizard (bottom half)
 upd_144_to_149_152_to_157:
@@ -939,66 +988,106 @@ upd_23:
 ;RAM:B7EA C3 E3 C4                    jp      upd_6_7
        b    @upd_6_7
 * ---------------------------------------------------------------------------
-;RAM:B7ED             ; fire (moving EW)
-;RAM:B7ED
+* fire (moving EW)
 upd_86_87:
-       b    @no_update
 ;RAM:B7ED CD F2 C4                    call    upd_12_to_15
+       bl   @upd_12_to_15_0
 ;RAM:B7F0 DD 36 0B 01                 ld      11(ix), #1                              ; pre-load dZ=1
+       movb one,@11(ix)
 ;RAM:B7F4 DD CB 0D 46                 bit     0, 13(ix)                               ; moving east?
 ;RAM:B7F8 3E 02                       ld      a, #2
+       movb @b02h,a
+       movb @13(ix),tmp0
+       andi tmp0,>0100
 ;RAM:B7FA 20 02                       jr      NZ, loc_B7FE                            ; yes, skip
+       jne  loc_B7FE
 ;RAM:B7FC ED 44                       neg
-;RAM:B7FE
-;RAM:B7FE             loc_B7FE:                                                       ; dX=+/-2
-;RAM:B7FE DD 77 09                    ld      9(ix), a
+       inv  a
+       ab   one,a
+loc_B7FE:
+;RAM:B7FE DD 77 09                    ld      9(ix), a                                ; dX=+/-2
+       movb a,@9(ix)
 ;RAM:B801 CD 5D B4                    call    audio_B45D
+;      TODO
 ;RAM:B804 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:B807 DD CB 0C 46                 bit     0, 12(ix)                               ; X OOB?
 ;RAM:B80B 3E 01                       ld      a, #1
+       movb one,a
+       movb @12(ix),tmp0
+       andi tmp0,>0100
 ;RAM:B80D 18 20                       jr      loc_B82F
-;RAM:B80F             ; ---------------------------------------------------------------------------
-;RAM:B80F             ; fire (moving NS)
-;RAM:B80F
+       jmp  loc_B82F
+* ---------------------------------------------------------------------------
+* fire (moving NS)
 upd_180_181:
-       b    @no_update
 ;RAM:B80F CD F2 C4                    call    upd_12_to_15
+       bl   @upd_12_to_15_0
 ;RAM:B812 DD 36 0B 01                 ld      11(ix), #1                              ; dZ=1
+       movb one,@11(ix)
 ;RAM:B816 DD CB 0D 4E                 bit     1, 13(ix)                               ; moving north?
 ;RAM:B81A 3E 02                       ld      a, #2
+       movb @b02h,a
+       movb @13(ix),tmp0
+       andi tmp0,>0200
 ;RAM:B81C 20 02                       jr      NZ, loc_B820                            ; yes, skip
+       jne  loc_B820
 ;RAM:B81E ED 44                       neg
-;RAM:B820
-;RAM:B820             loc_B820:                                                       ; dY=+/-2
-;RAM:B820 DD 77 0A                    ld      10(ix), a
+       inv  a
+       ab   one,a
+loc_B820:
+;RAM:B820 DD 77 0A                    ld      10(ix), a                               ; dY=+/-2
+       movb a,@10(ix)
 ;RAM:B823 CD 62 B4                    call    audio_B462
+;      TODO
 ;RAM:B826 CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:B829 DD CB 0C 4E                 bit     1, 12(ix)                               ; Y OOB?
 ;RAM:B82D 3E 02                       ld      a, #2
-;RAM:B82F
-;RAM:B82F             loc_B82F:
+       movb @b02h,a
+       movb @12(ix),tmp0
+       andi tmp0,>0200
+loc_B82F:
 ;RAM:B82F 28 09                       jr      Z, loc_B83A
+       jeq  loc_B83A
 ;RAM:B831 DD AE 0D                    xor     13(ix)                                  ; toggle bit 1/2
+       movb @13(ix),tmp0
+       xor tmp0,a
 ;RAM:B834 DD 77 0D                    ld      13(ix), a
+       movb a,@13(ix)
 ;RAM:B837 CD 2E B4                    call    audio_B42E
-;RAM:B83A
-;RAM:B83A             loc_B83A:
+;      TODO
+loc_B83A:
 ;RAM:B83A CD 85 B9                    call    toggle_next_prev_sprite
+       bl   @toggle_next_prev_sprite
 ;RAM:B83D 18 17                       jr      set_deadly_wipe_and_draw_flags
-;RAM:B83F             ; ---------------------------------------------------------------------------
-;RAM:B83F             ; fire (stationary) (not used)
-;RAM:B83F
+       b    @set_deadly_wipe_and_draw_flags
+* ---------------------------------------------------------------------------
+* fire (stationary) (not used)
 upd_176_177:
        b    @no_update
 ;RAM:B83F CD F2 C4                    call    upd_12_to_15
+       bl   @upd_12_to_15_0
 ;RAM:B842 3A BC 5B                    ld      a, (fire_seed)
+       movb @fire_seed,a
 ;RAM:B845 E6 01                       and     #1
+       andi a,>0100
 ;RAM:B847 C8                          ret     Z
+       jne  !
+       dect sp
+       mov  *sp,r11
+       rt
 ;RAM:B848 3A A5 5B                    ld      a, (seed_3)
+!      movb @seed_3,a
 ;RAM:B84B E6 40                       and     #0x40 ; '@'
+       andi a,>4000
 ;RAM:B84D DD AE 07                    xor     7(ix)                                   ; randomise hflip
+       movb @7(ix),tmp0
+       xor  tmp0,a
 ;RAM:B850 DD 77 07                    ld      7(ix), a
+       movb a,@7(ix)
 ;RAM:B853 CD 85 B9                    call    toggle_next_prev_sprite
+       bl   @toggle_next_prev_sprite
 * ---------------------------------------------------------------------------
 set_deadly_wipe_and_draw_flags:
 ;RAM:B856 CD 5C B8                    call    set_both_deadly_flags
