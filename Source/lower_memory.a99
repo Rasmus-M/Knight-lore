@@ -1345,7 +1345,6 @@ guard_S:                                                        ; dY=-2, dX=0
 * player appear sparkles
 upd_120_to_126:
 ;RAM:BEFE CD D8 C4                    call    adj_m4_m12
-;      b    @adj_m4_m12_1
        bl   @adj_m4_m12
 ;RAM:BF01 3A A2 5B                    ld      a, (seed_2)
        movb @seed_2,a
@@ -2393,6 +2392,7 @@ adj_p7_m12:
 * End of function adj_p7_m12
 * =============== S U B R O U T I N E =======================================
 adj_p3_m12:
+       mov  r11,*sp+
 ;RAM:C510 21 F4 03                    ld      hl, #0x3F4                              ; +3, -12
        li   hl,>03f4
 ;RAM:C513 18 CB                       jr      jp_set_pixel_adj
@@ -5512,8 +5512,8 @@ plyr_spr_init_data:
 start_locations:
 ;       byte >2F, >44, >B3, >8F         ; Standard
 ;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
-       byte >B3,>B3,>B3,>B3
-;       byte >8a,>8a,>8a,>8a            ; Cauldron room
+;       byte >B3,>B3,>B3,>B3
+       byte >8a,>8a,>8a,>8a            ; Cauldron room
 * ---------------------------------------------------------------------------
 *
 * End of function init_start_location
