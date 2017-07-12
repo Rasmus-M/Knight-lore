@@ -117,9 +117,17 @@ zx_aram:
        aorg >A000
        copy "lower_memory.a99"
        copy "upper_memory.a99"
+       copy "pickup-drop-objects.a99"
        copy "start-menu.a99"
        copy "game-over.a99"
        copy "sound.a99"
+*      Data
+       copy "font.a99"
+       copy "locations.a99"
+       copy "block-types.a99"
+       copy "background-types.a99"
+       copy "special-objects.a99"
+       copy "update-sprite-jump-table.a99"
 *
 upper_memory_end:
        data -1
@@ -127,17 +135,13 @@ upper_memory_end:
 *
 * Lower memory
 *
+       aorg >2000
+       copy "variables.a99"
+*
 * Linear video memory buffer, length >1800
 *
 vidbuf:
        equ >2800
-
-       aorg >2000
-       copy "variables.a99"
-*
-* Reverse bytes lookup table, >100 bytes
-*
-reverse_bytes_lookup_table equ >7F00
 *
 lower_memory_end:
        data -1

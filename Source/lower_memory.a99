@@ -34,7 +34,7 @@ start_menu:                                                                     
        bl   @clr_mem
 main:                                                                                 ; for bit reversal & shifting
 ;RAM:AF88 CD 9E D6                    call    build_lookup_tbls
-       bl   @build_lookup_tbls        ; Only bit reversal implemented
+;      bl   @build_lookup_tbls        ; Only bit reversal implemented
 ;RAM:AF8B AF                          xor     a
        clr  a
 ;RAM:AF8C 32 B2 5B                    ld      (not_1st_screen), a

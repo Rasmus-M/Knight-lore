@@ -1,39 +1,3 @@
-* ---------------------------------------------------------------------------
-
-       copy "font.a99"
-       copy "locations.a99"
-       copy "block-types.a99"
-       copy "background-types.a99"
-       copy "special-objects.a99"
-
-* Update sprite jump table
-       copy "update-sprite-jump-table.a99"
-
-* ---------------------------------------------------------------------------
-sprite_scratchpad:
-       byte >8A, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00, >00
-       byte >00, >00, >00, >00, >00, >00, >00, >00, >03, >01, >E8, >A0, >00, >00, >00, >00
-* ---------------------------------------------------------------------------
-objects_required:
-       byte 0, 1, 2, 3, 4, 5, 6, 3
-       byte 5, 0, 6, 1, 2, 4
-* ---------------------------------------------------------------------------
-render_list:
-       byte >FF
-       byte >FF
-       byte >FF
-       byte >FF
-       byte >FF
-       byte >FF
-       byte >FF
-       byte >FF
-
-* ---------------------------------------------------------------------------
-       even
-* ---------------------------------------------------------------------------
-
-       copy "pickup-drop-objects.a99"
-
 * =============== S U B R O U T I N E =======================================
 *
 print_days:
@@ -1266,71 +1230,71 @@ loc_C51A:
 *
 * End of function fill_window
 *
-*=============== S U B R O U T I N E =======================================
-*
-build_lookup_tbls:
-*
-* Build a look-up table of values (0-255) shifted left 1-7 bits
-* $F200 - $FFFF
-* Each shifted byte is stored as a word.
-* $100 entries x 2 bytes/entry * 7 = $e00 bytes
-*
-;RAM:D69E 2E 00                       ld      l, #0
-;RAM:D6A0
-loc_D6A0:
-;RAM:D6A0 16 00                       ld      d, #0
-;RAM:D6A2 5D                          ld      e, l
-;RAM:D6A3 26 FF                       ld      h, #0xFF
-;RAM:D6A5 06 07                       ld      b, #7
-;RAM:D6A7
-loc_D6A7:
-;RAM:D6A7 CB 23                       sla     e
-;RAM:D6A9 CB 12                       rl      d
-;RAM:D6AB 7B                          ld      a, e
-;RAM:D6AC 2F                          cpl
-;RAM:D6AD 77                          ld      (hl), a
-;RAM:D6AE 25                          dec     h
-;RAM:D6AF 7A                          ld      a, d
-;RAM:D6B0 2F                          cpl
-;RAM:D6B1 77                          ld      (hl), a
-;RAM:D6B2 25                          dec     h
-;RAM:D6B3 10 F2                       djnz    loc_D6A7
-;RAM:D6B5 2C                          inc     l
-;RAM:D6B6 20 E8                       jr      NZ, loc_D6A0
-*
-* Build a look-up table of bit-reversed bytes (0-255)
-* $F100 - $F1FF
-* $100 entries x 1 byte/entry = $100 bytes
-*
-;RAM:D6B8 21 00 F1                    ld      hl, #0xF100
-       li   hl,reverse_bytes_lookup_table
-loc_D6BB:
-;RAM:D6BB 55                          ld      d, l                                    ; byte offset from $F100
-       movb @l,d
-;RAM:D6BC 06 08                       ld      b, #8                                   ; 8 bits
-       movb @b08h,b
-       szcb mone,de_
-loc_D6BE:
-;RAM:D6BE CB 3A                       srl     d
-;RAM:D6C0 CB 13                       rl      e                                       ; reverse bits
-       srl  de_,1
-       sla  d,1
-       jnc  !
-       socb @b80h,de_
-;RAM:D6C2 10 FA                       djnz    loc_D6BE                                ; loop all bits
-!      sb   one,b
-       jne  loc_D6BE
-;RAM:D6C4 73                          ld      (hl), e                                 ; store
-       movb de_,*hl
-;RAM:D6C5 2C                          inc     l                                       ; next index/location
-       ab   one,@l
-;RAM:D6C6 20 F3                       jr      NZ, loc_D6BB                            ; loop 256 bytes
-       jne  loc_D6BB
-;RAM:D6C8 C9                          ret
-       rt
-*
-* End of function build_lookup_tbls
-*
+;*=============== S U B R O U T I N E =======================================
+;*
+;build_lookup_tbls:
+;*
+;* Build a look-up table of values (0-255) shifted left 1-7 bits
+;* $F200 - $FFFF
+;* Each shifted byte is stored as a word.
+;* $100 entries x 2 bytes/entry * 7 = $e00 bytes
+;*
+;;RAM:D69E 2E 00                       ld      l, #0
+;;RAM:D6A0
+;loc_D6A0:
+;;RAM:D6A0 16 00                       ld      d, #0
+;;RAM:D6A2 5D                          ld      e, l
+;;RAM:D6A3 26 FF                       ld      h, #0xFF
+;;RAM:D6A5 06 07                       ld      b, #7
+;;RAM:D6A7
+;loc_D6A7:
+;;RAM:D6A7 CB 23                       sla     e
+;;RAM:D6A9 CB 12                       rl      d
+;;RAM:D6AB 7B                          ld      a, e
+;;RAM:D6AC 2F                          cpl
+;;RAM:D6AD 77                          ld      (hl), a
+;;RAM:D6AE 25                          dec     h
+;;RAM:D6AF 7A                          ld      a, d
+;;RAM:D6B0 2F                          cpl
+;;RAM:D6B1 77                          ld      (hl), a
+;;RAM:D6B2 25                          dec     h
+;;RAM:D6B3 10 F2                       djnz    loc_D6A7
+;;RAM:D6B5 2C                          inc     l
+;;RAM:D6B6 20 E8                       jr      NZ, loc_D6A0
+;*
+;* Build a look-up table of bit-reversed bytes (0-255)
+;* $F100 - $F1FF
+;* $100 entries x 1 byte/entry = $100 bytes
+;*
+;;RAM:D6B8 21 00 F1                    ld      hl, #0xF100
+;       li   hl,reverse_bytes_lookup_table
+;loc_D6BB:
+;;RAM:D6BB 55                          ld      d, l                                    ; byte offset from $F100
+;       movb @l,d
+;;RAM:D6BC 06 08                       ld      b, #8                                   ; 8 bits
+;       movb @b08h,b
+;       szcb mone,de_
+;loc_D6BE:
+;;RAM:D6BE CB 3A                       srl     d
+;;RAM:D6C0 CB 13                       rl      e                                       ; reverse bits
+;       srl  de_,1
+;       sla  d,1
+;       jnc  !
+;       socb @b80h,de_
+;;RAM:D6C2 10 FA                       djnz    loc_D6BE                                ; loop all bits
+;!      sb   one,b
+;       jne  loc_D6BE
+;;RAM:D6C4 73                          ld      (hl), e                                 ; store
+;       movb de_,*hl
+;;RAM:D6C5 2C                          inc     l                                       ; next index/location
+;       ab   one,@l
+;;RAM:D6C6 20 F3                       jr      NZ, loc_D6BB                            ; loop 256 bytes
+;       jne  loc_D6BB
+;;RAM:D6C8 C9                          ret
+;       rt
+;*
+;* End of function build_lookup_tbls
+;*
 * =============== S U B R O U T I N E =======================================
 *
 calc_2d_info:
