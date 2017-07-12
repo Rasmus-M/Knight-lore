@@ -734,7 +734,7 @@ loc_B6DE:
        jne  !
        b    @set_wipe_and_draw_flags
 ;RAM:B6E9 3E 01                       ld      a, #1
-       movb one,a
+!      movb one,a
 ;RAM:B6EB 38 02                       jr      C, loc_B6EF
        cb   tmp0,@c
        jl   loc_B6EF
@@ -1490,7 +1490,6 @@ loc_BF31:
 * ---------------------------------------------------------------------------
 * sparkles (object in cauldron)
 upd_185_187:
-       b    @no_update
 ;RAM:BF37 DD 6E 10                    ld      l, 16(ix)
        movb @16(ix),@l                ; TODO: Little endian!
 ;RAM:BF3A DD 66 11                    ld      h, 17(ix)
