@@ -400,13 +400,18 @@ cauldron_bubbles:
 * sparkles from the blocks in the cauldron room at the end of the game
 *
 upd_131_to_133:
-       b    @no_update
 ;RAM:B566 CD D8 C4                    call    adj_m4_m12
+       bl   @adj_m4_m12
 ;RAM:B569 DD 7E 03                    ld      a, 3(ix)                                ; Z
+       movb @3(ix),a
 ;RAM:B56C FE A4                       cp      #164                                    ; <164?
+       cb   a,@ba4h
 ;RAM:B56E 30 54                       jr      NC, loc_B5C4                            ; no, go
+       jhe  loc_B5C4
 ;RAM:B570 DD 36 0B 03                 ld      11(ix), #3                              ; dZ=3
+       movb @b03h,@11(ix)
 ;RAM:B574 DD 7E 01                    ld      a, 1(ix)                                ; X
+       movb @1(ix),a
 ;RAM:B577 07                          rlca
 ;RAM:B578 E6 01                       and     #1
 ;RAM:B57A 6F                          ld      l, a                                    ; X bit7->bit0
@@ -416,82 +421,112 @@ upd_131_to_133:
 ;RAM:B581 07                          rlca                                            ; bit0->bit1, bit7->bit1
 ;RAM:B582 E6 03                       and     #3
 ;RAM:B584 6F                          ld      l, a
+       srl  a,6                       ; Bit 7 to bit 1
+       andi a,>0200                   ; Isolate
+       movb a,@l
+       movb @2(ix),a
+       srl  a,7                       ; Bit 7 to bit 0
+       socb a,@l                      ; Combine
 ;RAM:B585 01 8B B5                    ld      bc, #dX_dY_tbl                          ; jump table
+       li   bc,dX_dY_tbl
 ;RAM:B588 C3 DB AF                    jp      jump_to_tbl_entry
-;RAM:B588             ; ---------------------------------------------------------------------------
-;RAM:B58B 93 B5       dX_dY_tbl:      .dw p4_m4                                       ; +4, -4
-;RAM:B58D B5 B5                       .dw p4_p4                                       ; +4, +4
-;RAM:B58F BA B5                       .dw m4_m4                                       ; -4, -4
-;RAM:B591 BF B5                       .dw m4_p4                                       ; -4, +4
-;RAM:B593             ; ---------------------------------------------------------------------------
-;RAM:B593
-;RAM:B593             p4_m4:                                                          ; +4, -4
-;RAM:B593 21 FC 04                    ld      hl, #0x4FC
-;RAM:B596
-;RAM:B596             save_dX_dY:                                                     ; dX
-;RAM:B596 DD 75 09                    ld      9(ix), l
+       b    @jump_to_tbl_entry
+* ---------------------------------------------------------------------------
+dX_dY_tbl:
+       data p4_m4                                       ; +4, -4
+       data p4_p4                                       ; +4, +4
+       data m4_m4                                       ; -4, -4
+       data m4_p4                                       ; -4, +4
+* ---------------------------------------------------------------------------
+p4_m4:
+;RAM:B593 21 FC 04                    ld      hl, #0x4FC                              ; +4, -4
+       li   hl,>04fc
+save_dX_dY:
+;RAM:B596 DD 75 09                    ld      9(ix), l                                ; dX
+       movb @l,@9(ix)
 ;RAM:B599 DD 74 0A                    ld      10(ix), h                               ; dY
+       movb h,@10(ix)
 ;RAM:B59C 3A A5 5B                    ld      a, (seed_3)
+       movb @seed_3,a
 ;RAM:B59F E6 03                       and     #3                                      ; rnd 0-3
+       andi a,>0300
 ;RAM:B5A1 20 01                       jr      NZ, loc_B5A4                            ; >0, skip
+       jne  loc_B5A4
 ;RAM:B5A3 3C                          inc     a                                       ; =1
-;RAM:B5A4
-;RAM:B5A4             loc_B5A4:                                                       ; rnd twinkly sprite
-;RAM:B5A4 C6 82                       add     a, #130
+       ab   one,a
+loc_B5A4:
+;RAM:B5A4 C6 82                       add     a, #130                                 ; rnd twinkly sprite
+       ab   @b82h,a
 ;RAM:B5A6 DD 77 00                    ld      0(ix), a                                ; set graphic no.
-;RAM:B5A9
-;RAM:B5A9             loc_B5A9:                                                       ; Z
-;RAM:B5A9 DD 7E 03                    ld      a, 3(ix)
+       movb a,*ix
+loc_B5A9:
+;RAM:B5A9 DD 7E 03                    ld      a, 3(ix)                                ; Z
+       movb @3(ix),a
 ;RAM:B5AC 32 C5 5B                    ld      (rising_blocks_z), a
-;RAM:B5AF
+       movb a,@rising_blocks_z
 dec_dZ_wipe_and_draw:
 ;RAM:B5AF CD 00 C7                    call    dec_dZ_and_update_XYZ
        bl   @dec_dZ_and_update_XYZ
 ;RAM:B5B2 C3 92 C6                    jp      set_wipe_and_draw_flags
        b    @set_wipe_and_draw_flags
-;RAM:B5B5             ; ---------------------------------------------------------------------------
-;RAM:B5B5
-;RAM:B5B5             p4_p4:                                                          ; +4, +4
+* ---------------------------------------------------------------------------
+p4_p4:                                                          ; +4, +4
 ;RAM:B5B5 21 04 04                    ld      hl, #0x404
+       li   hl,>0404
 ;RAM:B5B8 18 DC                       jr      save_dX_dY
-;RAM:B5BA             ; ---------------------------------------------------------------------------
-;RAM:B5BA
-;RAM:B5BA             m4_m4:                                                          ; -4, -4
+       jmp  save_dX_dY
+* ---------------------------------------------------------------------------
+m4_m4:                                                          ; -4, -4
 ;RAM:B5BA 21 FC FC                    ld      hl, #0xFCFC
+       li   hl,>fcfc
 ;RAM:B5BD 18 D7                       jr      save_dX_dY
-;RAM:B5BF             ; ---------------------------------------------------------------------------
-;RAM:B5BF
-;RAM:B5BF             m4_p4:                                                          ; -4, +4
+       jmp  save_dX_dY
+* ---------------------------------------------------------------------------
+m4_p4:                                                          ; -4, +4
 ;RAM:B5BF 21 04 FC                    ld      hl, #0xFC04
+       li   hl,>fc04
 ;RAM:B5C2 18 D2                       jr      save_dX_dY
-;RAM:B5C4             ; ---------------------------------------------------------------------------
-;RAM:B5C4
-;RAM:B5C4             loc_B5C4:                                                       ; plyr_spr_1 X
-;RAM:B5C4 3A 09 5C                    ld      a, (graphic_objs_tbl+1)
+       jmp  save_dX_dY
+* ---------------------------------------------------------------------------
+loc_B5C4:
+;RAM:B5C4 3A 09 5C                    ld      a, (graphic_objs_tbl+1)                 ; plyr_spr_1 X
+       movb @graphic_objs_tbl+1,a
 ;RAM:B5C7 DD 96 01                    sub     1(ix)                                   ; object X
+       sb    @1(ix),a
 ;RAM:B5CA F2 CF B5                    jp      P, loc_B5CF
 ;RAM:B5CD ED 44                       neg                                             ; abs(delta x)
-;RAM:B5CF
-;RAM:B5CF             loc_B5CF:                                                       ; less than 6?
-;RAM:B5CF FE 06                       cp      #6
+loc_B5CF:
+       abs  a
+;RAM:B5CF FE 06                       cp      #6                                      ; less than 6?
+       cb   a,@b06h
 ;RAM:B5D1 30 10                       jr      NC, loc_B5E3                            ; no, skip
+       jhe  loc_B5E3
 ;RAM:B5D3 3A 0A 5C                    ld      a, (graphic_objs_tbl+2)                 ; plyr_spr_1 Y
+       movb @graphic_objs_tbl+2,a
 ;RAM:B5D6 DD 96 02                    sub     2(ix)                                   ; object Y
+       sb    @2(ix),a
 ;RAM:B5D9 F2 DE B5                    jp      P, loc_B5DE
 ;RAM:B5DC ED 44                       neg                                             ; abs(delta y)
-;RAM:B5DE
-;RAM:B5DE             loc_B5DE:                                                       ; less than 6?
-;RAM:B5DE FE 06                       cp      #6
+loc_B5DE:
+       abs  a
+;RAM:B5DE FE 06                       cp      #6                                      ; less than 6?
+       cb   a,@b06h
 ;RAM:B5E0 DA 22 BA                    jp      C, game_over                            ; yes, exit
-;RAM:B5E3
-;RAM:B5E3             loc_B5E3:                                                       ; fatal if it hits player
-;RAM:B5E3 DD CB 0D FE                 set     7, 13(ix)
+       jhe  loc_B5E3
+       b    @game_over
+loc_B5E3:
+;RAM:B5E3 DD CB 0D FE                 set     7, 13(ix)                               ; fatal if it hits player
+       socb @b80h,@13(ix)
 ;RAM:B5E7 DD CB 07 CE                 set     1, 7(ix)                                ; ignore object in 3D calculations
+       socb @b02h,@7(ix)
 ;RAM:B5EB DD 36 0B 01                 ld      11(ix), #1                              ; dZ=1
+       movb one,@11(ix)
 ;RAM:B5EF 01 04 04                    ld      bc, #0x404                              ; dX,dY=4
+       li   bc,>0404
 ;RAM:B5F2 CD 65 B9                    call    move_towards_plyr
+       bl   @move_towards_plyr
 ;RAM:B5F5 18 B2                       jr      loc_B5A9
-;RAM:B5F7
+       jmp  loc_B5A9
 * ---------------------------------------------------------------------------
 * ball (bouncing around)
 * - bounces towards wulf

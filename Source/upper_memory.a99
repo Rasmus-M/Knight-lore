@@ -2691,11 +2691,13 @@ b60h   byte >60
 b70h   byte >70
 b78h   byte >78
 b80h   byte >80
+b82h   byte >82
 b88h   byte >88
 b8ch   byte >8c
 b98h   byte >98
 ba0h   byte >a0
 ba8h   byte >a8
+ba4h   byte >a4
 baeh   byte >ae
 bb0h   byte >b0
 bb8h   byte >b8
