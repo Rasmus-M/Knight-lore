@@ -963,7 +963,7 @@ upd_63:
        movb @disable_spike_ball_drop,a
 ;RAM:B7B2 A7                          and     a
 ;RAM:B7B3 C0                          ret     NZ
-       jeq  upd_63_return
+       jne  upd_63_return
 ;RAM:B7B4 DD CB 0D 56                 bit     2, 13(ix)                               ; is this one dropping?
        movb @13(ix),tmp0
        andi tmp0,>0400
