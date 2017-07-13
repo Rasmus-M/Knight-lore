@@ -965,7 +965,7 @@ upd_63:
 ;RAM:B7B3 C0                          ret     NZ
        jeq  upd_63_return
 ;RAM:B7B4 DD CB 0D 56                 bit     2, 13(ix)                               ; is this one dropping?
-       mov  @13(ix),tmp0
+       movb @13(ix),tmp0
        andi tmp0,>0400
 ;RAM:B7B8 20 13                       jr      NZ, spiked_ball_drop                    ; yes, go
        jne  spiked_ball_drop
@@ -996,7 +996,7 @@ spiked_ball_drop:
 ;RAM:B7CD CD 00 C7                    call    dec_dZ_and_update_XYZ
        bl   @dec_dZ_and_update_XYZ
 ;RAM:B7D0 DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB? (hit the floor?)
-       mov  @12(ix),tmp0
+       movb @12(ix),tmp0
        andi tmp0,>0400
 ;RAM:B7D4 20 06                       jr      NZ, loc_B7DC                            ; yes, go
        jne  loc_B7DC
@@ -1317,7 +1317,7 @@ loc_B945:
 *
 upd_111:
 ;RAM:B95E DD 36 00 01                 ld      0(ix), #1                               ; invalid
-       mov  one,*ix
+       movb one,*ix
 loc_B962:
 ;RAM:B962 C3 32 C2                    jp      audio_B467_wipe_and_draw
        b    @audio_B467_wipe_and_draw
@@ -2833,9 +2833,9 @@ loc_C595:
 ;RAM:C599 28 1C                       jr      Z, loc_C5B7                             ; yes, skip
        jeq  loc_C5B7
 ;RAM:C59B FD 5E 10                    ld      e, 16(iy)
-       mov  @16(iy),@e                ; TODO: Little endian!
+       movb @16(iy),@e                ; TODO: Little endian!
 ;RAM:C59E FD 56 11                    ld      d, 17(iy)                               ; DE=ptr object table entry
-       mov  @17(iy),d
+       movb @17(iy),d
        jeq  loc_C5B7                  ; Bug fix?
 ;RAM:C5A1 FD 7E 00                    ld      a, 0(iy)                                ; get graphic no.
 ;RAM:C5A4 12                          ld      (de), a                                 ; store
@@ -5785,7 +5785,7 @@ plyr_spr_init_data:
 * ---------------------------------------------------------------------------
 start_locations:
 ;       byte >2F, >44, >B3, >8F         ; Standard
-;       byte >2f,>2f,>2f,>2f
+;       byte >b3,>b3,>b3,>b3
         byte >8a,>8a,>8a,>8a            ; Near cauldron room
 * ---------------------------------------------------------------------------
 *

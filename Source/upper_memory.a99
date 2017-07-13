@@ -270,7 +270,7 @@ print_text_std_font:
 ;RAM:BE46 21 08 61                    ld      hl, #font
        li   hl,font
 ;RAM:BE49 22 C7 5B                    ld      (gfxbase_8x8), hl
-       mov   hl,@gfxbase_8x8
+       mov  hl,@gfxbase_8x8
 *
 * de: address of text
 * screen location pushed to stack
@@ -1963,7 +1963,7 @@ calc_vram_addr:
        sla  de,5                       ; ???yyyyyyyy00000
        socb tmp1,@e                    ; ???yyyyy???yyyyy
        andi de,>1f07                   ; 000yyyyy00000yyy
-       mov  @c,@r0lb                   ; yyyyyyyyxxxxxxxx
+       movb @c,@r0lb                   ; yyyyyyyyxxxxxxxx
        andi tmp0,7                     ; 0000000000000xxx
        ab   @c,@e                      ; 000yyyyyxxxxx???
        s    tmp0,de                    ; 000yyyyyxxxxxyyy
