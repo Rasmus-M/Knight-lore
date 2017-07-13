@@ -1989,26 +1989,35 @@ ret_next_obj_required:
 * special objects
 upd_96_to_102:
 ;RAM:C28B CD D8 C4                    call    adj_m4_m12
-       b    @adj_m4_m12_1
+       bl    @adj_m4_m12
 ;RAM:C28E CD 00 C7                    call    dec_dZ_and_update_XYZ
+       bl   @dec_dZ_and_update_XYZ
 ;RAM:C291 DD CB 0D 46                 bit     0, 13(ix)                               ; just dropped?
+       movb @13(ix),a
+       andi a,>0100
 ;RAM:C295 20 04                       jr      NZ, loc_C29B                            ; no, skip
+       jne  loc_C29B
 ;RAM:C297 CD A1 C1                    call    is_obj_moving
+       bl   @is_obj_moving
 ;RAM:C29A C8                          ret     Z
-;RAM:C29B
-;RAM:C29B             loc_C29B:                                                       ; clear just dropped flag
-;RAM:C29B DD CB 0D 86                 res     0, 13(ix)
+       jne  loc_C29B
+       dect sp
+       mov  *sp,r11
+       rt
+loc_C29B:
+;RAM:C29B DD CB 0D 86                 res     0, 13(ix)                                ; clear just dropped flag
+       szcb @b01h,@13(ix)
 ;RAM:C29F CD F3 C9                    call    clear_dX_dY
+       bl   @clear_dX_dY
 ;RAM:C2A2 C3 32 C2                    jp      audio_B467_wipe_and_draw
-;RAM:C2A5
-;RAM:C2A5             ; =============== S U B R O U T I N E =======================================
-;RAM:C2A5
-;RAM:C2A5
-;RAM:C2A5             cycle_colours_with_sound:
+       b    @audio_B467_wipe_and_draw
+* =============== S U B R O U T I N E =======================================
+cycle_colours_with_sound:
+       movb r11,*sp+
 ;RAM:C2A5 16 10                       ld      d, #16                                  ; cycle 16 times
-;RAM:C2A7
-;RAM:C2A7             loc_C2A7:                                                       ; attribute memory
-;RAM:C2A7 21 00 58                    ld      hl, #0x5800
+       movb @b10h,d
+loc_C2A7:
+;RAM:C2A7 21 00 58                    ld      hl, #0x5800                             ; attribute memory
 ;RAM:C2AA 01 00 03                    ld      bc, #0x300                              ; size
 ;RAM:C2AD
 ;RAM:C2AD             cycle_attribute_mem:
@@ -2026,64 +2035,95 @@ upd_96_to_102:
 ;RAM:C2BA B1                          or      c
 ;RAM:C2BB 20 F0                       jr      NZ, cycle_attribute_mem
 ;RAM:C2BD CD 03 B4                    call    audio_B403
-;RAM:C2C0 01 00 20                    ld      bc, #0x2000
+;RAM:C2C0 01 00 20                    ld      bc, #0x2000                             ; delay
 ;RAM:C2C3
 ;RAM:C2C3             loc_C2C3:
 ;RAM:C2C3 0B                          dec     bc
 ;RAM:C2C4 78                          ld      a, b
 ;RAM:C2C5 B1                          or      c
 ;RAM:C2C6 20 FB                       jr      NZ, loc_C2C3
+       movb d,a
+       sb   one,a
+       bl   @fill_attr
 ;RAM:C2C8 15                          dec     d
+       sb   one,de
 ;RAM:C2C9 20 DC                       jr      NZ, loc_C2A7
+       jne  loc_C2A7
 ;RAM:C2CB
+* ---------------------------------------------------------------------------
 no_update:
 ;RAM:C2CB C9                          ret
        dect sp
        mov  *sp,r11
        rt
-;RAM:C2CB             ; End of function cycle_colours_with_sound
-;RAM:C2CB
-;RAM:C2CC
-;RAM:C2CC             ; =============== S U B R O U T I N E =======================================
-;RAM:C2CC
-;RAM:C2CC
-;RAM:C2CC             prepare_final_animation:
+*
+* End of function cycle_colours_with_sound
+* =============== S U B R O U T I N E =======================================
+prepare_final_animation:
+       mov  r11,*sp+
 ;RAM:C2CC 3E 01                       ld      a, #1
+       movb one,a
 ;RAM:C2CE 32 C3 5B                    ld      (all_objs_in_cauldron), a
+       movb @all_objs_in_cauldron,a
 ;RAM:C2D1 DD E5                       push    ix
+       mov  ix,*sp+
 ;RAM:C2D3 DD 21 68 5C                 ld      ix, #special_objs_here_1                ; special_objs_here[1]
+       li   ix,special_objs_here_1
 ;RAM:C2D7 11 20 00                    ld      de, #32                                 ; entry size
+       li   de,32
 ;RAM:C2DA 06 0B                       ld      b, #11                                  ; wipe 11 objects in the room
-;RAM:C2DA                                                                             ; (1 special, 7 bg, 3 fg)
-;RAM:C2DC
-;RAM:C2DC             loc_C2DC:
+       li   bc,11                                                                     ; (1 special, 7 bg, 3 fg)
+loc_C2DC:
 ;RAM:C2DC C5                          push    bc
+       mov  bc,*sp+
 ;RAM:C2DD D5                          push    de
+       mov  de,*sp+
 ;RAM:C2DE CD 92 C6                    call    set_wipe_and_draw_flags
+       bl   @set_wipe_and_draw_flags
 ;RAM:C2E1 D1                           pop     de
+       dect sp
+       mov  *sp,de
 ;RAM:C2E2 C1                          pop     bc
+       dect sp
+       mov  *sp,bc
 ;RAM:C2E3 DD 36 00 01                 ld      0(ix), #1                               ; set graphic no. = INVALID
+       movb one,*ix
 ;RAM:C2E7 DD 19                       add     ix, de                                  ; next entry
+       a    de,ix
 ;RAM:C2E9 10 F1                       djnz    loc_C2DC
+       sb   one,b
+       jne  loc_C2DC
 ;RAM:C2EB 01 08 61                    ld      bc, #font
-;RAM:C2EE
-;RAM:C2EE             loc_C2EE:                                                       ; graphic no.
-;RAM:C2EE DD 7E 00                    ld      a, 0(ix)
+       li   bc,graphic_objs_tbl_end
+loc_C2EE:
+;RAM:C2EE DD 7E 00                    ld      a, 0(ix)                                ; graphic no.
+       movb *ix,a
 ;RAM:C2F1 FE 07                       cp      #7                                      ; block?
+       cb   a,@b07h
 ;RAM:C2F3 20 04                       jr      NZ, loc_C2F9                            ; no, skip
+       jne  loc_C2F9
 ;RAM:C2F5 DD 36 00 83                 ld      0(ix), #131                             ; set to twinkly sprite
-;RAM:C2F9
-;RAM:C2F9             loc_C2F9:                                                       ; next entry
-;RAM:C2F9 DD 19                       add     ix, de
+       movb @b83h,*ix
+loc_C2F9:
+;RAM:C2F9 DD 19                       add     ix, de                                  ; next entry
+       a    de,ix
 ;RAM:C2FB DD E5                       push    ix
 ;RAM:C2FD E1                          pop     hl
+       mov  ix,hl
 ;RAM:C2FE A7                          and     a
 ;RAM:C2FF ED 42                       sbc     hl, bc                                  ; end of table?
+       cb   hl,bc
 ;RAM:C301 38 EB                       jr      C, loc_C2EE                             ; no, loop
+       jl   loc_C2EE
 ;RAM:C303 DD E1                       pop     ix
+       dect sp
+       mov  *sp,ix
 ;RAM:C305 C9                          ret
-;RAM:C305             ; End of function prepare_final_animation
-;RAM:C305
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function prepare_final_animation
 *
 * =============== S U B R O U T I N E =======================================
 *
