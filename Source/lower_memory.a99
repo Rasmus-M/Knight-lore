@@ -1149,7 +1149,7 @@ upd_178_179:
        movb @ball_bounce_height,a
 ;RAM:B86B A7                          and     a                                       ; bouncing?
 ;RAM:B86C 20 08                       jr      NZ, loc_B876                            ; yes, skip
-       jeq  loc_B876
+       jne  loc_B876
 ;RAM:B86E DD 7E 03                    ld      a, 3(ix)                                ; Z
        movb @3(ix),a
 ;RAM:B871 C6 20                       add     a, #32                                  ; calc bounce height
@@ -1280,7 +1280,7 @@ upd_164_to_167:
        movb @graphic_objs_tbl+7,a
 ;RAM:B939 CB 47                       bit     0, a                                    ; near arch?
        movb a,tmp0
-       andi a,1
+       andi a,>0100
 ;RAM:B93B 28 05                       jr      Z, loc_B942                             ; no, go
        jeq  loc_B942
 ;RAM:B93D 01 01 01                    ld      bc, #0x101                              ; dX,dY=1
@@ -3384,7 +3384,8 @@ chk_plyr_spec_near_arch:
 ;RAM:C7DF 11 20 00                    ld      de, #32                                 ; entry size
        li   de,32
 ;RAM:C7E2 06 04                       ld      b, #4                                   ; player and special objects only
-       movb @b04h,b
+      movb @b04h,b
+;       movb @b02h,b                   ; Rasmus optimize
 loc_C7E4:
 ;RAM:C7E4 FD 7E 00                    ld      a, 0(iy)                                ; graphic no
        movb *iy,a
@@ -3402,6 +3403,7 @@ loc_C7E4:
        jhe  loc_C7F9
 ;RAM:C7F5 FD CB 07 C6                 set     0, 7(iy)                                ; flag near arch
        socb one,@7(iy)
+;       jmp  !                         ; Rasmus optimize
 loc_C7F9:
 ;RAM:C7F9 FD 19                       add     iy, de                                  ; next entry
        a    de,iy
@@ -3409,7 +3411,7 @@ loc_C7F9:
        sb   one,b
        jne  loc_C7E4
 ;RAM:C7FD C9                          ret
-       dect sp
+!      dect sp
        mov  *sp,r11
        rt
 *
