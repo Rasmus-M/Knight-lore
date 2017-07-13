@@ -3114,9 +3114,8 @@ upd_9:
 ;      TODO
 stop_portcullis:
 ;RAM:C6E0 AF                          xor     a                                       ; flag not moving
-       clr  a
 ;RAM:C6E1 32 AF 5B                    ld      (portcullis_moving), a
-       movb a,@portcullis_moving
+       szcb one,@portcullis_moving
 ;RAM:C6E4 DD CB 00 86                 res     0, 0(ix)                                ; graphic_no=8
        szcb one,*ix
 ;RAM:C6E8 18 A8                       jr      set_wipe_and_draw_flags
@@ -5785,10 +5784,8 @@ plyr_spr_init_data:
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
 * ---------------------------------------------------------------------------
 start_locations:
-;       byte >2F, >44, >B3, >8F         ; Standard
-;       byte >6d,>27,>d0,>0a            ; Rooms with special objects
-;       byte >B3,>B3,>B3,>B3
-       byte >8a,>8a,>8a,>8a            ; Cauldron room
+       byte >2F, >44, >B3, >8F         ; Standard
+;       byte >8a,>8a,>8a,>8a            ; Nexr cauldron room
 * ---------------------------------------------------------------------------
 *
 * End of function init_start_location
