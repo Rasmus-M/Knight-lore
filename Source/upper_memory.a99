@@ -1633,11 +1633,11 @@ loc_D75A:
 ;RAM:D760 CD 11 D8                    call    calc_vidbuf_addr                        ; bc = address
        bl   @calc_vidbuf_addr
 ;RAM:D763 ED 73 A9 5B                 ld      (tmp_SP), sp                            ; store stack pointer
-       mov  sp,@tmp_SP
+;      mov  sp,@tmp_SP
 ;RAM:D767 EB                          ex      de, hl
 ;RAM:D768 F9                          ld      sp, hl                                  ; sp=source data address
 ;RAM:D769 EB                          ex      de, hl
-       mov  de,sp
+       mov  de,de_
 ;RAM:D76A DD 7E 19                    ld      a, 25(ix)                               ; height_lines
        movb @25(ix),a
 ;RAM:D76D 18 3B                       jr      loc_D7AA
@@ -1671,7 +1671,7 @@ loc_D76F:
 * For sprites with no bit offset, 8 bytes per routine
 * -- 1st byte --
 ;RAM:D780 D1                          pop     de                                      ; get pattern d and mask e
-       mov  *sp+,de
+       mov  *de_+,de
 ;RAM:D781 0A                          ld      a, (bc)                                 ; get existing byte
 ;RAM:D782 2F                          cpl                                             ; invert
 ;RAM:D783 B3                          or      e                                       ; apply mask
@@ -1683,7 +1683,7 @@ loc_D76F:
        socb  @e,*bc+
 * -- 2nd byte --
 ;RAM:D788 D1                          pop     de
-       mov  *sp+,de
+       mov  *de_+,de
 ;RAM:D789 0A                          ld      a, (bc)
 ;RAM:D78A 2F                          cpl
 ;RAM:D78B B3                          or      e
@@ -1696,7 +1696,7 @@ loc_D76F:
 loc_D790:
 * -- 3rd byte --
 ;RAM:D790 D1                          pop     de
-       mov  *sp+,de
+       mov  *de_+,de
 ;RAM:D791 0A                          ld      a, (bc)
 ;RAM:D792 2F                          cpl
 ;RAM:D793 B3                          or      e
@@ -1708,7 +1708,7 @@ loc_D790:
        socb  @e,*bc+
 * -- 4th byte --
 ;RAM:D798 D1                          pop     de
-       mov  *sp+,de
+       mov  *de_+,de
 ;RAM:D799 0A                          ld      a, (bc)
 ;RAM:D79A 2F                          cpl
 ;RAM:D79B B3                          or      e
@@ -1720,7 +1720,7 @@ loc_D790:
        socb  @e,*bc+
 * -- 5th byte --
 ;RAM:D7A0 D1                          pop     de
-       mov  *sp+,de
+       mov  *de_+,de
 ;RAM:D7A1 0A                          ld      a, (bc)
 ;RAM:D7A2 2F                          cpl
 ;RAM:D7A3 B3                          or      e
@@ -1748,8 +1748,8 @@ loc_D7AC:
        clr  de
        clr  hl
 plot_shifted_line:
-       movb *sp+,@e                    ; get pattern
-       movb *sp+,@l                    ; get mask
+       movb *de_+,@e                    ; get pattern
+       movb *de_+,@l                    ; get mask
 shift_pattern_1:
        sla  de,0                       ; Shift (8 - bit offset) pattern bits into MSB
 shift_mask_1:
@@ -1875,7 +1875,7 @@ loc_D800:
 ;RAM:D809 C2 AA D7                    jp      NZ, loc_D7AA                            ; line loop
        jne  loc_D7AA
 ;RAM:D80C ED 7B A9 5B                 ld      sp, (tmp_SP)                            ; restore stack pointer
-       mov  @tmp_SP,sp
+;      mov  @tmp_SP,sp
 ;RAM:D810 C9                          ret
        dect sp
        mov  *sp,r11

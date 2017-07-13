@@ -3038,7 +3038,7 @@ upd_8:
 ;RAM:C676 3A B0 5B                    ld      a, (portcullis_move_cnt)
        movb @portcullis_move_cnt,a
 ;RAM:C679 FE 04                       cp      #4                                      ; moved less than 4 times?
-       sb   a,@b04h
+       cb   a,@b04h
 ;RAM:C67B 38 08                       jr      C, init_portcullis_down                 ; yes, move immediately
        jl   init_portcullis_down
 ;RAM:C67D 3A A5 5B                    ld      a, (seed_3)
@@ -5784,8 +5784,9 @@ plyr_spr_init_data:
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
 * ---------------------------------------------------------------------------
 start_locations:
-       byte >2F, >44, >B3, >8F         ; Standard
-;       byte >8a,>8a,>8a,>8a            ; Nexr cauldron room
+;       byte >2F, >44, >B3, >8F         ; Standard
+;       byte >2f,>2f,>2f,>2f
+        byte >8a,>8a,>8a,>8a            ; Near cauldron room
 * ---------------------------------------------------------------------------
 *
 * End of function init_start_location
