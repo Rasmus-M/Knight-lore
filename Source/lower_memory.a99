@@ -637,8 +637,8 @@ loc_B66E:
 ;RAM:B66E 3A 09 5C                    ld      a, (graphic_objs_tbl+1)                 ; plyr_spr_1 X
        movb @graphic_objs_tbl+1,a
 ;RAM:B671 DD BE 01                    cp      1(ix)                                   ; < objX?
-       cb   a,@1(ix)
 ;RAM:B674 3E 02                       ld      a, #2
+       cb   a,@1(ix)
 loc_B676:
 ;RAM:B676 30 02                       jr      NC, loc_B67A                            ; (self-modifying)
        jl   loc_B67A
