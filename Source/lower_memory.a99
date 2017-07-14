@@ -2761,10 +2761,10 @@ loc_C530:
 ;RAM:C566 79                          ld      a, c
 ;RAM:C567 12                          ld      (de), a
 ;RAM:C568 13                          inc     de
+       movb @c,*de+                   ; TODO: Little endian
 ;RAM:C569 78                          ld      a, b
 ;RAM:C56A 12                          ld      (de), a                                 ; store
 ;RAM:C56B 13                          inc     de
-       movb @c,*de+                   ; TODO: Little endian
        movb b,*de+                    ; TODO: Little endian
 ;RAM:C56C 06 0E                       ld      b, #14
        movb @b0eh,b
