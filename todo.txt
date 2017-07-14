@@ -1,3 +1,2 @@
 Cannot die from spikes, etc.
 Bouncing balls just dropping -> appears to be fixed by ?
-Can keep picking up special objects

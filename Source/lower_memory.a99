@@ -2764,7 +2764,8 @@ loc_C530:
 ;RAM:C569 78                          ld      a, b
 ;RAM:C56A 12                          ld      (de), a                                 ; store
 ;RAM:C56B 13                          inc     de
-       mov  bc,*de+                   ; TODO: Little endian
+       movb @c,*de+                   ; TODO: Little endian
+       movb b,*de+                    ; TODO: Little endian
 ;RAM:C56C 06 0E                       ld      b, #14
        movb @b0eh,b
 ;RAM:C56E CD 08 D5                    call    zero_DE
