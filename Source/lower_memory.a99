@@ -1207,7 +1207,7 @@ upd_160_to_163:
 ;RAM:B8E1 C2 5E B9                    jp      NZ, upd_111                             ; no, skip
        jne  upd_111
 ;RAM:B8E4 DD CB 07 CE                 set     1, 7(ix)                                ; ignore in 3D calcs
-       socb one,@7(ix)
+       socb @b02h,@7(ix)
 ;RAM:B8E8 CD 00 C7                    call    dec_dZ_and_update_XYZ
        bl   @dec_dZ_and_update_XYZ
 ;RAM:B8EB CD 8C B9                    call    next_graphic_no_mod_4
@@ -1231,7 +1231,7 @@ upd_160_to_163:
 ;RAM:B904 38 13                       jr      C, loc_B919                             ; yes, go
        jl   loc_B919
 ;RAM:B906 DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
-       movb a,*ix
+       movb *ix,a
 ;RAM:B909 E6 03                       and     #3
        andi a,>0300
 ;RAM:B90B 20 09                       jr      NZ, loc_B916
@@ -2828,7 +2828,7 @@ update_special_objs:
        li   iy,special_objs_here
 loc_C595:
 ;RAM:C595 FD 7E 00                    ld      a, 0(iy)                                ; get graphic no.
-       movb iy,a
+       movb *iy,a
 ;RAM:C598 A7                          and     a                                       ; null?
 ;RAM:C599 28 1C                       jr      Z, loc_C5B7                             ; yes, skip
        jeq  loc_C5B7

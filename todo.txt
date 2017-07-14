@@ -1,0 +1,5 @@
+Cannot die from spikes, etc.
+Cauldron bubbles not showing object
+Cannot leave portculllis room after picking up object
+Bouncing balls not bouncing
+Falls into block after picking up object
