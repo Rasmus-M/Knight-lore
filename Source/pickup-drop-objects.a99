@@ -387,11 +387,9 @@ is_on_or_near_obj_1:
 ;RAM:C188 30 15                       jr      NC, loc_C19F
        jhe  loc_C19F
 ;RAM:C18A DD 7E 03                    ld      a, 3(ix)                                ; Z
-       movb @3(ix),a
 ;RAM:C18D D6 04                       sub     #4                                      ; Z-4
-       sb   @b04h,a
 ;RAM:C18F DD 77 03                    ld      3(ix), a
-       movb a,@3(ix)
+       sb   @b04h,@3(ix)
 ;RAM:C192 CD C7 CC                    call    do_objs_intersect_on_z
        bl   @do_objs_intersect_on_z
        jhe  !
@@ -402,7 +400,7 @@ is_on_or_near_obj_1:
 ;RAM:C196 DD 7E 03                    ld      a, 3(ix)
 ;RAM:C199 C6 04                       add     a, #4
 ;RAM:C19B DD 77 03                    ld      3(ix), a
-!!     ab   @b04h,@3(ix)
+!     ab   @b04h,@3(ix)
 ;RAM:C19E F1                          pop     af                                      ; restore carry flag
        jmp  !
 loc_C19F:

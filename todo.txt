@@ -1,5 +1,3 @@
 Cannot die from spikes, etc.
-Does not reappear after dying
-Cannot leave portcullis room after picking up object
-Bouncing balls just dropping
-Falls into block after picking up object
+Bouncing balls just dropping -> appears to be fixed by ?
+Can keep picking up special objects

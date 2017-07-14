@@ -3538,7 +3538,7 @@ loc_C83E:
 ;RAM:C853 30 18                       jr      NC, plyr_OOB
        jhe  plyr_OOB
 loc_C855:
-;RAM:C855 DD CB 27 CE                 set     1, 0x27(ix)                             ; fudge near arch
+;RAM:C855 DD CB 27 CE                 set     1, 0x27(ix)                             ; fudge near arch (or ignore?)
        socb @b02h,@>27(ix)
 ;RAM:C859 CD A1 C9                    call    move_player                             ; does the moving
        bl   @move_player
@@ -5787,8 +5787,9 @@ plyr_spr_init_data:
 * ---------------------------------------------------------------------------
 start_locations:
 ;       byte >2F, >44, >B3, >8F         ; Standard
-;       byte >b3,>b3,>b3,>b3
-        byte >8a,>8a,>8a,>8a            ; Near cauldron room
+       byte >b3,>b3,>b3,>b3
+;       byte >8a,>8a,>8a,>8a            ; Near cauldron room
+;       byte >87,>87,>87,>87            ; Portcullis room
 * ---------------------------------------------------------------------------
 *
 * End of function init_start_location
