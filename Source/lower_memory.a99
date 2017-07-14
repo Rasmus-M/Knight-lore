@@ -1331,7 +1331,7 @@ move_towards_plyr:
        movb @1(ix),a
 ;RAM:B96B 96                          sub     (hl)                                    ; -plyrX
 ;RAM:B96C 23                          inc     hl                                      ; plyr_spr_1 Y
-       sb   one,*hl+
+       sb   *hl+,a
 ;RAM:B96D 79                          ld      a, c                                    ; 1or4
        movb @c,a
 ;RAM:B96E FA 73 B9                    jp      M, loc_B973                             ; plyr E? yes, go
@@ -1346,7 +1346,7 @@ loc_B973:
        movb @2(ix),a
 ;RAM:B979 96                          sub     (hl)                                    ; -plyrY
 ;RAM:B97A 23                          inc     hl                                      ; plyrZ
-       sb   one,*hl+
+       sb   *hl+,a
 ;RAM:B97B 78                          ld      a, b                                    ; 1or4
        movb b,a
 ;RAM:B97C FA 81 B9                    jp      M, loc_B981                             ; plyr N? yes, go
@@ -1855,7 +1855,7 @@ loc_C1EE:
 *
 upd_104_to_110:
 ;RAM:C1F1 CD D8 C4                    call    adj_m4_m12
-       b    @adj_m4_m12_1
+       bl   @adj_m4_m12
 ;RAM:C1F4 DD 7E 01                    ld      a, 1(ix)                                ; X
        movb @1(ix),a
 ;RAM:C1F7 D6 80                       sub     #128
@@ -1865,26 +1865,26 @@ upd_104_to_110:
 ;RAM:C1FB 3E 01                       ld      a, #1
 ;RAM:C1FD FA 02 C2                    jp      M, loc_C202
 ;RAM:C200 ED 44                       neg
-       jlt  !
+       jl   !
        movb one,a
        jmp  loc_C202
-       movb mone,a
+!      movb mone,a
 loc_C202:
 ;RAM:C202 DD 77 09                    ld      9(ix), a                                ; dX towards centre of room
        movb a,@9(ix)
 ;RAM:C205 DD 7E 02                    ld      a, 2(ix)                                ; Y
        movb @2(ix),a
 ;RAM:C208 D6 80                       sub     #128
-       sb   @b80h,a
+       cb   @b80h,a
 ;RAM:C20A 28 07                       jr      Z, loc_C213
        jeq  loc_C213
 ;RAM:C20C 3E 01                       ld      a, #1
 ;RAM:C20E FA 13 C2                    jp      M, loc_C213
 ;RAM:C211 ED 44                       neg
-       jlt  !
+       jl   !
        movb one,a
        jmp  loc_C213
-       movb mone,a
+!      movb mone,a
 loc_C213:
 ;RAM:C213 DD 77 0A                    ld      10(ix), a                               ; dY towards cente of room
        movb a,@10(ix)
@@ -1953,7 +1953,7 @@ add_obj_to_cauldron:
 ;RAM:C257 34                          inc     (hl)
        ab   one,*hl
 ;RAM:C258 CD A5 C2                    call    cycle_colours_with_sound
-;      TODO
+       bl   @cycle_colours_with_sound
 ;RAM:C25B 3A BB 5B                    ld      a, (objects_put_in_cauldron)
        movb @objects_put_in_cauldron,a
 ;RAM:C25E FE 0E                       cp      #14                                     ; got all objects?
@@ -1961,7 +1961,7 @@ add_obj_to_cauldron:
 ;RAM:C260 20 03                       jr      NZ, loc_C265                            ; no, skip
        jne  loc_C265
 ;RAM:C262 CD CC C2                    call    prepare_final_animation
-;      bl   @prepare_final_animation
+       bl   @prepare_final_animation
 loc_C265:
 ;RAM:C265 AF                          xor     a
 ;RAM:C266 32 C4 5B                    ld      (obj_dropping_into_cauldron), a
@@ -4505,15 +4505,20 @@ loc_CBAF:
 ;RAM:CBBC E6 40                       and     #0x40 ; '@'                             ; bit 7->6
        andi a,>4000
 ;RAM:CBBE FD B6 0D                    or      13(iy)                                  ; obj2 destroyed?
-;RAM:CBC1 FD 77 0D                    ld      13(iy), a
-       socb a,@13(iy)
+       socb @13(iy),a
+;RAM:CBC1 FD 77 0D                    ld      13(iy), a                               ; kill
+       .ifne invincible 1
+       movb a,@13(iy)
+       .endif
 ;RAM:CBC4 07                          rlca
        sla  a,1
 ;RAM:CBC5 E6 40                       and     #0x40 ; '@'                             ; bit 5->6
        andi a,>4000
 ;RAM:CBC7 DD B6 0D                    or      13(ix)                                  ; obj1 destroyed?
 ;RAM:CBCA DD 77 0D                    ld      13(ix), a
-       socb a,@13(ix)
+       .ifne invincible 1
+       socb a,@13(ix)                                                                 ; kill
+       .endif
 ;RAM:CBCD FD CB 07 56                 bit     2, 7(iy)                                ; moveable?
        movb @7(iy),tmp0
        andi tmp0,>0400
@@ -4584,15 +4589,20 @@ loc_CBFE:
 ;RAM:CC0B E6 40                       and     #0x40 ; '@'                             ; bit 7->6
        andi a,>4000
 ;RAM:CC0D FD B6 0D                    or      13(iy)                                  ; obj2 destroyed?
+       socb @13(iy),a
 ;RAM:CC10 FD 77 0D                    ld      13(iy), a
-       socb a,@13(iy)
+       .ifne invincible 1
+       movb a,@13(iy)                                                                 ; kill
+       .endif
 ;RAM:CC13 07                          rlca
        sla  a,1
 ;RAM:CC14 E6 40                       and     #0x40 ; '@'                             ; bit 5->6
        andi a,>4000
 ;RAM:CC16 DD B6 0D                    or      13(ix)                                  ; obj1 destroyed?
 ;RAM:CC19 DD 77 0D                    ld      13(ix), a
-       socb a,@13(ix)
+       .ifne invincible 1
+       socb a,@13(ix)                                                                 ; kill
+       .endif
 ;RAM:CC1C FD CB 07 56                 bit     2, 7(iy)                                ; moveable?
        movb @7(iy),tmp0
        andi tmp0,>0400
@@ -4663,15 +4673,20 @@ loc_CC4D:
 ;RAM:CC5A E6 40                       and     #0x40 ; '@'                             ; bit 7->6
        andi a,>4000
 ;RAM:CC5C FD B6 0D                    or      13(iy)                                  ; obj2 destroyed?
+       socb @13(iy),a
 ;RAM:CC5F FD 77 0D                    ld      13(iy), a
-       socb a,@13(iy)
+       .ifne invincible 1
+       movb a,@13(iy)                                                                 ; kill
+       .endif
 ;RAM:CC62 07                          rlca
        sla  a,1
 ;RAM:CC63 E6 40                       and     #0x40 ; '@'                             ; bit 5->6
        andi a,>4000
 ;RAM:CC65 DD B6 0D                    or      13(ix)                                  ; obj1 destroyed?
 ;RAM:CC68 DD 77 0D                    ld      13(ix), a
-       socb a,@13(ix)
+       .ifne invincible 1
+       socb a,@13(ix)                                                                 ; kill
+       .endif
 ;RAM:CC6B FD CB 0D DE                 set     3, 13(iy)                               ; triggered (falling, collapsing blocks)
        socb @b08h,@13(iy)
 ;RAM:CC6F DD CB 07 56                 bit     2, 7(ix)                                ; moveable?
@@ -5788,8 +5803,8 @@ plyr_spr_init_data:
 * ---------------------------------------------------------------------------
 start_locations:
 ;       byte >2F, >44, >B3, >8F         ; Standard
-       byte >b3,>b3,>b3,>b3
-;       byte >8a,>8a,>8a,>8a            ; Near cauldron room
+;       byte >b3,>b3,>b3,>b3
+       byte >8a,>8a,>8a,>8a            ; Near cauldron room
 ;       byte >87,>87,>87,>87            ; Portcullis room
 * ---------------------------------------------------------------------------
 *

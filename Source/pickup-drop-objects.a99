@@ -216,7 +216,7 @@ room_to_drop:
 ;RAM:C0CD DD 7E 03                    ld      a, 3(ix)                                ; plyr_spr_1 Z
        movb @3(ix),a
 ;RAM:C0D0 FE 98                       cp      #152
-       sb   a,@b98h
+       cb   a,@b98h
 ;RAM:C0D2 38 09                       jr      C, loc_C0DD
        jl   loc_C0DD
 ;RAM:C0D4 FD CB 00 DE                 set     3, 0(iy)                                ; graphic_no
