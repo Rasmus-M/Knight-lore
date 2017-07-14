@@ -1,1 +1,2 @@
 Bouncing balls just dropping -> appears to be fixed by ?
+Ball carrying block doesn't seem to be moving right.

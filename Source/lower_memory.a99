@@ -1332,9 +1332,11 @@ move_towards_plyr:
 ;RAM:B96B 96                          sub     (hl)                                    ; -plyrX
 ;RAM:B96C 23                          inc     hl                                      ; plyr_spr_1 Y
        sb   *hl+,a
+       movb a,tmp0
 ;RAM:B96D 79                          ld      a, c                                    ; 1or4
        movb @c,a
 ;RAM:B96E FA 73 B9                    jp      M, loc_B973                             ; plyr E? yes, go
+       movb tmp0,tmp0
        jlt  loc_B973
 ;RAM:B971 ED 44                       neg
        inv  a
@@ -1347,9 +1349,11 @@ loc_B973:
 ;RAM:B979 96                          sub     (hl)                                    ; -plyrY
 ;RAM:B97A 23                          inc     hl                                      ; plyrZ
        sb   *hl+,a
+       movb a,tmp0
 ;RAM:B97B 78                          ld      a, b                                    ; 1or4
        movb b,a
 ;RAM:B97C FA 81 B9                    jp      M, loc_B981                             ; plyr N? yes, go
+       movb tmp0,tmp0
        jlt  loc_B981
 ;RAM:B97F ED 44                       neg
        inv  a
@@ -1859,44 +1863,49 @@ upd_104_to_110:
 ;RAM:C1F4 DD 7E 01                    ld      a, 1(ix)                                ; X
        movb @1(ix),a
 ;RAM:C1F7 D6 80                       sub     #128
-       cb   @b80h,a
+       cb   a,@b80h
 ;RAM:C1F9 28 07                       jr      Z, loc_C202
-       jeq  loc_C202
+       jne  !
+       clr  a
+       jmp  loc_C202
 ;RAM:C1FB 3E 01                       ld      a, #1
 ;RAM:C1FD FA 02 C2                    jp      M, loc_C202
 ;RAM:C200 ED 44                       neg
-       jl   !
-       movb one,a
+!      jl   loc_C202
+       movb mone,a
        jmp  loc_C202
-!      movb mone,a
+       movb one,a
 loc_C202:
 ;RAM:C202 DD 77 09                    ld      9(ix), a                                ; dX towards centre of room
        movb a,@9(ix)
 ;RAM:C205 DD 7E 02                    ld      a, 2(ix)                                ; Y
        movb @2(ix),a
 ;RAM:C208 D6 80                       sub     #128
-       cb   @b80h,a
+       cb   a,@b80h
 ;RAM:C20A 28 07                       jr      Z, loc_C213
-       jeq  loc_C213
+       jne  !
+       clr  a
+       jmp  loc_C213
 ;RAM:C20C 3E 01                       ld      a, #1
 ;RAM:C20E FA 13 C2                    jp      M, loc_C213
 ;RAM:C211 ED 44                       neg
-       jl   !
-       movb one,a
+!      jl   loc_C213
+       movb mone,a
        jmp  loc_C213
-!      movb mone,a
+       movb one,a
 loc_C213:
 ;RAM:C213 DD 77 0A                    ld      10(ix), a                               ; dY towards cente of room
        movb a,@10(ix)
 ;RAM:C216 DD 7E 01                    ld      a, 1(ix)                                ; X
        movb @1(ix),a
 ;RAM:C219 FE 80                       cp      #128                                    ; centre of X-axis?
-       cb   @b80h,a
+       cb   a,@b80h
 ;RAM:C21B 20 05                       jr      NZ, loc_C222                            ; no, skip
        jne  loc_C222
 ;RAM:C21D DD AE 02                    xor     2(ix)                                   ; centre of Y-axis?
        movb @2(ix),tmp0
        xor tmp0,a
+       andi a,>ff00
 ;RAM:C220 28 16                       jr      Z, centre_of_room                       ; yes, skip
        jeq  centre_of_room
 loc_C222:
@@ -2015,7 +2024,7 @@ loc_C29B:
 cycle_colours_with_sound:
        movb r11,*sp+
 ;RAM:C2A5 16 10                       ld      d, #16                                  ; cycle 16 times
-       movb @b10h,d
+       movb @b10h,de_
 loc_C2A7:
 ;RAM:C2A7 21 00 58                    ld      hl, #0x5800                             ; attribute memory
 ;RAM:C2AA 01 00 03                    ld      bc, #0x300                              ; size
@@ -2042,14 +2051,16 @@ loc_C2A7:
 ;RAM:C2C4 78                          ld      a, b
 ;RAM:C2C5 B1                          or      c
 ;RAM:C2C6 20 FB                       jr      NZ, loc_C2C3
-       movb d,a
+       movb de_,a
        sb   one,a
        bl   @fill_attr
 ;RAM:C2C8 15                          dec     d
-       sb   one,d
+       sb   one,de_
 ;RAM:C2C9 20 DC                       jr      NZ, loc_C2A7
        jne  loc_C2A7
 ;RAM:C2CB
+       movb @curr_room_attrib,a
+       bl   @fill_attr
 * ---------------------------------------------------------------------------
 no_update:
 ;RAM:C2CB C9                          ret
