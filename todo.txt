@@ -1,5 +1,5 @@
 Cannot die from spikes, etc.
-Cauldron bubbles not showing object
-Cannot leave portculllis room after picking up object
-Bouncing balls not bouncing
+Does not reappear after dying
+Cannot leave portcullis room after picking up object
+Bouncing balls just dropping
 Falls into block after picking up object

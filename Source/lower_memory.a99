@@ -262,7 +262,7 @@ loc_B074:
 ;RAM:B07C DD 7E 00                    ld      a, 0(ix)                                ; player sprite half
        movb *ix,a
 ;RAM:B07F DD B6 20                    or      0x20(ix)                                ; player other sprite half
-       soc  @>20(ix),a
+       socb @>20(ix),a
 ;RAM:B082 CA B7 AF                    jp      Z, player_dies                          ; both null? yes, lose a life
        jne  !
        b    @player_dies
@@ -542,9 +542,8 @@ upd_182_183:
 ;RAM:B608 E5                          push    hl
        mov  hl,*sp+
 ;RAM:B609 DD 7E 0B                    ld      a, 11(ix)                               ; dZ
-       movb @11(ix),a
 ;RAM:B60C 32 C2 5B                    ld      (tmp_bouncing_ball_dZ), a               ; tmp store
-       movb a,@tmp_bouncing_ball_dZ
+       movb @11(ix),@tmp_bouncing_ball_dZ
 ;RAM:B60F CD 00 C7                    call    dec_dZ_and_update_XYZ
        bl   @dec_dZ_and_update_XYZ
 ;RAM:B612 E1                          pop     hl
@@ -642,7 +641,7 @@ loc_B66E:
 ;RAM:B674 3E 02                       ld      a, #2
 loc_B676:
 ;RAM:B676 30 02                       jr      NC, loc_B67A                            ; (self-modifying)
-       jhe  loc_B67A
+       jl   loc_B67A
 ;RAM:B678 ED 44                       neg                                             ; towards player
        movb @bfeh,a                   ; a=-2
        jmp  !
@@ -1143,6 +1142,7 @@ set_both_deadly_flags:
 * ---------------------------------------------------------------------------
 * ball up/down
 upd_178_179:
+;       szcb @b02h,@7(ix)              ; TODO: Reset ignore bit, sometimes this bit is set
 ;RAM:B865 CD F2 C4                    call    upd_12_to_15                            ; adjust (-4,-8)
        bl   @upd_12_to_15_0
 ;RAM:B868 3A BD 5B                    ld      a, (ball_bounce_height)
@@ -2046,7 +2046,7 @@ loc_C2A7:
        sb   one,a
        bl   @fill_attr
 ;RAM:C2C8 15                          dec     d
-       sb   one,de
+       sb   one,d
 ;RAM:C2C9 20 DC                       jr      NZ, loc_C2A7
        jne  loc_C2A7
 ;RAM:C2CB
@@ -4150,40 +4150,6 @@ move_plyr_S:
 *
 * =============== S U B R O U T I N E =======================================
 *
-adj_dZ_for_out_of_bounds:
-       mov  r11,*sp+
-;RAM:CA5A 3A AE 5B                    ld      a, (room_size_Z)
-       movb @room_size_Z,a
-;RAM:CA5D 57                          ld      d, a
-       movb a,d
-loc_CA5E:
-;RAM:CA5E DD 7E 03                    ld      a, 3(ix)                                ; Z
-       movb @3(ix),a
-;RAM:CA61 84                          add     a, h                                    ; Z+=dZ
-       ab   h,a
-;RAM:CA62 BA                          cp      d                                       ; >= room height?
-       cb   a,d
-;RAM:CA63 D0                          ret     NC                                      ; yes, return
-       jhe  adj_dZ_for_out_of_bounds_return
-;RAM:CA64 DD CB 0C D6                 set     2, 12(ix)
-       socb @b04h,@12(ix)
-;RAM:CA68 7C                          ld      a, h                                    ; Z+dZ
-       movb h,a
-;RAM:CA69 CD 89 CA                    call    adj_d_for_out_of_bounds
-       bl   @adj_d_for_out_of_bounds
-;RAM:CA6C 67                          ld      h, a                                    ; new dZ
-       movb a,h
-;RAM:CA6D 20 EF                       jr      NZ, loc_CA5E                            ; check again
-       jne  loc_CA5E
-;RAM:CA6F C9                          ret
-adj_dZ_for_out_of_bounds_return:
-       dect sp
-       mov  *sp,r11
-       rt
-* End of function adj_dZ_for_out_of_bounds
-*
-* =============== S U B R O U T I N E =======================================
-*
 * adjust dX/dY/dZ when out of bounds
 * A = dX/dY/dZ
 *
@@ -4961,6 +4927,40 @@ adj_dY_for_out_of_bounds_return:
        rt
 *
 * End of function adj_dY_for_out_of_bounds
+*
+* =============== S U B R O U T I N E =======================================
+*
+adj_dZ_for_out_of_bounds:
+       mov  r11,*sp+
+;RAM:CA5A 3A AE 5B                    ld      a, (room_size_Z)
+;RAM:CA5D 57                          ld      d, a
+       movb @room_size_Z,d
+loc_CA5E:
+;RAM:CA5E DD 7E 03                    ld      a, 3(ix)                                ; Z
+       movb @3(ix),a
+;RAM:CA61 84                          add     a, h                                    ; Z+=dZ
+       ab   h,a
+;RAM:CA62 BA                          cp      d                                       ; >= room height?
+       cb   a,d
+;RAM:CA63 D0                          ret     NC                                      ; yes, return
+       jhe  adj_dZ_for_out_of_bounds_return
+;RAM:CA64 DD CB 0C D6                 set     2, 12(ix)
+       socb @b04h,@12(ix)
+;RAM:CA68 7C                          ld      a, h                                    ; Z+dZ
+       movb h,a
+;RAM:CA69 CD 89 CA                    call    adj_d_for_out_of_bounds
+       bl   @adj_d_for_out_of_bounds
+;RAM:CA6C 67                          ld      h, a                                    ; new dZ
+       movb a,h
+;RAM:CA6D 20 EF                       jr      NZ, loc_CA5E                            ; check again
+       jne  loc_CA5E
+;RAM:CA6F C9                          ret
+adj_dZ_for_out_of_bounds_return:
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function adj_dZ_for_out_of_bounds
 *
 * =============== S U B R O U T I N E =======================================
 *
