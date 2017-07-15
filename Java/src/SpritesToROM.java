@@ -11,7 +11,7 @@ public class SpritesToROM implements Runnable {
     private final static int START_BANK = 0;
     private final static int BANK_OFFSET = 4;
     private final static int BANK_SIZE = 0x2000;
-    private final static int HEADER_SIZE = 0x20;
+    private final static int HEADER_SIZE = 0x120;
     private final static int ROM_SIZE = 0x40000 - 0x8000;
 
     public static void main(String[] args) {
@@ -71,6 +71,10 @@ public class SpritesToROM implements Runnable {
         System.out.println("Sprite No: " + spriteNo);
         int srcAddr = getWord(sprites, spriteNo * 2) - SPRITE_DATA_ADDR;
         int width = getByte(spriteData, srcAddr++);
+        if ((width & 0x80) != 0) {
+            flipV = !flipV;
+            width = width & 0x07;
+        }
         int height = getByte(spriteData, srcAddr++);
         System.out.println("Width: " + width + ", Height: " + height);
         byte[] sprite = new byte[2 + 2 * width * height];

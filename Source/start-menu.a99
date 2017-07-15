@@ -5,78 +5,135 @@ do_menu_selection:
        mov  r11,*sp+
 ;RAM:BD0C AF                          xor     a
 ;RAM:BD0D 32 B8 5B                    ld      (suppress_border), a
-
+       szcb mone,@suppress_border
 ;RAM:BD10 21 A2 BD                    ld      hl, #menu_colours
+       li   hl,menu_colours
 ;RAM:BD13 06 08                       ld      b, #8                                   ; # menu entries
-;RAM:BD15
-;RAM:BD15             loc_BD15:                                                       ; reset flashing attribute
-;RAM:BD15 CB BE                       res     7, (hl)
+       movb @b08h,b
+loc_BD15:
+;RAM:BD15 CB BE                       res     7, (hl)                                 ; reset flashing attribute
 ;RAM:BD17 23                          inc     hl                                      ; next menu colour entry
+       szcb @b80h,*hl+
 ;RAM:BD18 10 FB                       djnz    loc_BD15                                ; loop until done
+       sb   one,b
+       jne  loc_BD15
 ;RAM:BD1A CD 67 D5                    call    clear_scrn_buffer
+       bl   @clear_scrn_buffer
 ;RAM:BD1D CD B3 BE                    call    display_menu
+       bl   @display_menu
 ;RAM:BD20 CD 89 BD                    call    flash_menu
-;RAM:BD23
-;RAM:BD23             menu_loop:
+       bl   @flash_menu
+menu_loop:
 ;RAM:BD23 CD B3 BE                    call    display_menu
+       bl   @display_menu
 ;RAM:BD26 11 53 B2                    ld      de, #menu_tune
 ;RAM:BD29 CD B6 B2                    call    play_audio_wait_key
+;      TODO
 ;RAM:BD2C 3E F7                       ld      a, #0xF7 ; '�'                          ; 1,2,3,4,5
+       movb @bf7h,a
 ;RAM:BD2E CD F7 B5                    call    read_port
 ;RAM:BD31 5F                          ld      e, a                                    ; store keybd status
+;      Do later
 ;RAM:BD32 3A A4 5B                    ld      a, (user_input_method)
 ;RAM:BD35 32 A6 5B                    ld      (old_input_method), a
+       movb @user_input_method,a
+       movb a,@old_input_method
 ;RAM:BD38 CB 43                       bit     0, e                                    ; '1' (keyboard)?
+       li   tmp0,KEY_1
+       bl   @chkkey
 ;RAM:BD3A 28 02                       jr      Z, check_for_kempston_joystick          ; no, skip
-;RAM:BD3C E6 F9                       and     #0xF9 ; '�'                             ; mask off (bits 2,1)
+       jeq  check_for_kempston_joystick
+;RAM:BD3C E6 F9                       and     #0xF9 ; '�'                            ; mask off (bits 2,1)
+       andi a,>f900
 ;RAM:BD3E
-;RAM:BD3E             check_for_kempston_joystick:                                    ; '2' (Kempston Joystick)?
-;RAM:BD3E CB 4B                       bit     1, e
+check_for_kempston_joystick:
+;RAM:BD3E CB 4B                       bit     1, e                                    ; '2' (Kempston Joystick)?
+       li   tmp0,KEY_2
+       bl   @chkkey
 ;RAM:BD40 28 04                       jr      Z, check_for_cursor_joystick            ; no, skip
-;RAM:BD42 E6 F9                       and     #0xF9 ; '�'                             ; mask off (bits 2,1)
+       jeq  check_for_cursor_joystick
+;RAM:BD42 E6 F9                       and     #0xF9 ; '�'                            ; mask off (bits 2,1)
+       andi a,>f900
 ;RAM:BD44 F6 02                       or      #2                                      ; set bit 1
+       ori  a,>0200
 ;RAM:BD46
-;RAM:BD46             check_for_cursor_joystick:                                      ; '3' (Cursor Joystick)?
-;RAM:BD46 CB 53                       bit     2, e
+check_for_cursor_joystick:
+;RAM:BD46 CB 53                       bit     2, e                                    ; '3' (Cursor Joystick)?
+       li   tmp0,KEY_3
+       bl   @chkkey
 ;RAM:BD48 28 04                       jr      Z, check_for_interface_ii               ; no, skip
-;RAM:BD4A E6 F9                       and     #0xF9 ; '�'                             ; mask off (bits 2,1)
+       jeq  check_for_interface_ii
+;RAM:BD4A E6 F9                       and     #0xF9 ; '�'                            ; mask off (bits 2,1)
+       andi a,>f900
 ;RAM:BD4C F6 04                       or      #4                                      ; set bit 2
+       ori  a,>0400
 ;RAM:BD4E
-;RAM:BD4E             check_for_interface_ii:                                         ; '4' (Interface II)?
-;RAM:BD4E CB 5B                       bit     3, e
+check_for_interface_ii:
+;RAM:BD4E CB 5B                       bit     3, e                                    ; '4' (Interface II)?
+       li   tmp0,KEY_4
+       bl   @chkkey
 ;RAM:BD50 28 02                       jr      Z, check_for_directional_control        ; no, skip
+       jeq  check_for_directional_control
 ;RAM:BD52 F6 06                       or      #6                                      ; set bits 1,2
+       ori  a,>0600
 ;RAM:BD54
-;RAM:BD54             check_for_directional_control:                                  ; store
-;RAM:BD54 32 A4 5B                    ld      (user_input_method), a
+check_for_directional_control:
+;RAM:BD54 32 A4 5B                    ld      (user_input_method), a                  ; store
+       movb a,@user_input_method
 ;RAM:BD57 21 D2 5B                    ld      hl, #debounce_5
+       li   hl,debounce_5
 ;RAM:BD5A CB 63                       bit     4, e                                    ; '5' (directional control)?
+       li   tmp0,KEY_5
+       bl   @chkkey
 ;RAM:BD5C 28 27                       jr      Z, clr_debounce                         ; no, skip
+       jeq  clr_debounce
 ;RAM:BD5E CB 46                       bit     0, (hl)                                 ; was pressed last time?
+       movb *hl,tmp0
+       andi tmp0,>0100
 ;RAM:BD60 20 0A                       jr      NZ, check_for_start_game                ; yes, skip
+       jne  check_for_start_game
 ;RAM:BD62 CB C6                       set     0, (hl)                                 ; set debounce
+       socb one,*hl
 ;RAM:BD64 3A A4 5B                    ld      a, (user_input_method)
+       movb @user_input_method,a
 ;RAM:BD67 EE 08                       xor     #8                                      ; toggle directional
+       li   tmp0,>0800
+       xor tmp0,a
 ;RAM:BD69 32 A4 5B                    ld      (user_input_method), a
+       movb a,@user_input_method
 ;RAM:BD6C
-;RAM:BD6C             check_for_start_game:
+check_for_start_game:
 ;RAM:BD6C 21 A6 5B                    ld      hl, #old_input_method
+       li   hl,old_input_method
 ;RAM:BD6F BE                          cp      (hl)                                    ; changed input method?
+       cb   a,*hl
 ;RAM:BD70 C4 A3 B4                    call    NZ, toggle_audio_hw_x16                 ; yes
+;      TODO
 ;RAM:BD73 3E EF                       ld      a, #0xEF ; '�'                          ; 0,9,8,7,6
+       movb @befh,a
 ;RAM:BD75 CD F7 B5                    call    read_port
 ;RAM:BD78 CB 47                       bit     0, a                                    ; '0' (Start Game)?
+       li   tmp0,KEY_0
+       bl   @chkkey
 ;RAM:BD7A C0                          ret     NZ                                      ; yes, exit
+       jne  do_menu_selection_return
 ;RAM:BD7B 21 A0 5B                    ld      hl, #seed_1
+       li   hl,seed_1
 ;RAM:BD7E 34                          inc     (hl)                                    ; remember when BASIC games did this?
+       ab   one,*hl
 ;RAM:BD7F CD 89 BD                    call    flash_menu
+       bl   @flash_menu
 ;RAM:BD82 C3 23 BD                    jp      menu_loop
-;RAM:BD85             ; ---------------------------------------------------------------------------
-;RAM:BD85
-;RAM:BD85             clr_debounce:
+       b    @menu_loop
+* ---------------------------------------------------------------------------
+clr_debounce:
 ;RAM:BD85 CB 86                       res     0, (hl)
+       szcb one,*hl
 ;RAM:BD87 18 E3                       jr      check_for_start_game                    ; continue
-       movb  @b02h,@user_input_method
+       jmp  check_for_start_game
+do_menu_selection_return:
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function do_menu_selection
@@ -84,21 +141,156 @@ do_menu_selection:
 * =============== S U B R O U T I N E =======================================
 *
 flash_menu:
+       mov  r11,*sp+
 ;RAM:BD89 21 A3 BD                    ld      hl, # menu_colours+1
+       li   hl,menu_colours+1
 ;RAM:BD8C 3A A4 5B                    ld      a, (user_input_method)
+       movb @user_input_method,a
 ;RAM:BD8F 0F                          rrca
+       srl  a,1
 ;RAM:BD90 E6 03                       and     #3                                      ; keybd/joystick bits only
+       andi a,>0300
 ;RAM:BD92 06 04                       ld      b, #4
+       movb @b04h,b
 ;RAM:BD94 CD A3 BE                    call    toggle_selected
+       bl   @toggle_selected
 ;RAM:BD97 CB BE                       res     7, (hl)
+       szcb @b80h,*hl
 ;RAM:BD99 3A A4 5B                    ld      a, (user_input_method)
+       movb @user_input_method,a
 ;RAM:BD9C E6 08                       and     #8                                      ; directional only
+       andi a,>0800
 ;RAM:BD9E C8                          ret     Z
+       jeq  flash_menu_return
 ;RAM:BD9F CB FE                       set     7, (hl)
+       socb @b80h,*hl
 ;RAM:BDA1 C9                          ret
+flash_menu_return:
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function flash_menu
+*
+* =============== S U B R O U T I N E =======================================
+*
+toggle_selected:
+;RAM:BEA3 A7                          and     a
+       movb a,a
+;RAM:BEA4 20 07                       jr      NZ, loc_BEAD
+       jne  loc_BEAD
+loc_BEA6:
+;RAM:BEA6 CB FE                       set     7, (hl)
+       socb @b80h,*hl
+;RAM:BEA8 18 05                       jr      loc_BEAF
+       jmp  loc_BEAF
+* ---------------------------------------------------------------------------
+loc_BEAA:
+;RAM:BEAA 3D                          dec     a
+       sb   one,a
+;RAM:BEAB 28 F9                       jr      Z, loc_BEA6
+       jeq  loc_BEA6
+loc_BEAD:
+;RAM:BEAD CB BE                       res     7, (hl)
+       szcb @b80h,*hl
+loc_BEAF:
+;RAM:BEAF 23                          inc     hl
+       inc  hl
+;RAM:BEB0 10 F8                       djnz    loc_BEAA
+       sb   one,b
+       jne  loc_BEAA
+;RAM:BEB2 C9                          ret
+       rt
+*
+* End of function toggle_selected
+*
+* =============== S U B R O U T I N E =======================================
+*
+display_menu:
+       mov  r11,*sp+
+;RAM:BEB3 11 A2 BD                    ld      de, #menu_colours
+       li   de,menu_colours
+;RAM:BEB6 D9                          exx                                             ; select param set 2
+       bl   @exx
+;RAM:BEB7 21 AA BD                    ld      hl, #menu_xy
+       li   hl,menu_xy
+;RAM:BEBA 11 BA BD                    ld      de, #menu_text
+       li   de,menu_text
+;RAM:BEBD 06 08                       ld      b, #8                                   ; 8 lines to display
+       movb @b08h,b
+*      Call instead of fall through
+       bl   @display_text_list
+*      Return
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function display_menu
+*
+* =============== S U B R O U T I N E =======================================
+*
+* DE  = attributes
+* HL' = coordinates
+* DE' = text entries
+*  B' = number to display
+*
+display_text_list:
+       mov  r11,*sp+
+display_text_list_1:
+;RAM:BEBF D9                          exx                                             ; select param set 1
+       bl   @exx
+;RAM:BEC0 1A                          ld      a, (de)                                 ; get attribute
+;RAM:BEC1 32 B6 5B                    ld      (tmp_attrib), a                         ; store
+;RAM:BEC4 13                          inc     de                                      ; next attribute
+       movb *de+,a
+       movb a,@tmp_attrib
+;RAM:BEC5 D9                          exx                                             ; select param set 2
+       bl   @exx
+;RAM:BEC6 C5                          push    bc                                      ; number to display
+       mov  bc,*sp+
+;RAM:BEC7 7E                          ld      a, (hl)                                 ; get X
+       movb *hl,a
+;RAM:BEC8 23                          inc     hl
+;RAM:BEC9 23                          inc     hl
+       inct hl
+;RAM:BECA E5                          push    hl
+       mov  hl,*sp+
+;RAM:BECB 2B                          dec     hl
+       dec  hl
+;RAM:BECC 66                          ld      h, (hl)                                 ; H = Y
+       movb *hl,h
+;RAM:BECD 6F                          ld      l, a                                    ; L = X
+       movb a,@l
+;RAM:BECE CD 31 BE                    call    print_text_single_colour
+       bl   @print_text_single_colour
+;RAM:BED1 E1                          pop     hl
+       dect sp
+       mov  *sp,hl
+;RAM:BED2 C1                          pop     bc
+       dect sp
+       mov  *sp,bc
+;RAM:BED3 10 EA                       djnz    display_text_list                       ; loop through list of messages
+       sb   one,b
+       jne  display_text_list_1
+;RAM:BED5 3A B8 5B                    ld      a, (suppress_border)
+       movb @suppress_border,a
+;RAM:BED8 A7                          and     a                                       ; show border?
+;RAM:BED9 C0                          ret     NZ                                      ; no, return
+       jne  display_text_list_return
+;RAM:BEDA 3C                          inc     a
+       ab   one,a
+;RAM:BEDB 32 B8 5B                    ld      (suppress_border), a
+       movb a,@suppress_border
+;RAM:BEDE CD 96 D2                    call    print_border
+       bl   @print_border
+;RAM:BEE1 C3 6F D5                    jp      update_screen
+       bl   @update_screen
+display_text_list_return:
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function display_text_list
 *
 * ---------------------------------------------------------------------------
 * colours
@@ -133,69 +325,5 @@ menu_text:
 * "(c) 1984 A.C.G."
        byte >25, >26, 1, 9, 8, 4, >26, >A, >24, >C, >24
        byte >10, >A4
-* =============== S U B R O U T I N E =======================================
-*
-toggle_selected:
-;RAM:BEA3 A7                          and     a
-;RAM:BEA4 20 07                       jr      NZ, loc_BEAD
-;RAM:BEA6
-loc_BEA6:
-;RAM:BEA6 CB FE                       set     7, (hl)
-;RAM:BEA8 18 05                       jr      loc_BEAF
-* ---------------------------------------------------------------------------
-;RAM:BEAA
-loc_BEAA:
-;RAM:BEAA 3D                          dec     a
-;RAM:BEAB 28 F9                       jr      Z, loc_BEA6
-;RAM:BEAD
-loc_BEAD:
-;RAM:BEAD CB BE                       res     7, (hl)
-;RAM:BEAF
-loc_BEAF:
-;RAM:BEAF 23                          inc     hl
-;RAM:BEB0 10 F8                       djnz    loc_BEAA
-;RAM:BEB2 C9                          ret
-       rt
-*
-* End of function toggle_selected
-*
-* =============== S U B R O U T I N E =======================================
-*
-display_menu:
-;RAM:BEB3 11 A2 BD                    ld      de, #menu_colours
-;RAM:BEB6 D9                          exx                                             ; select param set 2
-;RAM:BEB7 21 AA BD                    ld      hl, #menu_xy
-;RAM:BEBA 11 BA BD                    ld      de, #menu_text
-;RAM:BEBD 06 08                       ld      b, #8                                   ; 8 lines to display
-*
-* End of function display_menu
-*
-display_text_list:
-;RAM:BEBF D9                          exx                                             ; select param set 1
-;RAM:BEC0 1A                          ld      a, (de)                                 ; get attribute
-;RAM:BEC1 32 B6 5B                    ld      (tmp_attrib), a                         ; store
-;RAM:BEC4 13                          inc     de                                      ; next attribute
-;RAM:BEC5 D9                          exx                                             ; select param set 2
-;RAM:BEC6 C5                          push    bc                                      ; number to display
-;RAM:BEC7 7E                          ld      a, (hl)                                 ; get X
-;RAM:BEC8 23                          inc     hl
-;RAM:BEC9 23                          inc     hl
-;RAM:BECA E5                          push    hl
-;RAM:BECB 2B                          dec     hl
-;RAM:BECC 66                          ld      h, (hl)                                 ; H = Y
-;RAM:BECD 6F                          ld      l, a                                    ; L = X
-;RAM:BECE CD 31 BE                    call    print_text_single_colour
-;RAM:BED1 E1                          pop     hl
-;RAM:BED2 C1                          pop     bc
-;RAM:BED3 10 EA                       djnz    display_text_list                       ; loop through list of messages
-;RAM:BED5 3A B8 5B                    ld      a, (suppress_border)
-;RAM:BED8 A7                          and     a                                       ; show border?
-;RAM:BED9 C0                          ret     NZ                                      ; no, return
-;RAM:BEDA 3C                          inc     a
-;RAM:BEDB 32 B8 5B                    ld      (suppress_border), a
-;RAM:BEDE CD 96 D2                    call    print_border
-;RAM:BEE1 C3 6F D5                    jp      update_screen
-       b    @update_screen
-*
-* End of function display_text_list
-*
+
+       even

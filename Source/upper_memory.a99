@@ -1,3 +1,67 @@
+*
+* =============== S U B R O U T I N E =======================================
+*
+print_border:
+       mov  r11,*sp+
+;RAM:D296 DD 21 DB BF                 ld      ix, #sprite_scratchpad
+       li   ix,sprite_scratchpad
+;RAM:D29A 21 CF D2                    ld      hl, #border_data
+       li   hl,border_data
+;RAM:D29D CD 4C D2                    call    transfer_sprite_and_print
+       bl   @transfer_sprite_and_print
+;RAM:D2A0 CD 4C D2                    call    transfer_sprite_and_print
+       bl   @transfer_sprite_and_print
+;RAM:D2A3 CD 4C D2                    call    transfer_sprite_and_print
+       bl   @transfer_sprite_and_print
+;RAM:D2A6 CD 4C D2                    call    transfer_sprite_and_print
+       bl   @transfer_sprite_and_print
+;RAM:D2A9 CD 37 D2                    call    transfer_sprite
+       bl   @transfer_sprite
+;RAM:D2AC 11 08 00                    ld      de, #8                                  ; X+=8, Y+=0
+       li   de,>0008
+;RAM:D2AF 06 18                       ld      b, #24                                  ; 24 times
+       movb @b18h,b
+;RAM:D2B1 CD E4 BE                    call    multiple_print_sprite
+       bl   @multiple_print_sprite
+;RAM:D2B4 CD 37 D2                    call    transfer_sprite
+       bl   @transfer_sprite
+;RAM:D2B7 06 18                       ld      b, #24                                  ; 24 times
+       movb @b18h,b
+;RAM:D2B9 CD E4 BE                    call    multiple_print_sprite
+       bl   @multiple_print_sprite
+;RAM:D2BC CD 37 D2                    call    transfer_sprite
+       bl   @transfer_sprite
+;RAM:D2BF 11 00 01                    ld      de, #0x100                              ; X+=0, Y+=1
+       li   de,>0100
+;RAM:D2C2 06 80                       ld      b, #128                                 ; 128 times
+       movb @b80h,b
+;RAM:D2C4 CD E4 BE                    call    multiple_print_sprite
+       bl   @multiple_print_sprite
+;RAM:D2C7 CD 37 D2                    call    transfer_sprite
+       bl   @transfer_sprite
+;RAM:D2CA 06 80                       ld      b, #128                                 ; 128 times
+       movb @b80h,b
+;RAM:D2CC C3 E4 BE                    jp      multiple_print_sprite
+       bl    @multiple_print_sprite
+*      Return
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function print_border
+*
+* ---------------------------------------------------------------------------
+* sprite index, flags, X, Y
+border_data:
+       byte >89, >00, >00, >A0
+       byte >89, >40, >E0, >A0
+       byte >89, >C0, >E0, >00
+       byte >89, >80, >00, >00
+       byte >8B, >00, >20, >A8
+       byte >8B, >00, >20, >00
+       byte >8A, >00, >00, >20
+       byte >8A, >00, >E8, >20
+*
 * =============== S U B R O U T I N E =======================================
 *
 print_days:
@@ -280,11 +344,11 @@ print_text_single_colour:
        bl   @calc_vidbuf_addr
 ;RAM:BE3D 69                          ld      l, c
 ;RAM:BE3E 60                          ld      h, b                                    ; HL = bitmap buffer address
-       movb bc,hl
+       mov  bc,hl
 ;RAM:BE3F 3A B6 5B                    ld      a, (tmp_attrib)
        movb @tmp_attrib,a
 ;RAM:BE42 08                          ex      af, af'
-       mov  af,af_
+       bl   @ex_af_af_
 ;RAM:BE43 18 11                       jr      loc_BE56
        jmp  loc_BE56
 *
@@ -319,7 +383,7 @@ print_text:
 ;RAM:BE53 1A                          ld      a, (de)                                 ; attribute
        movb *de,a
 ;RAM:BE54 08                          ex      af, af'
-       mov  af,af_
+       bl   @ex_af_af_
 ;RAM:BE55 13                          inc     de                                      ; ptr first character
        inc  de
 loc_BE56:
@@ -358,13 +422,13 @@ loc_BE5F:
 ;RAM:BE6B D9                          exx
        bl   @exx
 ;RAM:BE6C 08                          ex      af, af'
-       mov  af_,af
+       bl   @ex_af_af_
 ;RAM:BE6D 77                          ld      (hl), a                                 ; store attribute
        bl   @set_attribute
 ;RAM:BE6E 2C                          inc     l                                       ; next attribute address
        ab   one,@l
 ;RAM:BE6F 08                          ex      af, af'
-       mov  af,af_
+       bl   @ex_af_af_
 ;RAM:BE70 18 ED                       jr      loc_BE5F                                ; loop until message done
        jmp  loc_BE5F
 * ---------------------------------------------------------------------------
@@ -374,7 +438,7 @@ loc_BE72:
 ;RAM:BE74 D5                          push    de
        mov  de,*sp+
 ;RAM:BE75 CD 7F BE                    call    print_8x8                               ; display a character
-      bl   @print_8x8
+       bl   @print_8x8
 ;RAM:BE78 D1                          pop     de
        dect sp
        mov  *sp,de
@@ -383,7 +447,7 @@ loc_BE72:
 ;RAM:BE7A D9                          exx
        bl   @exx
 ;RAM:BE7B 08                          ex      af, af'
-       mov  af_,af
+       bl   @ex_af_af_
 ;RAM:BE7C 77                          ld      (hl), a                                 ; store attribute
        bl   @set_attribute
 ;RAM:BE7D D9                          exx
@@ -851,7 +915,7 @@ fill_attr:
 ;RAM:D55D 18 DD                       jr      clr_byte                                ; fill
        bl   @ti_color
        li   hl,COLRTB
-       mov  af_,de
+       mov  tmp0,de
        li   bc,>1800
        bl   @vdpwr
 *      Return
@@ -1417,7 +1481,7 @@ flip_sprite:
        andi tmp0,>c000                ; Isolate vflip and hflip
        srl  tmp0,12                   ; Move to bits 3-2
        soc  tmp0,tmp1                 ; Combine with index
-       ai   tmp1,>6020                ; Add offset to index
+       ai   tmp1,>6120                ; Add offset to index
        seto @>6008                    ; Select ROM bank containing index
        mov  *tmp1+,tmp0               ; Bank select address
        mov  *tmp1,de                  ; Bank address
@@ -1508,24 +1572,20 @@ transfer_sprite_and_print_1:
 transfer_sprite:
 ;RAM:D237 7E                          ld      a, (hl)                                 ; sprite index
 ;RAM:D238 23                          inc     hl
-       movb *hl+,a
 ;RAM:D239 DD 77 00                    ld      0(ix), a                                ; store sprite index
-       movb a,*ix
+       movb *hl+,*ix
 ;RAM:D23C 7E                          ld      a, (hl)                                 ; flags
 ;RAM:D23D 23                          inc     hl
-       movb *hl+,a
 ;RAM:D23E DD 77 07                    ld      7(ix), a                                ; store flags
-       movb a,@7(ix)
+       movb *hl+,@7(ix)
 ;RAM:D241 7E                          ld      a, (hl)                                 ; X
 ;RAM:D242 23                          inc     hl
-       movb *hl+,a
 ;RAM:D243 DD 77 1A                    ld      26(ix), a                               ; pixel X
-       movb a,@26(ix)
+       movb *hl+,@26(ix)
 ;RAM:D246 7E                          ld      a, (hl)                                 ; Y
 ;RAM:D247 23                          inc     hl
-       movb *hl+,a
 ;RAM:D248 DD 77 1B                    ld      27(ix), a                               ; pixel Y
-       movb a,@27(ix)
+       movb *hl+,@27(ix)
 ;RAM:D24B C9                          ret
        rt
 *
@@ -2356,7 +2416,7 @@ fill_color_window:
        mov  r11,*sp+
        bl   @ti_color
        mov  hl,@wrksp2                  hl -> r0
-       movb af_,@wrksp2+2               af_ -> r1
+       movb tmp0,@wrksp2+2              tmp0 -> r1
        mov  bc,@wrksp2+4                bc -> r2
        lwpi wrksp2
        ai   r0,-zx_aram
@@ -2406,7 +2466,7 @@ fill_color_window_2:
 *  - B - Bright (0-No, 1-Yes)
 *  - F - Flash  (0-No, 1-Yes)
 *
-* On return af_ contains the TI color FFFFBBBB.
+* On return tmp0 MSB contains the TI color FFFFBBBB.
 *
 ti_color:
        movb a,@wrksp2
@@ -2430,8 +2490,14 @@ ti_color:
        swpb r2
        movb @tipal(r2),r3
        socb r3,r1
-       lwpi wrksp
-       movb @wrksp2+2,af_
+*      Flash
+       andi r0,>8000
+       jeq  !
+       srl  r1,4
+       andi r1,>0ff0
+       socb @wrksp2+3,r1
+!      lwpi wrksp
+       movb @wrksp2+2,tmp0
        rt
 
 * Spectrum palette
@@ -2565,6 +2631,12 @@ ex_de_hl:
        mov  tmp0,hl
        rt
 
+ex_af_af_:
+       mov  af,tmp0
+       mov  af_,af
+       mov  tmp0,af_
+       rt
+
 ldir:
        movb *hl+,*de+
        dec  bc
@@ -2678,7 +2750,7 @@ chkkey:
        mov  tmp0,r12                   ; Select row
        tb   0                          ; Test key, EQ if not pressed
        rt
-*// CHKKEY
+*// chkkey
 
 *********************************************************************
 *
@@ -2702,6 +2774,7 @@ b10h   byte >10
 b12h   byte >12
 b14h   byte >14
 b17h   byte >17
+b18h   byte >18
 b1ah   byte >1a
 b1fh   byte >1f
 b20h   byte >20
@@ -2737,8 +2810,10 @@ bc0h   byte >c0
 bc8h   byte >c8
 bd0h   byte >d0
 be1h   byte >e1
+befh   byte >ef
 bf0h   byte >f0
 bf1h   byte >f1
+bf7h   byte >f7
 bfeh   byte >fe
 bffh   byte >ff
 
