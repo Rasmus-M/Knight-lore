@@ -263,6 +263,35 @@ print_BCD_lsd:
 *
 * =============== S U B R O U T I N E =======================================
 *
+print_text_single_colour:
+       mov  r11,*sp+
+;RAM:BE31 E5                          push    hl                                      ; save Y,X
+       mov  hl,*sp+
+;RAM:BE32 21 08 61                    ld      hl, #font
+       li   hl,font
+;RAM:BE35 22 C7 5B                    ld      (gfxbase_8x8), hl
+       mov  hl,@gfxbase_8x8
+;RAM:BE38 C1                          pop     bc                                      ; BC = Y,X
+       dect sp
+       mov  *sp,bc
+;RAM:BE39 C5                          push    bc
+       mov  bc,*sp+
+;RAM:BE3A CD 11 D8                    call    calc_vidbuf_addr
+       bl   @calc_vidbuf_addr
+;RAM:BE3D 69                          ld      l, c
+;RAM:BE3E 60                          ld      h, b                                    ; HL = bitmap buffer address
+       movb bc,hl
+;RAM:BE3F 3A B6 5B                    ld      a, (tmp_attrib)
+       movb @tmp_attrib,a
+;RAM:BE42 08                          ex      af, af'
+       mov  af,af_
+;RAM:BE43 18 11                       jr      loc_BE56
+       jmp  loc_BE56
+*
+* End of function print_text_single_colour
+*
+* =============== S U B R O U T I N E =======================================
+*
 print_text_std_font:
        mov  r11,*sp+
 ;RAM:BE45 E5                          push    hl
