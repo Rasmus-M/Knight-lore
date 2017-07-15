@@ -527,13 +527,12 @@ check_user_input:
 ;RAM:D029 B1                          or      c
        socb @c,a
 ;RAM:D02A 0E 00                       ld      c, #0
+;      Do later
 ;RAM:D02C C2 11 D1                    jp      NZ, finished_input
        jeq  !
-       szcb mone,@c
        b    @finished_input
 ;RAM:D02F 3A A4 5B                    ld      a, (user_input_method)
-!      szcb mone,@c
-       movb @user_input_method,a
+!       movb @user_input_method,a
 ;RAM:D032 0F                          rrca
        srl  a,1
 ;RAM:D033 E6 03                       and     #3                                      ; keybd/joystick bits only
@@ -567,27 +566,26 @@ interface_ii:
 ;RAM:D054 0E 00                       ld      c, #0
 ;RAM:D056 CB 47                       bit     0, a                                    ; 0/left???
 ;RAM:D058 28 02                       jr      Z, loc_D05C
-;RAM:D05A CB D9                       set     3, c
+;RAM:D05A CB D9                       set     3, c                                    ; Forward
 ;RAM:D05C
 ;RAM:D05C             loc_D05C:
 ;RAM:D05C CB 4F                       bit     1, a
 ;RAM:D05E 28 02                       jr      Z, loc_D062
-;RAM:D060 CB D1                       set     2, c
-;RAM:D062
+;RAM:D060 CB D1                       set     2, c;RAM:D062
 ;RAM:D062             loc_D062:
 ;RAM:D062 CB 57                       bit     2, a
 ;RAM:D064 28 02                       jr      Z, loc_D068
-;RAM:D066 CB E1                       set     4, c
+;RAM:D066 CB E1                       set     4, c                                    ; Pickup
 ;RAM:D068
 ;RAM:D068             loc_D068:
 ;RAM:D068 CB 5F                       bit     3, a
 ;RAM:D06A 28 02                       jr      Z, loc_D06E
-;RAM:D06C CB C9                       set     1, c
+;RAM:D06C CB C9                       set     1, c                                    ; Right
 ;RAM:D06E
 ;RAM:D06E             loc_D06E:
 ;RAM:D06E CB 67                       bit     4, a
 ;RAM:D070 28 02                       jr      Z, loc_D074
-;RAM:D072 CB C1                       set     0, c
+;RAM:D072 CB C1                       set     0, c                                    ; Left
 ;RAM:D074
 ;RAM:D074             loc_D074:
 ;RAM:D074 C3 11 D1                    jp      finished_input
@@ -602,7 +600,7 @@ kempston:
        ldcr tmp0,3                      ; Select it
        li   r12,>0006                 , Base CRU address for joystick 1
 ;RAM:D079 0E 00                       ld      c, #0
-       szcb mone,@c
+      szcb mone,@c
 ;RAM:D07B CB 47                       bit     0, a                                    ; right?
        tb   2
 ;RAM:D07D 28 02                       jr      Z, loc_D081
@@ -643,36 +641,59 @@ loc_D099:
 * ---------------------------------------------------------------------------
 cursor:
 ;RAM:D09C 0E 00                       ld      c, #0
-;RAM:D09E 3E F7                       ld      a, #0xF7 ; '�'                          ; row 3
+      szcb mone,@c
+;RAM:D09E 3E F7                       ld      a, #0xF7 ; '�'                         ; row 3
 ;RAM:D0A0 CD F7 B5                    call    read_port
 ;RAM:D0A3 CB 67                       bit     4, a                                    ; '5'?
+       li   r0,KEY_S
+       bl   @chkkey
 ;RAM:D0A5 28 02                       jr      Z, loc_D0A9
-;RAM:D0A7 CB C1                       set     0, c
+       jeq  loc_D0A9
+;RAM:D0A7 CB C1                       set     0, c                                    ; Left
+       socb one,@c
 ;RAM:D0A9
-;RAM:D0A9             loc_D0A9:                                                       ; row 4
-;RAM:D0A9 3E EF                       ld      a, #0xEF ; '�'
+loc_D0A9:
+;RAM:D0A9 3E EF                       ld      a, #0xEF ; '�'                         ; row 4
 ;RAM:D0AB CD F7 B5                    call    read_port
 ;RAM:D0AE CB 47                       bit     0, a                                    ; '0'?
+       li   r0,KEY_SP
+       bl   @chkkey
 ;RAM:D0B0 28 02                       jr      Z, loc_D0B4
-;RAM:D0B2 CB D9                       set     3, c
+       jeq  loc_D0B4
+;RAM:D0B2 CB D9                       set     3, c                                    ; Jump
+       socb @b08h,@c
 ;RAM:D0B4
-;RAM:D0B4             loc_D0B4:                                                       ; '7'?
-;RAM:D0B4 CB 5F                       bit     3, a
+loc_D0B4:
+;RAM:D0B4 CB 5F                       bit     3, a                                    ; '7'?
+       li   r0,KEY_E
+       bl   @chkkey
 ;RAM:D0B6 28 02                       jr      Z, loc_D0BA
-;RAM:D0B8 CB D1                       set     2, c
+       jeq  loc_D0BA
+;RAM:D0B8 CB D1                       set     2, c                                    ; Forward
+       socb @b04h,@c
 ;RAM:D0BA
-;RAM:D0BA             loc_D0BA:                                                       ; '8'?
-;RAM:D0BA CB 57                       bit     2, a
+loc_D0BA:
+;RAM:D0BA CB 57                       bit     2, a                                    ; '8'?
+       li   r0,KEY_D
+       bl   @chkkey
 ;RAM:D0BC 28 02                       jr      Z, loc_D0C0
-;RAM:D0BE CB C9                       set     1, c
+       jeq  loc_D0C0
+;RAM:D0BE CB C9                       set     1, c                                    ; Right
+       socb @b02h,@c
 ;RAM:D0C0
-;RAM:D0C0             loc_D0C0:                                                       ; '6'?
-;RAM:D0C0 CB 67                       bit     4, a
+loc_D0C0:
+;RAM:D0C0 CB 67                       bit     4, a                                    ; '6'?
+       li   r0,KEY_X
+       bl   @chkkey
 ;RAM:D0C2 28 4D                       jr      Z, finished_input
+       jeq  finished_input
 ;RAM:D0C4 CB E1                       set     4, c
+       socb @b10h,@c
 ;RAM:D0C6 18 49                       jr      finished_input
+       jmp  finished_input
 * ---------------------------------------------------------------------------
 keyboard:
+      szcb mone,@c
 ;RAM:D0C8 3E FE                       ld      a, #0xFE ; '�'                          ; row 0 (SHIFT,Z,X,C,V)
 ;RAM:D0CA CD F7 B5                    call    read_port
 ;RAM:D0CD 0F                          rrca
@@ -690,12 +711,20 @@ keyboard:
 ;RAM:D0E2 CB C9                       set     1, c                                    ; flag RIGHT
 loc_D0E4:
 ;RAM:D0E4 CB 57                       bit     2, a                                    ; 'M'? (left)
+       li   r0,KEY_N
+       bl   @chkkey
 ;RAM:D0E6 28 02                       jr      Z, loc_D0EA                             ; no, skip
+       jeq  loc_D0EA
 ;RAM:D0E8 CB C1                       set     0, c                                    ; flag LEFT
+       socb one,@c
 loc_D0EA:
 ;RAM:D0EA CB 5F                       bit     3, a                                    ; 'N'? (right)
+       li   r0,KEY_M
+       bl   @chkkey
 ;RAM:D0EC 28 02                       jr      Z, loc_D0F0                             ; no, skip
+       jeq  loc_D0F0
 ;RAM:D0EE CB C9                       set     1, c                                    ; flag RIGHT
+       socb @b02h,@c
 loc_D0F0:
 ;RAM:D0F0 CB 67                       bit     4, a                                    ; 'B'? (left)
 ;RAM:D0F2 28 02                       jr      Z, loc_D0F6
@@ -703,18 +732,30 @@ loc_D0F0:
 loc_D0F6:
 ;RAM:D0F6 3E BD                       ld      a, #0xBD ; '�'                         ; row 1,6 (2nd row) A,S,F,G,G,H,J,K,L,ENTER (FORWARD)
 ;RAM:D0F8 CD F7 B5                    call    read_port
+       li   r0,KEY_A
+       bl   @chkkey
 ;RAM:D0FB 28 02                       jr      Z, loc_D0FF
+       jeq  loc_D0FF
 ;RAM:D0FD CB D1                       set     2, c                                    ; flag FORWARD
+       socb @b04h,@c
 loc_D0FF:
 ;RAM:D0FF 3E DB                       ld      a, #0xDB ; '�'                         ; row 2,5 (1st row) QWERTYUIOP (JUMP)
 ;RAM:D101 CD F7 B5                    call    read_port
+       li   r0,KEY_SP
+       bl   @chkkey
 ;RAM:D104 28 02                       jr      Z, loc_D108
+       jeq  loc_D108
 ;RAM:D106 CB D9                       set     3, c                                    ; flag JUMP
+       socb @b08h,@c
 loc_D108:
 ;RAM:D108 3E E7                       ld      a, #0xE7 ; '�'                         ; row 3,4 (0-9) (PICKUP/DROP)
 ;RAM:D10A CD F7 B5                    call    read_port
+       li   r0,KEY_Z
+       bl   @chkkey
 ;RAM:D10D 28 02                       jr      Z, finished_input
+       jeq  finished_input
 ;RAM:D10F CB E1                       set     4, c                                    ; flag PICKUP/DROP
+       socb @b10h,@c
 finished_input:
 ;RAM:D111 3E 7E                       ld      a, #0x7E ; '~'                          ; (3rd row) SHIFT,Z,X,C,V,SPACE,SYMSHIFT,M,N,B (LEFT/RIGHT)
 ;RAM:D113 CD F7 B5                    call    read_port
@@ -725,7 +766,7 @@ finished_input:
 ;RAM:D11C CD F7 B5                    call    read_port
 ;RAM:D11F B0                          or      b
 ;RAM:D120 C1                          pop     bc
-       li   tmp0,KEY_SP
+       li   tmp0,KEY_CT
        bl   @chkkey
 ;RAM:D121 28 02                       jr      Z, loc_D125
        jeq  loc_D125

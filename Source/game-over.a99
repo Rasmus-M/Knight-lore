@@ -55,7 +55,7 @@ loc_BA29:
 ;RAM:BA5B 07                          rlca
        sla  a,3
 ;RAM:BA5C E6 0E                       and     #0xE
-       andi a,>e000
+       andi a,>0e00
 ;RAM:BA5E 6F                          ld      l, a
        movb a,@l
 ;RAM:BA5F 26 00                       ld      h, #0
@@ -66,9 +66,8 @@ loc_BA29:
        a    bc,hl
 ;RAM:BA65 5E                          ld      e, (hl)
 ;RAM:BA66 23                          inc     hl
-       movb *hl+,@e
 ;RAM:BA67 56                          ld      d, (hl)                                 ; DE=addr of rating string
-       movb *hl,d
+       mov  *hl,de
 ;RAM:BA68 21 58 27                    ld      hl, #0x2758
        li   hl,>2758
 ;RAM:BA6B CD 45 BE                    call    print_text_std_font
@@ -80,7 +79,7 @@ loc_BA29:
 ;RAM:BA72 D6 0A                       sub     #10                                     ; less than 10?
        sb   @b0ah,a
 ;RAM:BA74 38 03                       jr      C, loc_BA79                             ; yes, skip
-       jl   loc_BA79
+       jlt  loc_BA79
 ;RAM:BA76 F6 10                       or      #0x10                                   ; convert to BCD
        socb @b10h,a
 ;RAM:BA78 12                          ld      (de), a                                 ; store BCD
@@ -186,6 +185,7 @@ game_complete_msg:
 *
 * =============== S U B R O U T I N E =======================================
 calc_and_display_percent:
+       mov  r11,*sp+
 ;RAM:BC10 1E 00                       ld      e, #0                                   ; zero room count
        szcb mone,@e
 ;RAM:BC12 01 20 08                    ld      bc, #0x820                              ; B=8 bits/byte
@@ -208,6 +208,7 @@ loc_BC1B:
 loc_BC1F:
 ;RAM:BC1F 10 FA                       djnz    loc_BC1B
        sb   one,b
+       jne  loc_BC1B
 ;RAM:BC21 C1                          pop     bc
        dect sp
        movb *sp,bc
@@ -258,12 +259,14 @@ loc_BC38:
 !
 ;RAM:BC45 27                          daa                                             ; fix rounding to 100%
        bl   @daa
+       stst tmp0                      ; Preserve carry
 ;RAM:BC46 32 CA 5B                    ld      (percent_lsw), a                        ; store least significant 2 BCD digits
        movb a,@percent_lsw
 ;RAM:BC49 3E 00                       ld      a, #0
        clr  a
 ;RAM:BC4B CE 00                       adc     a, #0
-       jnc  !                         ; TODO: This cannot work
+       andi tmp0,>1000
+       jeq  !                         ; TODO: Does this work?
        ab   one,a
 !
 ;RAM:BC4D 27                          daa

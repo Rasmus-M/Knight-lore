@@ -56,7 +56,6 @@ check_for_kempston_joystick:
        andi a,>f900
 ;RAM:BD44 F6 02                       or      #2                                      ; set bit 1
        ori  a,>0200
-;RAM:BD46
 check_for_cursor_joystick:
 ;RAM:BD46 CB 53                       bit     2, e                                    ; '3' (Cursor Joystick)?
        li   tmp0,KEY_3
@@ -67,7 +66,6 @@ check_for_cursor_joystick:
        andi a,>f900
 ;RAM:BD4C F6 04                       or      #4                                      ; set bit 2
        ori  a,>0400
-;RAM:BD4E
 check_for_interface_ii:
 ;RAM:BD4E CB 5B                       bit     3, e                                    ; '4' (Interface II)?
        li   tmp0,KEY_4
@@ -76,7 +74,6 @@ check_for_interface_ii:
        jeq  check_for_directional_control
 ;RAM:BD52 F6 06                       or      #6                                      ; set bits 1,2
        ori  a,>0600
-;RAM:BD54
 check_for_directional_control:
 ;RAM:BD54 32 A4 5B                    ld      (user_input_method), a                  ; store
        movb a,@user_input_method
@@ -110,7 +107,6 @@ check_for_start_game:
 ;RAM:BD70 C4 A3 B4                    call    NZ, toggle_audio_hw_x16                 ; yes
 ;      TODO
 ;RAM:BD73 3E EF                       ld      a, #0xEF ; '�'                          ; 0,9,8,7,6
-       movb @befh,a
 ;RAM:BD75 CD F7 B5                    call    read_port
 ;RAM:BD78 CB 47                       bit     0, a                                    ; '0' (Start Game)?
        li   tmp0,KEY_0
@@ -218,7 +214,7 @@ display_menu:
        li   de,menu_text
 ;RAM:BEBD 06 08                       ld      b, #8                                   ; 8 lines to display
        movb @b08h,b
-*      Call instead of fall through
+*      Call instead of fall-through
        bl   @display_text_list
 *      Return
        dect sp
@@ -295,11 +291,13 @@ display_text_list_return:
 * ---------------------------------------------------------------------------
 * colours
 menu_colours:
-       byte >43, >C4, >44, >44, >44, >45, >47, >47
+      byte >43, >C4, >44, >44, >44, >45, >47, >47
+;       byte >43, >C4, >44, >44, >45, >47, >47
 * XY positions
 menu_xy:
        byte 88, 159, 48, 143, 48, 127, 48, 111, 48, 95, 48, 79
        byte 48, 63, 80, 39
+;       byte 80, 39
 * "KNIGHT LORE"
 menu_text:
        byte >14, >17, >12, >10, >11, >1D, >26, >15, >18
@@ -307,7 +305,8 @@ menu_text:
 * "1 KEYBOARD"
        byte 1, >26, >14, >E, >22, >B, >18, >A, >1B, >8D
 * "2 KEMPSTON JOYSTICK"
-       byte 2, >26, >14, >E, >16, >19, >1C, >1D, >18, >17
+;      byte 2, >26, >14, >E, >16, >19, >1C, >1D, >18, >17
+       byte 2
        byte >26, >13, >18, >22, >1C, >1D, >12, >C, >94
 * "3 CURSOR   JOYSTICK"
        byte 3, >26, >C, >1E, >1B, >1C, >18, >1B, >26, >26
