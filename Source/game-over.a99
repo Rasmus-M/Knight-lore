@@ -4,54 +4,98 @@
 *
 game_over:
 ;RAM:BA22 3A C3 5B                    ld      a, (all_objs_in_cauldron)
+       movb @all_objs_in_cauldron,a
 ;RAM:BA25 A7                          and     a
 ;RAM:BA26 C2 AB BA                    jp      NZ, game_complete_msg
+       jeq  loc_BA29
+       b    @game_complete_msg
 loc_BA29:
 ;RAM:BA29 CD 67 D5                    call    clear_scrn_buffer
+       bl   @clear_scrn_buffer
 ;RAM:BA2C CD 5F D5                    call    clear_scrn
+       bl   @clear_scrn
 ;RAM:BA2F 11 4C BB                    ld      de, #gameover_colours                   ; game over status screen
+       li   de,gameover_colours
 ;RAM:BA32 D9                          exx
+       bl   @exx
 ;RAM:BA33 21 52 BB                    ld      hl, #gameover_xy                        ; game over status screen
+       li   hl,gameover_xy
 ;RAM:BA36 11 5E BB                    ld      de, #a_GAME_OVER
+       li   de,a_GAME_OVER
 ;RAM:BA39 06 06                       ld      b, #6
+       movb @b06h,b
 ;RAM:BA3B CD BF BE                    call    display_text_list
+       bl   @display_text_list
 ;RAM:BA3E 21 E2 E8                    ld      hl, # vidbuf+0xFEF                      ; video buffer address
+       li   hl,vidbuf+>0fef
 ;RAM:BA41 11 B9 5B                    ld      de, #days
+       li   de,days
 ;RAM:BA44 06 01                       ld      b, #1                                   ; 1 BCD digit pair
+       movb one,b
 ;RAM:BA46 CD AE BC                    call    print_BCD_number
+       bl   @print_BCD_number
 ;RAM:BA49 CD 10 BC                    call    calc_and_display_percent
+       bl   @calc_and_display_percent
 ;RAM:BA4C 3A C6 5B                    ld      a, (num_scrns_visited)
+       movb @num_scrns_visited,a
 ;RAM:BA4F 07                          rlca
+       sla  a,1
 ;RAM:BA50 E6 C0                       and     #0xC0 ; '�'
+       andi a,>c000
 ;RAM:BA52 4F                          ld      c, a
+       movb a,@c
 ;RAM:BA53 3A C3 5B                    ld      a, (all_objs_in_cauldron)
+       movb @all_objs_in_cauldron,a
 ;RAM:BA56 E6 01                       and     #1
+       andi a,>0100
 ;RAM:BA58 B1                          or      c
+       socb @c,a
 ;RAM:BA59 07                          rlca
 ;RAM:BA5A 07                          rlca
 ;RAM:BA5B 07                          rlca
+       sla  a,3
 ;RAM:BA5C E6 0E                       and     #0xE
+       andi a,>e000
 ;RAM:BA5E 6F                          ld      l, a
+       movb a,@l
 ;RAM:BA5F 26 00                       ld      h, #0
+       szcb mone,h
 ;RAM:BA61 01 B7 BB                    ld      bc, #rating_tbl
+       li   bc,rating_tbl
 ;RAM:BA64 09                          add     hl, bc                                  ; ptr to rating text entry
+       a    bc,hl
 ;RAM:BA65 5E                          ld      e, (hl)
 ;RAM:BA66 23                          inc     hl
+       movb *hl+,@e
 ;RAM:BA67 56                          ld      d, (hl)                                 ; DE=addr of rating string
+       movb *hl,d
 ;RAM:BA68 21 58 27                    ld      hl, #0x2758
+       li   hl,>2758
 ;RAM:BA6B CD 45 BE                    call    print_text_std_font
+       bl   @print_text_std_font
 ;RAM:BA6E 11 BB 5B                    ld      de, #objects_put_in_cauldron
+       li   de,objects_put_in_cauldron
 ;RAM:BA71 1A                          ld      a, (de)
+       movb *de,a
 ;RAM:BA72 D6 0A                       sub     #10                                     ; less than 10?
+       sb   @b0ah,a
 ;RAM:BA74 38 03                       jr      C, loc_BA79                             ; yes, skip
+       jl   loc_BA79
 ;RAM:BA76 F6 10                       or      #0x10                                   ; convert to BCD
+       socb @b10h,a
 ;RAM:BA78 12                          ld      (de), a                                 ; store BCD
+       movb a,*de
 loc_BA79:
 ;RAM:BA79 21 EA E2                    ld      hl, # vidbuf+0x9F7                      ; video buffer address
+       li   hl,vidbuf+>09F7
 ;RAM:BA7C 06 01                       ld      b, #1                                   ; 1 BCD digit pair
+       movb one,b
 ;RAM:BA7E CD AE BC                    call    print_BCD_number
+       bl   @print_BCD_number
 ;RAM:BA81 CD 96 D2                    call    print_border
+       bl   @print_border
 ;RAM:BA84 CD 6F D5                    call    update_screen
+       bl   @update_screen
 loc_BA87:
 ;RAM:BA87 AF                          xor     a
 ;RAM:BA88 CD F7 B5                    call    read_port
@@ -59,7 +103,9 @@ loc_BA87:
 ;RAM:BA8D 11 18 B2                    ld      de, #game_over_tune
 ;RAM:BA90 CD BE B2                    call    play_audio_until_keypress
 ;RAM:BA93 06 08                       ld      b, #8                                   ; how long to wait
+       movb @b08h,b
 ;RAM:BA95 CD 9B BA                    call    wait_for_key_press
+       bl   @wait_for_key_press
 *
 * the stack has at least 1 return address on it
 * but the main game loop re-init's the stack each iteration
@@ -71,17 +117,35 @@ loc_BA87:
 *
 * =============== S U B R O U T I N E =======================================
 wait_for_key_press:
+       mov  r11,*sp+
 ;RAM:BA9B 21 00 00                    ld      hl, #0
+       clr  hl
 loc_BA9E:
 ;RAM:BA9E AF                          xor     a
 ;RAM:BA9F CD F7 B5                    call    read_port
+       li   tmp0,KEY_FI
+       bl   @chkkey
 ;RAM:BAA2 C0                          ret     NZ
+       jne  wait_for_key_press_return
+       li   tmp0,KEY_SP
+       bl   @chkkey
+       jne  wait_for_key_press_return
+       li   tmp0,KEY_EN
+       bl   @chkkey
+       jne  wait_for_key_press_return
 ;RAM:BAA3 2B                          dec     hl
+       dec  hl
 ;RAM:BAA4 7C                          ld      a, h
 ;RAM:BAA5 B5                          or      l
 ;RAM:BAA6 20 F6                       jr      NZ, loc_BA9E                            ; loop B times
+       jne  loc_BA9E
 ;RAM:BAA8 10 F4                       djnz    loc_BA9E
+       sb   one,b
+       jne  loc_BA9E
 ;RAM:BAAA C9                          ret
+wait_for_key_press_return:
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function wait_for_key_press
@@ -90,79 +154,145 @@ loc_BA9E:
 * START OF FUNCTION CHUNK FOR lose_life
 game_complete_msg:
 ;RAM:BAAB CD 67 D5                    call    clear_scrn_buffer
+       bl   @clear_scrn_buffer
 ;RAM:BAAE CD 5F D5                    call    clear_scrn
+       bl   @clear_scrn
 ;RAM:BAB1 11 D2 BA                    ld      de, #complete_colours
+       li   de,complete_colours
 ;RAM:BAB4 D9                          exx
+       bl   @exx
 ;RAM:BAB5 21 D8 BA                    ld      hl, #complete_xy
+       li   hl,complete_xy
 ;RAM:BAB8 11 E4 BA                    ld      de, #the_potion_casts
+       li   de,the_potion_casts
 ;RAM:BABB 06 06                       ld      b, #6
+       movb @b06h,b
 ;RAM:BABD AF                          xor     a
 ;RAM:BABE 32 B8 5B                    ld      (suppress_border), a
+       szcb mone,@suppress_border
 ;RAM:BAC1 CD BF BE                    call    display_text_list
+       bl   @display_text_list
 ;RAM:BAC4 11 39 B2                    ld      de, #game_complete_tune
 ;RAM:BAC7 CD CF B2                    call    play_audio
+;      TODO
 ;RAM:BACA 06 08                       ld      b, #8
+       movb @b08h,b
 ;RAM:BACC CD 9B BA                    call    wait_for_key_press
+       bl   @wait_for_key_press
 ;RAM:BACF C3 29 BA                    jp      loc_BA29
+       b    @loc_BA29
 *
 * END OF FUNCTION CHUNK FOR lose_life
 *
 * =============== S U B R O U T I N E =======================================
 calc_and_display_percent:
 ;RAM:BC10 1E 00                       ld      e, #0                                   ; zero room count
+       szcb mone,@e
 ;RAM:BC12 01 20 08                    ld      bc, #0x820                              ; B=8 bits/byte
+       li   bc,>0820
 ;RAM:BC15 21 E8 5B                    ld      hl, #scrn_visited
+       li   hl,scrn_visited
 count_screens:
 ;RAM:BC18 C5                          push    bc
+       mov  bc,*sp+
 ;RAM:BC19 7E                          ld      a, (hl)
 ;RAM:BC1A 23                          inc     hl
+       movb *hl+,a
 loc_BC1B:
 ;RAM:BC1B 0F                          rrca
+       sla  a,1
 ;RAM:BC1C 30 01                       jr      NC, loc_BC1F
+       jnc  loc_BC1F
 ;RAM:BC1E 1C                          inc     e                                       ; room count
+       ab   one,@e
 loc_BC1F:
 ;RAM:BC1F 10 FA                       djnz    loc_BC1B
+       sb   one,b
 ;RAM:BC21 C1                          pop     bc
+       dect sp
+       movb *sp,bc
 ;RAM:BC22 0D                          dec     c                                       ; done all screens?
+       sb   one,@c
 ;RAM:BC23 20 F3                       jr      NZ, count_screens                       ; no, loop
+       jne  count_screens
 ;RAM:BC25 7B                          ld      a, e
+       movb @e,a
 ;RAM:BC26 3D                          dec     a                                       ; -1? don't count 1st room?
+       sb   one,a
 ;RAM:BC27 32 C6 5B                    ld      (num_scrns_visited), a                  ; store for ratings calculations
+       movb a,@num_scrns_visited
 ;RAM:BC2A 3A BB 5B                    ld      a, (objects_put_in_cauldron)
+       movb @objects_put_in_cauldron,a
 ;RAM:BC2D CB 27                       sla     a                                       ; x2
+       sla  a,1
 ;RAM:BC2F 83                          add     a, e
+       ab   @e,a
 ;RAM:BC30 5F                          ld      e, a
+       movb a,@e
 ;RAM:BC31 01 1A A4                    ld      bc, #0xA41A                             ; 0.64102 * (128 + 14*2) = 99.999%
+       li   bc,>a41a
 ;RAM:BC34 21 00 00                    ld      hl, #0
+       clr  hl
 ;RAM:BC37 AF                          xor     a
+       clr  a
 loc_BC38:
 ;RAM:BC38 09                          add     hl, bc
+       a    bc,hl
 ;RAM:BC39 CE 00                       adc     a, #0
+       jnc  !
+       ab   one,a
+!
 ;RAM:BC3B 27                          daa
+       bl   @daa
 ;RAM:BC3C 1D                          dec     e
+       sb   one,@e
 ;RAM:BC3D 20 F9                       jr      NZ, loc_BC38                            ; calculate percentage complete (BCD)
+       jne  loc_BC38
 ;RAM:BC3F 01 28 00                    ld      bc, #0x28 ; '('                         ; $A410*156 = $63FFD8+$28 = $640000
+       li   bc,>0028
 ;RAM:BC42 09                          add     hl, bc
+       a    bc,hl
 ;RAM:BC43 CE 00                       adc     a, #0
+       jnc  !
+       ab   one,a
+!
 ;RAM:BC45 27                          daa                                             ; fix rounding to 100%
+       bl   @daa
 ;RAM:BC46 32 CA 5B                    ld      (percent_lsw), a                        ; store least significant 2 BCD digits
+       movb a,@percent_lsw
 ;RAM:BC49 3E 00                       ld      a, #0
+       clr  a
 ;RAM:BC4B CE 00                       adc     a, #0
+       jnc  !                         ; TODO: This cannot work
+       ab   one,a
+!
 ;RAM:BC4D 27                          daa
+       bl   @daa
 ;RAM:BC4E 32 C9 5B                    ld      (percent_msw), a                        ; store most significant BCD digit
+       movb a,@percent_msw
 ;RAM:BC51 21 E6 E4                    ld      hl, # vidbuf+0xBF3
+       li   hl,vidbuf+>0BF3
 ;RAM:BC54 11 C9 5B                    ld      de, #percent_msw
+       li   de,percent_msw
 ;RAM:BC57 06 01                       ld      b, #1                                   ; 1 pair = 2 digits
+       movb one,b
 ;RAM:BC59 1A                          ld      a, (de)
+       movb *de,a
 ;RAM:BC5A A7                          and     a                                       ; 100%?
 ;RAM:BC5B 28 04                       jr      Z, loc_BC61                             ; no, skip
+       jeq  loc_BC61
 ;RAM:BC5D 04                          inc     b                                       ; 2 pair = 4 digits
+       ab   one,b
 ;RAM:BC5E C3 C0 BC                    jp      print_BCD_lsd
+       b    @print_BCD_lsd
 * ---------------------------------------------------------------------------
 loc_BC61:
 ;RAM:BC61 23                          inc     hl
+       inc  hl
 ;RAM:BC62 13                          inc     de                                      ; skip over leading zero
+       inc  de
 ;RAM:BC63 C3 AE BC                    jp      print_BCD_number
+       b    @print_BCD_number_1
 *
 * End of function calc_and_display_percent
 *

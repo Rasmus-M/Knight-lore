@@ -20,6 +20,8 @@ start:
        mov  *sp,af
 ;RAM:AF7A 32 A0 5B                    ld      (seed_1), a
        movb a,@seed_1
+*      Default input method
+       movb  @b02h,@user_input_method
 ;RAM:AF7D 18 09                       jr      main
        jmp  main
 * ---------------------------------------------------------------------------
@@ -42,8 +44,9 @@ main:                                                                           
 ;RAM:AF8F 32 6D D1                    ld      (flags12_1), a                          ; plyr_spr_1_scratchpad
        movb a,@flags12_1
 ;RAM:AF92 3E 05                       ld      a, #5                                   ; 5 lives to start
+       li   a,lives_init*256
 ;RAM:AF94 32 BA 5B                    ld      (lives), a
-       movb @b05h,@lives
+       movb a,@lives
 ;RAM:AF97 21 A0 5B                    ld      hl, #seed_1
        li   hl,seed_1
 ;RAM:AF9A 3A A2 5B                    ld      a, (seed_2)
@@ -4521,7 +4524,7 @@ loc_CBAF:
 ;RAM:CBBE FD B6 0D                    or      13(iy)                                  ; obj2 destroyed?
        socb @13(iy),a
 ;RAM:CBC1 FD 77 0D                    ld      13(iy), a                               ; kill
-       .ifne invincible 1
+       .ifne invincible,1
        movb a,@13(iy)
        .endif
 ;RAM:CBC4 07                          rlca
@@ -4530,7 +4533,7 @@ loc_CBAF:
        andi a,>4000
 ;RAM:CBC7 DD B6 0D                    or      13(ix)                                  ; obj1 destroyed?
 ;RAM:CBCA DD 77 0D                    ld      13(ix), a
-       .ifne invincible 1
+       .ifne invincible,1
        socb a,@13(ix)                                                                 ; kill
        .endif
 ;RAM:CBCD FD CB 07 56                 bit     2, 7(iy)                                ; moveable?
@@ -4605,7 +4608,7 @@ loc_CBFE:
 ;RAM:CC0D FD B6 0D                    or      13(iy)                                  ; obj2 destroyed?
        socb @13(iy),a
 ;RAM:CC10 FD 77 0D                    ld      13(iy), a
-       .ifne invincible 1
+       .ifne invincible,1
        movb a,@13(iy)                                                                 ; kill
        .endif
 ;RAM:CC13 07                          rlca
@@ -4614,7 +4617,7 @@ loc_CBFE:
        andi a,>4000
 ;RAM:CC16 DD B6 0D                    or      13(ix)                                  ; obj1 destroyed?
 ;RAM:CC19 DD 77 0D                    ld      13(ix), a
-       .ifne invincible 1
+       .ifne invincible,1
        socb a,@13(ix)                                                                 ; kill
        .endif
 ;RAM:CC1C FD CB 07 56                 bit     2, 7(iy)                                ; moveable?
@@ -4689,7 +4692,7 @@ loc_CC4D:
 ;RAM:CC5C FD B6 0D                    or      13(iy)                                  ; obj2 destroyed?
        socb @13(iy),a
 ;RAM:CC5F FD 77 0D                    ld      13(iy), a
-       .ifne invincible 1
+       .ifne invincible,1
        movb a,@13(iy)                                                                 ; kill
        .endif
 ;RAM:CC62 07                          rlca
@@ -4698,7 +4701,7 @@ loc_CC4D:
        andi a,>4000
 ;RAM:CC65 DD B6 0D                    or      13(ix)                                  ; obj1 destroyed?
 ;RAM:CC68 DD 77 0D                    ld      13(ix), a
-       .ifne invincible 1
+       .ifne invincible,1
        socb a,@13(ix)                                                                 ; kill
        .endif
 ;RAM:CC6B FD CB 0D DE                 set     3, 13(iy)                               ; triggered (falling, collapsing blocks)

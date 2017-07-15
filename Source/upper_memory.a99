@@ -285,6 +285,7 @@ loc_D317:                                                                       
 *
 print_BCD_number:
        mov  r11,*sp+
+print_BCD_number_1:
 ;RAM:BCAE E5                          push    hl
        mov  hl,*sp+
 ;RAM:BCAF 21 08 61                    ld      hl, #font
@@ -2738,6 +2739,7 @@ KEY_X  EQU  >0114
 KEY_Y  EQU  >040A
 KEY_Z  EQU  >0514
 KEY_SP EQU  >0008
+KEY_EN EQU  >000A
 KEY_FN EQU  >000E
 KEY_SH EQU  >0010
 KEY_CT EQU  >0012

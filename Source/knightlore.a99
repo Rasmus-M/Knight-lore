@@ -35,9 +35,11 @@
        def  start
 
 invincible:
-       equ  1
+       equ  0
 delay_on:
        equ  0
+lives_init:
+       equ  1
 
 **
 * Memory mapped addresses
