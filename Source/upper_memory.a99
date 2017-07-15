@@ -589,7 +589,6 @@ interface_ii:
 ;RAM:D074
 ;RAM:D074             loc_D074:
 ;RAM:D074 C3 11 D1                    jp      finished_input
-       b    @finished_input
 * ---------------------------------------------------------------------------
 kempston:
 ;RAM:D077 DB 1F                       in      a, (0x1F)
