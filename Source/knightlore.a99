@@ -36,6 +36,8 @@
 
 invincible:
        equ  1
+delay_on:
+       equ  0
 
 **
 * Memory mapped addresses

@@ -188,6 +188,7 @@ loc_B000:
        jeq  !
        bl   @audio_B454
 !:
+       .ifeq delay_on 1
 ;RAM:B028 3A BE 5B                    ld      a, (rendered_objs_cnt)
        movb @rendered_objs_cnt,a
 ;RAM:B02B ED 44                       neg
@@ -214,6 +215,7 @@ delay_loop:
 ;RAM:B03D 10 F6                       djnz    game_delay
        sb   one,b
        jne  game_delay
+       .endif
 no_delay:
 ;RAM:B03F 3A B7 5B                    ld      a, (render_status_info)
        movb @render_status_info,a
@@ -2209,7 +2211,8 @@ loc_C349:
 ;RAM:C349 3A A2 5B                    ld      a, (seed_2)
        movb @seed_2,a
 ;RAM:C34C E6 03                       and     #3                                      ; 1-in-4 chance?
-       andi a,>0300
+;      andi a,>0300
+       andi a,>0300                   ; Transform faster
 ;RAM:C34E C0                          ret     NZ                                      ; no, return
        jne  chk_and_init_transform_return
 ;RAM:C34F CD 72 B4                    call    audio_B472
