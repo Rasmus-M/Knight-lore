@@ -2809,6 +2809,7 @@ b07h   byte >07
 b08h   byte >08
 b09h   byte >09
 b0ah   byte >0a
+b0bh   byte >0b
 b0ch   byte >0c
 b0dh   byte >0d
 b0eh   byte >0e

@@ -191,7 +191,7 @@ loc_B000:
        jeq  !
        bl   @audio_B454
 !:
-       .ifeq delay_on 1
+       .ifeq delay_on,1
 ;RAM:B028 3A BE 5B                    ld      a, (rendered_objs_cnt)
        movb @rendered_objs_cnt,a
 ;RAM:B02B ED 44                       neg
@@ -218,8 +218,8 @@ delay_loop:
 ;RAM:B03D 10 F6                       djnz    game_delay
        sb   one,b
        jne  game_delay
-       .endif
 no_delay:
+       .endif
 ;RAM:B03F 3A B7 5B                    ld      a, (render_status_info)
        movb @render_status_info,a
 ;RAM:B042 A7                          and     a                                       ; rendered before?
@@ -2027,7 +2027,7 @@ loc_C29B:
        b    @audio_B467_wipe_and_draw
 * =============== S U B R O U T I N E =======================================
 cycle_colours_with_sound:
-       movb r11,*sp+
+       mov  r11,*sp+
 ;RAM:C2A5 16 10                       ld      d, #16                                  ; cycle 16 times
        movb @b10h,de_
 loc_C2A7:
@@ -2080,7 +2080,7 @@ prepare_final_animation:
 ;RAM:C2CC 3E 01                       ld      a, #1
        movb one,a
 ;RAM:C2CE 32 C3 5B                    ld      (all_objs_in_cauldron), a
-       movb @all_objs_in_cauldron,a
+       movb a,@all_objs_in_cauldron
 ;RAM:C2D1 DD E5                       push    ix
        mov  ix,*sp+
 ;RAM:C2D3 DD 21 68 5C                 ld      ix, #special_objs_here_1                ; special_objs_here[1]
@@ -2088,14 +2088,14 @@ prepare_final_animation:
 ;RAM:C2D7 11 20 00                    ld      de, #32                                 ; entry size
        li   de,32
 ;RAM:C2DA 06 0B                       ld      b, #11                                  ; wipe 11 objects in the room
-       li   bc,11                                                                     ; (1 special, 7 bg, 3 fg)
+       movb @b0bh,b                                                                     ; (1 special, 7 bg, 3 fg)
 loc_C2DC:
 ;RAM:C2DC C5                          push    bc
        mov  bc,*sp+
 ;RAM:C2DD D5                          push    de
        mov  de,*sp+
 ;RAM:C2DE CD 92 C6                    call    set_wipe_and_draw_flags
-       bl   @set_wipe_and_draw_flags
+       bl   @set_wipe_and_draw_flags_0
 ;RAM:C2E1 D1                           pop     de
        dect sp
        mov  *sp,de
@@ -2128,7 +2128,7 @@ loc_C2F9:
        mov  ix,hl
 ;RAM:C2FE A7                          and     a
 ;RAM:C2FF ED 42                       sbc     hl, bc                                  ; end of table?
-       cb   hl,bc
+       c    hl,bc
 ;RAM:C301 38 EB                       jr      C, loc_C2EE                             ; no, loop
        jl   loc_C2EE
 ;RAM:C303 DD E1                       pop     ix
@@ -3402,8 +3402,8 @@ chk_plyr_spec_near_arch:
 ;RAM:C7DF 11 20 00                    ld      de, #32                                 ; entry size
        li   de,32
 ;RAM:C7E2 06 04                       ld      b, #4                                   ; player and special objects only
-      movb @b04h,b
-;       movb @b02h,b                   ; Rasmus optimize
+;      movb @b04h,b
+       movb @b02h,b                   ; Rasmus' optimization
 loc_C7E4:
 ;RAM:C7E4 FD 7E 00                    ld      a, 0(iy)                                ; graphic no
        movb *iy,a
@@ -3421,7 +3421,7 @@ loc_C7E4:
        jhe  loc_C7F9
 ;RAM:C7F5 FD CB 07 C6                 set     0, 7(iy)                                ; flag near arch
        socb one,@7(iy)
-;       jmp  !                         ; Rasmus optimize
+       jmp  !                         ; Rasmus optimization
 loc_C7F9:
 ;RAM:C7F9 FD 19                       add     iy, de                                  ; next entry
        a    de,iy
@@ -5819,7 +5819,7 @@ plyr_spr_init_data:
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
 * ---------------------------------------------------------------------------
 start_locations:
-        byte >2F, >44, >B3, >8F         ; Standard
+        byte >2F, >44, >B3, >8F         ; Default
 ;       byte >b3,>b3,>b3,>b3            ; 3 ways
 ;       byte >8a,>8a,>8a,>8a            ; Near cauldron room
 ;       byte >87,>87,>87,>87            ; Portcullis room
