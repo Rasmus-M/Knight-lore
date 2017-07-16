@@ -11,7 +11,7 @@ public class SpritesToROM implements Runnable {
     private final static int START_BANK = 0;
     private final static int BANK_OFFSET = 4;
     private final static int BANK_SIZE = 0x2000;
-    private final static int HEADER_SIZE = 0x120;
+    private final static int HEADER_SIZE = 0x40;
     private final static int ROM_SIZE = 0x40000 - 0x8000;
 
     public static void main(String[] args) {

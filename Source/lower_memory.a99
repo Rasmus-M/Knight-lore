@@ -2214,8 +2214,11 @@ loc_C349:
 ;RAM:C349 3A A2 5B                    ld      a, (seed_2)
        movb @seed_2,a
 ;RAM:C34C E6 03                       and     #3                                      ; 1-in-4 chance?
-;      andi a,>0300
+       .ifeq delay_on,1
        andi a,>0100                   ; Transform faster
+       .else
+       andi a,>0300
+       .endif
 ;RAM:C34E C0                          ret     NZ                                      ; no, return
        jne  chk_and_init_transform_return
 ;RAM:C34F CD 72 B4                    call    audio_B472

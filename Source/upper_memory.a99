@@ -1542,7 +1542,7 @@ flip_sprite:
        andi tmp0,>c000                ; Isolate vflip and hflip
        srl  tmp0,12                   ; Move to bits 3-2
        soc  tmp0,tmp1                 ; Combine with index
-       ai   tmp1,>6120                ; Add offset to index
+       ai   tmp1,>6040                ; Add offset to index
        seto @>6008                    ; Select ROM bank containing index
        mov  *tmp1+,tmp0               ; Bank select address
        mov  *tmp1,de                  ; Bank address

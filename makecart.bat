@@ -5,4 +5,6 @@ java -jar tools/ea5tocart.jar kl1 "KNIGHT LORE"
 
 copy /b kl18.bin + /b binary-data\sprite-rom.bin knightlore8.bin
 
+java -jar tools/CopyHeader.jar knightlore8.bin 60
+
 :end
