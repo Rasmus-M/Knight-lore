@@ -786,7 +786,22 @@ loc_D125:
 * =============== S U B R O U T I N E =======================================
 *
 handle_pause:
-       rt
+       mov  r11,*sp+
+       li   tmp0,KEY_P
+       bl   @chkkey
+       jeq  handle_pause_return
+handle_pause_1:
+       li   tmp0,KEY_P
+       bl   @chkkey
+       jne  handle_pause_1
+handle_pause_2:
+       li   tmp0,KEY_P
+       bl   @chkkey
+       jeq  handle_pause_2
+handle_pause_3:
+       li   tmp0,KEY_P
+       bl   @chkkey
+       jne  handle_pause_3
 ;RAM:D50E 3E 7E                       ld      a, #0x7E ; '~'                          ; SPACE,SYMSHIFT,M,N,B
 ;RAM:D510 CD F7 B5                    call    read_port
 ;RAM:D513 CB 47                       bit     0, a                                    ; SPACE?
@@ -813,8 +828,13 @@ handle_pause:
 ;RAM:D533 CB 47                       bit     0, a                                    ; SPACE?
 ;RAM:D535 20 F7                       jr      NZ, debounce_space_release              ; no, loop
 ;RAM:D537 C3 A8 B4                    jp      toggle_audio_hw_x24
-;RAM:D537             ; End of function handle_pause
-;RAM:D537
+handle_pause_return:
+       dect sp
+       mov  *sp,r11
+       rt
+*
+* End of function handle_pause
+*
 * ---------------------------------------------------------------------------
 
 ;RAM:B5F7             ; =============== S U B R O U T I N E =======================================
