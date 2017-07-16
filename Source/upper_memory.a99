@@ -2441,6 +2441,48 @@ ti_99_4a_init:
        dect sp
        mov  *sp,r11
        rt
+*// ti_99_4a_init
+
+*********************************************************************************
+*
+* TI-99/4 helper routines
+*
+start_screen:
+       mov  r11,*sp+
+;      Patterns
+       seto @>603C                     ; Select bank 30
+       li   tmp0,PTRNTB
+       bl   @vwad
+       li   hl,>6800
+       li   bc,>1800
+!      movb *hl+,@VDPWD
+       dec  bc
+       jne  -!
+;      Colors
+       seto @>603E                     ; Select bank 31
+       li   tmp0,COLRTB
+       bl   @vwad
+       li   hl,>6800
+       li   bc,>1800
+!      movb *hl+,@VDPWD
+       dec  bc
+       jne  -!
+;      Wait for key
+!      li   tmp0,KEY_FI
+       bl   @chkkey
+       jne  start_screen_return
+       li   tmp0,KEY_SP
+       bl   @chkkey
+       jne  start_screen_return
+       li   tmp0,KEY_EN
+       bl   @chkkey
+       jne  start_screen_return
+       jmp  -!
+start_screen_return:
+       dect sp
+       mov  *sp,r11
+       rt
+*// start_screen
 
 *********************************************************************************
 *

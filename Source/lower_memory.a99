@@ -4,6 +4,8 @@
 start:
 *      Init TI-99/4A
        bl   @ti_99_4a_init
+*      Start screen
+       bl   @start_screen
 ;RAM:AF6C 21 A0 5B                    ld      hl, #seed_1                             ; location to clear
        li   hl,static_variables_start
 ;RAM:AF6F 01 68 05                    ld      bc, #0x568                              ; # bytes to clear
