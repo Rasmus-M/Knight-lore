@@ -2831,6 +2831,7 @@ quit1  blwp @>0000
 * Wait for key press
 *
 wtkey  mov  r11,*sp+
+       li   tmp1,30000
 !      li   tmp0,KEY_FI
        bl   @chkkey
        jne  wtkey_return
@@ -2840,7 +2841,8 @@ wtkey  mov  r11,*sp+
        li   tmp0,KEY_EN
        bl   @chkkey
        jne  wtkey_return
-       jmp  -!
+       dec  tmp1
+       jne  -!
 wtkey_return:
        dect sp
        mov  *sp,r11
