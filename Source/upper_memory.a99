@@ -561,7 +561,34 @@ check_user_input:
        sb   one,a
 ;RAM:D03C 28 5E                       jr      Z, cursor
        jeq  cursor
-interface_ii:
+interface_ii:                         ; 2-button joystick on TI
+*      Read joystick using CRU
+;      Note: r12=af_
+       szcb mone,@c
+       li   r12,>0024                 ; CRU address of the column decoder
+       li   tmp0,>0600                ; Column 6, i.e joystick #1
+       ldcr tmp0,3                    ; Select it
+       li   r12,>0006                 ; Base CRU address for joystick 1
+       tb   2                         ; Rigth
+       jeq !
+       socb @b02h,@c
+!      tb   1                         ; Left
+       jeq  !
+       socb @b01h,@c
+!      tb   4                         ; Forward
+       jeq  !
+       socb @b04h,@c
+!      tb   0                         ; Jump
+       jeq  !
+       socb @b08h,@c
+!      li   r12,>0024                 ; CRU address of the column decoder
+       li   tmp0,>0700                ; Column 7, i.e joystick #2
+       ldcr tmp0,3                    ; Select it
+       li   r12,>0006                 ; Base CRU address for joystick 1
+       tb   0                         ; Pickup/drop
+       jeq  !
+       socb @b10h,@c
+!      b    @finished_input
 ;RAM:D03E 3E F7                       ld      a, #0xF7 ; '�'                         ; address interface ii joystick
 ;RAM:D040 CD F7 B5                    call    read_port                               ; read joystick
 ;RAM:D043 C5                          push    bc
@@ -609,9 +636,9 @@ kempston:
 *      Read joystick using CRU
 ;      Note: r12=af_
        li   r12,>0024                 ; CRU address of the column decoder
-       li   tmp0,>0600                  ; Column 6, i.e joystick #1
-       ldcr tmp0,3                      ; Select it
-       li   r12,>0006                 , Base CRU address for joystick 1
+       li   tmp0,>0600                ; Column 6, i.e joystick #1
+       ldcr tmp0,3                    ; Select it
+       li   r12,>0006                 ; Base CRU address for joystick 1
 ;RAM:D079 0E 00                       ld      c, #0
       szcb mone,@c
 ;RAM:D07B CB 47                       bit     0, a                                    ; right?
@@ -2749,6 +2776,22 @@ ld_a_r:
        rt
 rand_no:
        data 0
+
+*********************************************************************
+*
+* Check for quit
+*
+ckquit clr  tmp1                         ; Test column 0
+       li   r12,>0024                  ; Address for column selection
+       ldcr tmp1,3                       ; Select column
+       li   r12,>0006                  ; Address to read rows
+       stcr tmp1,8
+       andi tmp1,>1100
+       jeq  quit
+       b    *r11
+*      Quit
+quit   clr  @>83c4                     ; Reset user ISR address
+quit1  blwp @>0000
 
 ***************************************************************************
 *

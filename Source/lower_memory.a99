@@ -177,7 +177,9 @@ loc_B000:
 ;RAM:B013 CB C6                       set     0, (hl)                                 ; update special objects table next time
        socb one,*hl
 ;RAM:B015 CD 0E D5                    call    handle_pause                            ; handle pause key
-       bl   @handle_pause             ; TODO
+       bl   @handle_pause
+*      TI quit key
+       bl   @ckquit
 ;RAM:B018 CD A9 B8                    call    init_cauldron_bubbles
        bl   @init_cauldron_bubbles
 ;RAM:B01B CD 62 CE                    call    list_objects_to_draw                    ; builds a list of screen objects
