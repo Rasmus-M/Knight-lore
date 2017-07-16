@@ -2430,11 +2430,11 @@ calc_attrib_addr:
 *********************************************************************************
 
 ti_99_4a_init:
-       mov  r11,@STACK
+       mov  r11,@stack
        limi 0
-       lwpi WRKSP
-       li   sp,STACK+2
-       movb @RNDSD,@rand_no
+       lwpi wrksp
+       li   sp,stack+2
+       movb @rndsd,@rand_no
        li   one,>0100
        li   mone,>ff00
        bl   @gmode

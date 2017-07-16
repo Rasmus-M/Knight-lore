@@ -62,22 +62,147 @@ SPRATB EQU  >3B00                      ; Sprite attribute table base
 **
 * Scratch pad
 *
-RNDSD  EQU  >83C0                      ; Random number seed
-PAD    EQU  >8300
-WRKSP  EQU  PAD                        ; Workspace
-R0LB   EQU  WRKSP+1
-R1LB   EQU  WRKSP+3
-R2LB   EQU  WRKSP+5
-R3LB   EQU  WRKSP+7
-R4LB   EQU  WRKSP+9
-R5LB   EQU  WRKSP+11
-R6LB   EQU  WRKSP+13
-R7LB   EQU  WRKSP+15
-R8LB   EQU  WRKSP+17
-R9LB   EQU  WRKSP+19
-WRKSP2 EQU  WRKSP+>20
-STACK  EQU  WRKSP2+>20                 ; Stack grows up
-PADVAR EQU  STACK+>80
+rndsd  equ  >83C0                      ; Random number seed
+pad    equ  >8300
+wrksp  equ  pad                        ; Workspace
+r0lb   equ  wrksp+1
+r1lb   equ  wrksp+3
+r2lb   equ  wrksp+5
+r3lb   equ  wrksp+7
+r4lb   equ  wrksp+9
+r5lb   equ  wrksp+11
+r6lb   equ  wrksp+13
+r7lb   equ  wrksp+15
+r8lb   equ  wrksp+17
+r9lb   equ  wrksp+19
+wrksp2 equ  wrksp+>20
+padvar equ  wrksp2+>20
+*
+* Variables from here are zeroed at start of game
+*
+static_variables_start:
+       equ  padvar
+seed_1:
+       equ  padvar
+seed_2:
+       equ  seed_1+2
+* bit   3 : directional
+* bit 2-1 : 00=keybd, 01=kempston, 10=cursor, 11=i/f-ii
+user_input_method:
+       equ  seed_2+2
+seed_3:
+       equ  user_input_method+1
+old_input_method:
+       equ  seed_3+1
+*
+* Variables from here are zeroed each game
+*
+volatile_variables_start:
+       equ  old_input_method+2
+tmp_SP:                                ; Swapped tmp_SP and objs_wiped_cnt
+       equ  volatile_variables_start
+objs_wiped_cnt:
+       equ  tmp_SP+2
+room_size_X:
+       equ  objs_wiped_cnt+1
+room_size_Y:
+       equ  room_size_X+1
+curr_room_attrib:
+       equ  room_size_Y+1
+room_size_Z:
+       equ  curr_room_attrib+1
+portcullis_moving:
+       equ  room_size_Z+1
+portcullis_move_cnt:
+       equ  portcullis_moving+1
+transform_flag_graphic:
+       equ  portcullis_move_cnt+1
+not_1st_screen:
+       equ  transform_flag_graphic+1
+pickup_drop_pressed:
+       equ  not_1st_screen+1
+objects_carried_changed:
+       equ  pickup_drop_pressed+1
+* b5=???
+* b4=pickup/drop
+* b3=jump
+* b2=forward
+* b1=right
+* b0=left
+user_input:
+       equ  objects_carried_changed+1
+tmp_attrib:
+       equ  user_input+1
+render_status_info:
+       equ  tmp_attrib+1
+suppress_border:
+       equ  render_status_info+1
+days:
+       equ  suppress_border+1
+lives:
+       equ  days+1
+objects_put_in_cauldron:
+       equ  lives+1
+fire_seed:
+       equ  objects_put_in_cauldron+1
+ball_bounce_height:
+       equ  fire_seed+1
+rendered_objs_cnt:
+       equ  ball_bounce_height+1
+is_spike_ball_dropping:
+       equ  rendered_objs_cnt+1
+disable_spike_ball_drop:
+       equ  is_spike_ball_dropping+1
+tmp_dZ:
+       equ  disable_spike_ball_drop+1
+tmp_bouncing_ball_dZ:
+       equ  tmp_dZ+1
+all_objs_in_cauldron:
+       equ  tmp_bouncing_ball_dZ+1
+obj_dropping_into_cauldron:
+       equ  all_objs_in_cauldron+1
+rising_blocks_z:
+       equ  obj_dropping_into_cauldron+1
+num_scrns_visited:
+       equ  rising_blocks_z+1
+audio_played:                          ; Moved from after render_obj_2
+       equ  num_scrns_visited+1
+gfxbase_8x8:
+       equ  audio_played+2
+percent_msw:
+       equ  gfxbase_8x8+2
+percent_lsw:
+       equ  percent_msw+2
+tmp_objects_to_draw:
+       equ  percent_lsw+2
+render_obj_1:
+       equ  tmp_objects_to_draw+2
+render_obj_2:
+       equ  render_obj_1+2
+debounce_5:
+       equ  render_obj_2+2
+cant_drop:
+       equ  debounce_5+1
+inventory:
+       equ  cant_drop+5
+objects_carried:
+       equ  inventory+4
+unk_5BE3:
+       equ  objects_carried+7
+object_carried_2:
+       equ  unk_5BE3+1
+end_of_objects_carried:
+       equ  object_carried_2+3
+*
+* table of bits (flags) denoting room has been visited
+* - used only in ratings calculations
+*
+scrn_visited:
+       equ end_of_objects_carried
+variables_end:
+       equ  scrn_visited+32
+
+stack  equ  variables_end              ; Stack grows up
 
 **
 * Z80 register mapping

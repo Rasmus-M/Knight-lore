@@ -11,8 +11,7 @@ start:
 ;RAM:AF6F 01 68 05                    ld      bc, #0x568                              ; # bytes to clear
        li   bc,variables_end-static_variables_start
 ;RAM:AF72 3A 78 5C                    ld      a, (0x5C78)                             ; FRAMES system variable (LSB)
-       movb @RNDSD,a
-;      clr  a
+       movb @rndsd,a
 ;RAM:AF75 F5                          push    af
        mov  af,*sp+
 ;RAM:AF76 CD 3A D5                    call    clr_mem
@@ -35,6 +34,10 @@ start_menu:                                                                     
 ;RAM:AF82 01 60 05                    ld      bc, #0x560                              ; # bytes to clear
        li   bc,variables_end-volatile_variables_start
 ;RAM:AF85 CD 3A D5                    call    clr_mem
+       bl   @clr_mem
+*      Clear object table
+       li   hl,graphic_objs_tbl
+       li   bc,graphic_objs_tbl_end-graphic_objs_tbl
        bl   @clr_mem
 main:                                                                                 ; for bit reversal & shifting
 ;RAM:AF88 CD 9E D6                    call    build_lookup_tbls
