@@ -2468,16 +2468,7 @@ start_screen:
        dec  bc
        jne  -!
 ;      Wait for key
-!      li   tmp0,KEY_FI
-       bl   @chkkey
-       jne  start_screen_return
-       li   tmp0,KEY_SP
-       bl   @chkkey
-       jne  start_screen_return
-       li   tmp0,KEY_EN
-       bl   @chkkey
-       jne  start_screen_return
-       jmp  -!
+       bl   @wtkey
 start_screen_return:
        dect sp
        mov  *sp,r11
@@ -2834,6 +2825,27 @@ ckquit clr  tmp1                         ; Test column 0
 *      Quit
 quit   clr  @>83c4                     ; Reset user ISR address
 quit1  blwp @>0000
+
+***************************************************************************
+*
+* Wait for key press
+*
+wtkey  mov  r11,*sp+
+!      li   tmp0,KEY_FI
+       bl   @chkkey
+       jne  wtkey_return
+       li   tmp0,KEY_SP
+       bl   @chkkey
+       jne  wtkey_return
+       li   tmp0,KEY_EN
+       bl   @chkkey
+       jne  wtkey_return
+       jmp  -!
+wtkey_return:
+       dect sp
+       mov  *sp,r11
+       rt
+*// wtkey
 
 ***************************************************************************
 *
