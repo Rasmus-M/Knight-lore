@@ -59,8 +59,8 @@ play_audio_until_keypress:
        bl   @anykey
        jeq  play_audio_until_keypress
 ;RAM:B2C4 C9                          ret
-play_audio_wait_key_return:
        bl   @mtesnd
+play_audio_wait_key_return:
        dect sp
        mov  *sp,r11
        rt
