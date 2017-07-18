@@ -2934,8 +2934,8 @@ anykey1:
        stcr tmp0,8
        cb   tmp0,mone                  ; If any bit is reset a key is pressed
        jne  anykey2
-       inct tmp1
-       ci   tmp1,>0016
+       inc  tmp1
+       ci   tmp1,>0008
        jne  anykey1
 anykey2:
        rt

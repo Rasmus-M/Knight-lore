@@ -505,7 +505,7 @@ audio_B4BB:
        andi a,>0100
 ;RAM:B4C0 C0                          ret     NZ
        jne  audio_B4BB_return
-       li   tmp0,sound2
+       li   tmp0,step1
        li   tmp1,0
        bl   @plysnd
 audio_B4BB_return:
@@ -736,5 +736,12 @@ sound2:
        byte >01, >9c, >01
        byte >01, >9f, >00
 
+step1:
+       byte >02, >e6, >f4, >01            * W2
+       byte >01, >f6, >01
+       byte >01, >f8, >01
+       byte >01, >ff, >00
+
+       even
 intro_music:
        bcopy "..\sound\intro.vgm.spf"
