@@ -23,12 +23,14 @@ loc_BD15:
        bl   @display_menu
 ;RAM:BD20 CD 89 BD                    call    flash_menu
        bl   @flash_menu
+*      Init music
+       bl   @init_music
 menu_loop:
 ;RAM:BD23 CD B3 BE                    call    display_menu
        bl   @display_menu
 ;RAM:BD26 11 53 B2                    ld      de, #menu_tune
 ;RAM:BD29 CD B6 B2                    call    play_audio_wait_key
-;      TODO
+       bl   @play_audio_wait_key
 ;RAM:BD2C 3E F7                       ld      a, #0xF7 ; '�'                          ; 1,2,3,4,5
        movb @bf7h,a
 ;RAM:BD2E CD F7 B5                    call    read_port
@@ -129,6 +131,8 @@ clr_debounce:
        szcb one,*hl
 ;RAM:BD87 18 E3                       jr      check_for_start_game                    ; continue
        jmp  check_for_start_game
+*      Mute sound
+       bl   @mtesnd
 do_menu_selection_return:
        dect sp
        mov  *sp,r11

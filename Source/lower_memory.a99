@@ -153,6 +153,8 @@ ret_from_tbl_jp:
        c    hl,bc
 ;RAM:AFFC 30 02                       jr      NC, loc_B000                            ; yes, exit
        jhe  loc_B000
+*      Call sound player
+       bl   @sndplr
 ;RAM:AFFE 18 C7                       jr      update_sprite_loop                      ; loop
        jmp  update_sprite_loop
 *
@@ -278,8 +280,10 @@ loc_B074:
 ;RAM:B082 CA B7 AF                    jp      Z, player_dies                          ; both null? yes, lose a life
        jne  !
        b    @player_dies
+*      Call sound player
+!      bl   @sndplr
 ;RAM:B085 C3 BD AF                    jp      onscreen_loop
-!      b    @onscreen_loop
+       b    @onscreen_loop
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -5719,6 +5723,8 @@ render_obj:
        ab   one,*hl
 ;RAM:D00F CD 04 D7                    call    calc_pixel_XY_and_render                ; render object to video buffer
        bl   @calc_pixel_XY_and_render
+*      Call sound player
+       bl   @sndplr
 ;RAM:D012 C3 C3 CE                    jp      process_remaining_objs                  ; restart processing again
        b    @process_remaining_objs
 * ---------------------------------------------------------------------------
@@ -6520,9 +6526,10 @@ render_dynamic_objects:
        movb @render_status_info,a
 ;RAM:D5A8 A7                          and     a                                       ; initial rendering?
 ;RAM:D5A9 C2 53 D6                    jp      NZ, loc_D653                            ; yes, no need to wipe anything
-       jne  loc_D653
+       jeq  !
+       b    @loc_D653
 ;RAM:D5AC 21 8B CE                    ld      hl, #objects_to_draw
-       li   hl,objects_to_draw
+!      li   hl,objects_to_draw
 ;RAM:D5AF 22 CB 5B                    ld      (tmp_objects_to_draw), hl               ; temp storage
        mov  hl,@tmp_objects_to_draw
 wipe_next_object:
@@ -6681,6 +6688,8 @@ loc_D62C:
        clr  a
 ;RAM:D643 CD 15 C5                    call    fill_window
        bl   @fill_window
+*      Call sound player
+       bl   @sndplr
 ;RAM:D646 C3 B2 D5                    jp      wipe_next_object
        b    @wipe_next_object
 * ---------------------------------------------------------------------------
@@ -6738,6 +6747,8 @@ loc_D666:
        movb a,@c
 ;RAM:D674 CD 7C D6                    call    blit_to_screen
        bl   @blit_to_screen
+*      Call sound player
+       bl   @sndplr
 ;RAM:D677 18 ED                       jr      loc_D666                                ; loop
        jmp  loc_D666
 * ---------------------------------------------------------------------------

@@ -261,6 +261,7 @@ zx_aram:
        copy "background-types.a99"
        copy "special-objects.a99"
        copy "update-sprite-jump-table.a99"
+       copy "tiplayer.a99"
 *
 upper_memory_end:
        data -1

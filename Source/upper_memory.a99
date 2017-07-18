@@ -2814,9 +2814,9 @@ rand_no:
 *
 * Check for quit
 *
-ckquit clr  tmp1                         ; Test column 0
+ckquit clr  tmp1                       ; Test column 0
        li   r12,>0024                  ; Address for column selection
-       ldcr tmp1,3                       ; Select column
+       ldcr tmp1,3                     ; Select column
        li   r12,>0006                  ; Address to read rows
        stcr tmp1,8
        andi tmp1,>1100
@@ -2830,20 +2830,12 @@ quit1  blwp @>0000
 *
 * Wait for key press
 *
-wtkey  mov  r11,*sp+
-       li   tmp1,30000
-!      li   tmp0,KEY_FI
-       bl   @chkkey
-       jne  wtkey_return
-       li   tmp0,KEY_SP
-       bl   @chkkey
-       jne  wtkey_return
-       li   tmp0,KEY_EN
-       bl   @chkkey
-       jne  wtkey_return
-       dec  tmp1
-       jne  -!
-wtkey_return:
+wtkey:
+       mov  r11,*sp+
+wtkey1:
+       bl   @anykey
+       jeq  wtkey1
+*      Return
        dect sp
        mov  *sp,r11
        rt
@@ -2926,6 +2918,28 @@ chkkey:
        tb   0                          ; Test key, EQ if not pressed
        rt
 *// chkkey
+
+*********************************************************************
+*
+* Resets EQ if any key is pressed
+*
+anykey:
+       li   tmp1,>0000                 ; Column
+anykey1:
+       li   r12,>0024                  ; CRU address of the column decoder
+       mov  tmp1,tmp0
+       swpb tmp0
+       ldcr tmp0,3                     ; Select column
+       li   r12,0006                   ; Select row
+       stcr tmp0,8
+       cb   tmp0,mone                  ; If any bit is reset a key is pressed
+       jne  anykey2
+       inct tmp1
+       ci   tmp1,>0016
+       jne  anykey1
+anykey2:
+       rt
+*// anykey
 
 *********************************************************************
 *

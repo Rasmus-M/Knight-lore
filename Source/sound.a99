@@ -14,40 +14,59 @@ game_complete_tune:
 ;       byte >20, >22, >1E, >1D, >1E, >20, >1D, >1B, >1D
 ;       byte >1E, >1B, >1A, >1B, >1D, >1A, >9B, >FF
 menu_tune:
-;      byte >1B, >27, >1B, >27, >1B, >2A, >2E, >1B, >27
-;       byte >1B, >27, >1B, >2A, >1B, >2E, >16, >25, >16
-;       byte >24, >16, >22, >16, >22, >16, >25, >16, >24
-;       byte >16, >22, >16, >22, >16, >22, >1B, >27, >1B
-;       byte >27, >1B, >2A, >2E, >1B, >27, >1B, >27, >1B
-;       byte >2A, >1B, >2E, >16, >25, >16, >24, >16, >22
-;       byte >16, >22, >16, >25, >16, >24, >16, >22, >16
-;       byte >22, >16, >22, >17, >2E, >17, >2E, >17, >2E
-;       byte >17, >2E, >19, >2E, >19, >2E, >19, >2E, >19
-;       byte >2E, >1B, >2E, >1B, >2E, >1B, >2E, >1B, >2E
-;       byte >1B, >2E, >1B, >2E, >1B, >2E, >1B, >2E, >FF
-;RAM:B2B6
-;RAM:B2B6             ; =============== S U B R O U T I N E =======================================
-;RAM:B2B6
-;RAM:B2B6
+;       byte >1B
+;       byte >27, >1B, >27, >1B, >2A, >2E
+;       byte >1B, >27, >1B, >27, >1B, >2A, >1B, >2E
+;       byte >16, >25, >16, >24, >16, >22, >16, >22
+;       byte >16, >25, >16, >24, >16, >22, >16, >22
+;       byte >16, >22
+;       byte >1B, >27, >1B, >27, >1B, >2A, >2E
+;       byte >1B, >27, >1B, >27, >1B, >2A, >1B, >2E
+;       byte >16, >25, >16, >24, >16, >22, >16, >22
+;       byte >16, >25, >16, >24, >16, >22, >16, >22
+;       byte >16, >22
+;       byte >17, >2E, >17, >2E, >17, >2E, >17, >2E
+;       byte >19, >2E, >19, >2E, >19, >2E, >19, >2E
+;       byte >1B, >2E, >1B, >2E, >1B, >2E, >1B, >2E
+;       byte >1B, >2E, >1B, >2E, >1B, >2E, >1B, >2E
+;       byte >FF
+*
+* =============== S U B R O U T I N E =======================================
+*
 play_audio_wait_key:
+       mov  r11,*sp+
 ;RAM:B2B6 21 D1 5B                    ld      hl, #audio_played
+       li   hl,audio_played
 ;RAM:B2B9 7E                          ld      a, (hl)
+       movb *hl,a
 ;RAM:B2BA A7                          and     a
 ;RAM:B2BB C0                          ret     NZ
+       jne  play_audio_wait_key_return
 ;RAM:B2BC CB C6                       set     0, (hl)
-;RAM:B2BC             ; End of function play_audio_wait_key
-;RAM:B2BC
-;RAM:B2BE
-;RAM:B2BE             ; =============== S U B R O U T I N E =======================================
-;RAM:B2BE
-;RAM:B2BE
+       movb one,*hl
+*      Init music
+       bl   @init_music
+*
+* End of function play_audio_wait_key
+*
+* =============== S U B R O U T I N E =======================================
+*
 play_audio_until_keypress:
+       bl   @play_music
 ;RAM:B2BE AF                          xor     a
 ;RAM:B2BF CD F7 B5                    call    read_port
 ;RAM:B2C2 28 01                       jr      Z, loc_B2C5
+       bl   @anykey
+       jeq  play_audio_until_keypress
 ;RAM:B2C4 C9                          ret
+play_audio_wait_key_return:
+       bl   @mtesnd
+       dect sp
+       mov  *sp,r11
        rt
-;RAM:B2C5             ; ---------------------------------------------------------------------------
+*
+* ---------------------------------------------------------------------------
+*
 ;RAM:B2C5
 ;RAM:B2C5             loc_B2C5:                                                       ; audio data
 ;RAM:B2C5 1A                          ld      a, (de)
@@ -479,11 +498,19 @@ audio_guard_wizard:
 * ---------------------------------------------------------------------------
 * eg. walking
 audio_B4BB:
-       rt
+       mov  r11,*sp+
 ;RAM:B4BB DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
+       movb *ix,a
 ;RAM:B4BE E6 01                       and     #1
+       andi a,>0100
 ;RAM:B4C0 C0                          ret     NZ
-;RAM:B4C1
+       jne  audio_B4BB_return
+       li   tmp0,sound2
+       li   tmp1,0
+       bl   @plysnd
+audio_B4BB_return:
+       dect sp
+       mov  *sp,r11
 audio_B4C1:
        rt
 ;RAM:B4C1 06 60                       ld      b, #0x60 ; '`'
@@ -539,3 +566,175 @@ toggle_audio_hw:
 ;RAM:B4FC C9                          ret
        rt
 * End of function toggle_audio_hw
+
+*********************************************************************
+*
+* Play sound
+* 
+* tmp0: Address of sound data to play
+* tmp1: Channel to use (0-3)
+*
+plysnd:
+       sla  tmp1,1
+       mov  tmp0,@sndad0(tmp1)
+       li   tmp0,1
+       mov  tmp0,@sndct0(tmp1)
+       rt
+*// plysnd
+
+*********************************************************************
+*
+* Mute sound
+* 
+mtesnd:
+       clr  @sndad0                    ; Sound address channel 0
+       clr  @sndad1                    ; Sound address channel 1
+       clr  @sndad2                    ; Sound address channel 2
+       clr  @sndad3                    ; Sound address channel 3
+       li   tmp0,mutetb                ; Mute all
+       movb *tmp0,@sound
+       movb *tmp0+,@sound
+       movb *tmp0+,@sound
+       movb *tmp0+,@sound
+       rt
+*// mteend
+
+mutetb byte >9f, >bf, >df, >ff
+
+*********************************************************************
+*
+* Sound player
+* 
+* Modifies R0-R2
+*
+sndplr:
+       movb @vdpsta,tmp0
+*      Play after interrupt only
+       jlt  sndpl8
+       rt
+sndpl8:
+       lwpi wrksp2
+       li   r2,2                       ; Channel
+sndpl0:
+       mov  @sndad0(r2),r0
+       jeq  sndpl3
+       dec  @sndct0(r2)
+       jgt  sndpl3
+       clr  r1
+       movb *r0+,r1                    ; Get number of bytes to read
+       jne  sndpl5
+*      Repeat command found
+       mov  *r0+,r3                    ; Get loop address
+       mov  @sndrp0(r2),r1             ; Get repeat counter
+       jne  sndpl6                     ; Check for repeat in progress
+*      New repeat
+       movb *r0,@sndrp0+1(r2)          ; Get 'number of repeats' byte
+       mov  r3,@sndad0(r2)             ; Set player address to loop address
+       jmp  sndpl0
+*      Repeat in progress
+sndpl6: 
+       dec  @sndrp0(r2)
+       jeq  sndpl7                     ; Check if last repetition
+       mov  r3,@sndad0(r2)             ; Set player address to loop address
+       jmp  sndpl0
+*      Repeat done
+sndpl7: 
+       inc  r0                         ; Skip 'number of repeats' byte
+       mov  r0,@sndad0(r2)
+       jmp  sndpl0
+sndpl5: 
+       swpb r1
+sndpl1: 
+       movb *r0+,@sound                ; Play
+       dec  r1
+       jne  sndpl1
+       movb *r0+,r1
+       jne  sndpl2
+*      End of sound data
+       clr  @sndad0(r2)
+       jmp  sndpl3
+*      More sound data
+sndpl2: 
+       swpb r1
+       mov  r1,@sndct0(r2)
+       mov  r0,@sndad0(r2)
+sndpl3: 
+       dect r2
+       jlt  sndpl4
+       jmp  sndpl0
+sndpl4:
+       lwpi wrksp
+sndple:
+       rt
+*// sndplr
+
+sndad0 data 0                          ; Sound player data address channel 0
+sndad1 data 0                          ; Sound player data address channel 1
+sndad2 data 0                          ; Sound player data address channel 2
+sndad3 data 0                          ; Sound player data address channel 3
+sndct0 data 0                          ; Sound player counter channel 0
+sndct1 data 0                          ; Sound player counter channel 1
+sndct2 data 0                          ; Sound player counter channel 2
+sndct3 data 0                          ; Sound player counter channel 3
+sndrp0 data 0                          ; Sound player repeat counter channel 0
+sndrp1 data 0                          ; Sound player repeat counter channel 1
+sndrp2 data 0                          ; Sound player repeat counter channel 2
+sndrp3 data 0                          ; Sound player repeat counter channel 3
+
+*********************************************************************************
+*
+* Play music
+*
+play_music:
+       movb @vdpsta,tmp0
+*      Play after interrupt only
+       jlt  playm0
+       rt
+playm0:
+       mov  r11,*sp+                   ; Push return address onto the stack
+       bl   @stplay
+       lwpi wrksp
+       mov  @wrksp2+14,tmp0            ; Check if music is done
+       jne  playm1
+*      Restart music
+       bl   @init_music
+*      Return
+playm1:
+       dect sp                         ; Pop return address off the stack
+       mov  *sp,r11
+       rt
+*// play_music
+
+*********************************************************************************
+*
+* Initialize music
+*
+init_music:
+       mov  r11,*sp+                   ; Push return address onto the stack
+       li   r0,intro_music
+       clr  r1
+       bl   @stinit
+*      Return
+       dect sp                         ; Pop return address off the stack
+       mov  *sp,r11
+       rt
+*// init_music
+
+*********************************************************************************
+*
+sound1:
+       byte >03, >8e, >0f, >90, >01        * A21
+       byte >01, >94, >01
+       byte >01, >98, >01
+       byte >01, >9c, >01
+       byte >01, >9f, >00
+
+sound2:
+       byte >03, >8c, >1f, >90, >01        * A11
+       byte >01, >94, >01
+       byte >01, >98, >01
+       byte >01, >9c, >01
+       byte >01, >9f, >00
+
+intro_music:
+       bcopy "..\sound\intro.vgm.spf"
