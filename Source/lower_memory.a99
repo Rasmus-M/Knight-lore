@@ -1179,7 +1179,7 @@ set_both_deadly_flags:
 * ---------------------------------------------------------------------------
 * ball up/down
 upd_178_179:
-;       szcb @b02h,@7(ix)              ; TODO: Reset ignore bit, sometimes this bit is set
+;       szcb @b02h,@7(ix)              ; Reset ignore bit, sometimes this bit is set
 ;RAM:B865 CD F2 C4                    call    upd_12_to_15                            ; adjust (-4,-8)
        bl   @upd_12_to_15_0
 ;RAM:B868 3A BD 5B                    ld      a, (ball_bounce_height)
@@ -1645,7 +1645,7 @@ loc_BF31:
 * sparkles (object in cauldron)
 upd_185_187:
 ;RAM:BF37 DD 6E 10                    ld      l, 16(ix)
-       movb @16(ix),@l                ; TODO: Little endian!
+       movb @16(ix),@l                ; Little endian!
 ;RAM:BF3A DD 66 11                    ld      h, 17(ix)
        movb @17(ix),h
 ;RAM:BF3D             ;
@@ -2830,11 +2830,11 @@ loc_C530:
 ;RAM:C566 79                          ld      a, c
 ;RAM:C567 12                          ld      (de), a
 ;RAM:C568 13                          inc     de
-       movb @c,*de+                   ; TODO: Little endian
+       movb @c,*de+                   ; Little endian!
 ;RAM:C569 78                          ld      a, b
 ;RAM:C56A 12                          ld      (de), a                                 ; store
 ;RAM:C56B 13                          inc     de
-       movb b,*de+                    ; TODO: Little endian
+       movb b,*de+                    ; Little endian!
 ;RAM:C56C 06 0E                       ld      b, #14
        movb @b0eh,b
 ;RAM:C56E CD 08 D5                    call    zero_DE
@@ -2903,7 +2903,7 @@ loc_C595:
 ;RAM:C599 28 1C                       jr      Z, loc_C5B7                             ; yes, skip
        jeq  loc_C5B7
 ;RAM:C59B FD 5E 10                    ld      e, 16(iy)
-       movb @16(iy),@e                ; TODO: Little endian!
+       movb @16(iy),@e                ; Little endian!
 ;RAM:C59E FD 56 11                    ld      d, 17(iy)                               ; DE=ptr object table entry
        movb @17(iy),d
        jeq  loc_C5B7                  ; Bug fix?
@@ -5113,7 +5113,7 @@ set_draw_objs_overlapped_1:
 ;RAM:CD68 BD                          cp      l
        cb   a,@l
 ;RAM:CD69 38 01                       jr      C, loc_CD6C
-       jl   loc_CD6C                  ; TODO: test if this works
+       jl   loc_CD6C                  ; Carry flag
 ;RAM:CD6B 7D                          ld      a, l
        movb @l,a
 loc_CD6C:
@@ -5132,7 +5132,7 @@ loc_CD6C:
 ;RAM:CD76 BD                          cp      l
        cb   a,@l
 ;RAM:CD77 30 01                       jr      NC, loc_CD7A
-       jhe  loc_CD7A                  ; TODO: test if this works
+       jhe  loc_CD7A                  ; Carry flag
 ;RAM:CD79 7D                          ld      a, l
        movb @l,a
 loc_CD7A:
@@ -5145,7 +5145,7 @@ loc_CD7A:
 ;RAM:CD7F DD BE 1F                    cp      31(ix)                                  ; old pixelY
        cb   a,@31(ix)
 ;RAM:CD82 38 03                       jr      C, loc_CD87
-       jl   loc_CD87                  ; TODO: test if this works
+       jl   loc_CD87                  ; Carry flag
 ;RAM:CD84 DD 7E 1F                    ld      a, 31(ix)                               ; old pixelY
        movb @31(ix),a
 loc_CD87:
@@ -5164,7 +5164,7 @@ loc_CD87:
 ;RAM:CD95 BC                          cp      h
        cb   a,h
 ;RAM:CD96 30 01                       jr      NC, loc_CD99
-       jhe  loc_CD99                 ; TODO: test if this works
+       jhe  loc_CD99                  ; Carry flag
 ;RAM:CD98 7C                          ld      a, h
        movb h,a
 loc_CD99:
@@ -5193,7 +5193,7 @@ test_overlap_obj:
        andi a,>1f00
 ;RAM:CDAF 93                          sub     e                                       ; < left extremity (to the left)?
 ;RAM:CDB0 38 1A                       jr      C, loc_CDCC                             ; yes, go
-       cb   a,@e                       ; TODO: test if this works
+       cb   a,@e                      ; Carry flag
        jhe  !
        sb   @e,a
        jmp  loc_CDCC
@@ -5207,7 +5207,7 @@ loc_CDB3:
        movb @27(iy),a
 ;RAM:CDB8 95                          sub     l                                       ; < lowest Y (below)?
 ;RAM:CDB9 38 18                       jr      C, loc_CDD3                             ; yes, go
-       cb   a,@l                      ; TODO: test if this works
+       cb   a,@l                      ; Carry flag
        jhe  !
        sb   @l,a
        jmp  loc_CDD3
@@ -5517,7 +5517,7 @@ loc_CEDB:
 ;RAM:CF01 DD 7E 03                    ld      a, 3(ix)                                ; Z1
        movb @3(ix),a
 ;RAM:CF04 95                          sub     l                                       ; Z1-(Z2+H2)
-       cb   a,@l                      ; TODO: is this correct?
+       cb   a,@l                      ; Carry flag
 ;RAM:CF05 30 0F                       jr      NC, loc_CF16                            ; no overlap (C+=0)
        jhe  loc_CF16
 ;RAM:CF07 DD 7E 03                    ld      a, 3(ix)                                ; Z1
@@ -5529,7 +5529,7 @@ loc_CEDB:
 ;RAM:CF0E FD 7E 03                    ld      a, 3(iy)                                ; Z2
        movb @3(iy),a
 ;RAM:CF11 95                          sub     l                                       ; Z2-(Z1+H1)
-       cb   a,@l                      ; TODO: is this correct?
+       cb   a,@l                      ; Carry flag
 ;RAM:CF12 38 01                       jr      C, loc_CF15                             ; overlap (C+=1)
        jl   loc_CF15
 ;RAM:CF14 0C                          inc     c                                       ; no overlap (C+=2)
@@ -5549,7 +5549,7 @@ loc_CF16:
 ;RAM:CF20 DD 96 05                    sub     5(ix)                                   ; sub D1
        sb   @5(ix),a
 ;RAM:CF23 95                          sub     l                                       ; Y1-D1-(Y2+d2)
-       cb   a,@l                      ; TODO: is this correct?
+       cb   a,@l                      ; Carry flag
 ;RAM:CF24 30 16                       jr      NC, loc_CF3C                            ; no overlap (C+=0)
        jhe  loc_CF3C
 ;RAM:CF26 DD 7E 02                    ld      a, 2(ix)                                ; Y1
@@ -5564,7 +5564,7 @@ loc_CF16:
        sb   @5(iy),a
 ;RAM:CF33 95                          sub     l                                       ; Y2-D2-(Y1+D1)
 ;RAM:CF34 79                          ld      a, c
-       movb a,tmp0                      ; TODO: is this correct?
+       movb a,tmp0                    ; Carry flag
        movb @c,a
        cb   tmp0,@l
 ;RAM:CF35 38 02                       jr      C, loc_CF39                             ; overlap (C+=3)
@@ -5588,7 +5588,7 @@ loc_CF3C:
 ;RAM:CF46 DD 96 04                    sub     4(ix)                                   ; sub W1
        sb   @4(ix),a
 ;RAM:CF49 95                          sub     l                                       ; X1-W1-(X2+W2)
-       cb   a,@l                     ; TODO: is this correct?
+       cb   a,@l                     ; Carry flag
 ;RAM:CF4A 30 16                       jr      NC, loc_CF62                            ; no overlap (C+=0)
        jhe  loc_CF62
 ;RAM:CF4C DD 7E 01                    ld      a, 1(ix)                                ; X1
@@ -6611,7 +6611,7 @@ wipe_next_object:
 ;RAM:D5D2 DD 96 1E                    sub     30(ix)                                  ; old pixel X
        cb   a,@30(ix)
 ;RAM:D5D5 DA 49 D6                    jp      C, loc_D649
-       jl   loc_D649                  ; TODO: test if this works
+       jl   loc_D649                  ; Carry flag
 ;RAM:D5D8 DD 4E 1E                    ld      c, 30(ix)                               ; old pixel X
        movb @30(ix),@c
 loc_D5DB:
@@ -6640,7 +6640,7 @@ loc_D5DB:
 ;RAM:D5F2 BB                          cp      e
        cb   a,@e
 ;RAM:D5F3 38 01                       jr      C, loc_D5F6
-       jl   loc_D5F6                  ; TODO: test if this works
+       jl   loc_D5F6                  ; Carry flag
 ;RAM:D5F5 5F                          ld      e, a
        movb a,@e
 loc_D5F6:
@@ -6665,7 +6665,7 @@ loc_D5F6:
 ;RAM:D603 DD 96 1F                    sub     31(ix)                                  ; pixel Y < old pixel Y?
        cb   a,@31(ix)
 ;RAM:D606 38 46                       jr      C, loc_D64E                             ; yes, go
-       jl   loc_D64E                  ; TODO: test if this works
+       jl   loc_D64E                  ; Carry flag
 ;RAM:D608 DD 46 1F                    ld      b, 31(ix)                               ; old pixel Y
        movb @31(ix),b
 loc_D60B:
@@ -6682,7 +6682,7 @@ loc_D60B:
 ;RAM:D618 BB                          cp      e
        cb   a,@e
 ;RAM:D619 30 01                       jr      NC, loc_D61C
-       jhe  loc_D61C                   ; TODO: test if this works
+       jhe  loc_D61C                   ; Carry flag
 ;RAM:D61B 7B                          ld      a, e
        movb @e,a
 loc_D61C:
@@ -6695,13 +6695,13 @@ loc_D61C:
 ;RAM:D61F FE C0                       cp      #192                                    ; off bottom of screen?
        cb   a,@bc0h
 ;RAM:D621 30 8F                       jr      NC, wipe_next_object                    ; yes, go
-       jhe  wipe_next_object          ; TODO: test if this works
+       jhe  wipe_next_object          ; Carry flag
 ;RAM:D623 85                          add     a, l
        ab   @l,a
 ;RAM:D624 D6 C0                       sub     #192
        cb   a,@bc0h
 ;RAM:D626 38 04                       jr      C, loc_D62C
-       jl   loc_D62C                  ; TODO: test if this works
+       jl   loc_D62C                  ; Carry flag
        sb   @bc0h,a
 ;RAM:D628 ED 44                       neg
        inv  a
