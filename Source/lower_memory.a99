@@ -196,10 +196,12 @@ loc_B000:
 ;RAM:B021 3A C5 5B                    ld      a, (rising_blocks_z)
        movb @rising_blocks_z,a
 ;RAM:B024 A7                          and     a                                       ; any blocks rising?
+       .ifeq sound_on,1
 ;RAM:B025 C4 54 B4                    call    NZ, audio_B454                          ; yes, play audio
        jeq  !
-       bl   @audio_B454               ; TODO
+       bl   @audio_B454
 !:
+       .endif
        .ifeq delay_on,1
 ;RAM:B028 3A BE 5B                    ld      a, (rendered_objs_cnt)
        movb @rendered_objs_cnt,a
@@ -617,8 +619,10 @@ loc_B63C:
 ;RAM:B649 F2 4F B6                    jp      P, loc_B64F                             ; yes, skip
        jgt  loc_B64F
        jeq  loc_B64F
+       .ifeq sound_on,1
 ;RAM:B64C CD 2E B4                    call    audio_B42E
-       bl   @audio_B42E               ; TODO
+       bl   @audio_B42E
+       .endif
 loc_B64F:
 ;RAM:B64F ED 5F                       ld      a, r                                    ; random
        bl   @ld_a_r
@@ -694,8 +698,10 @@ upd_91:
        andi tmp0,>0400
 ;RAM:B69A 20 03                       jr      NZ, loc_B69F                            ; yes, skip
        jne  loc_B69F
+       .ifeq sound_on,1
 ;RAM:B69C CD 51 B4                    call    audio_B451
-       bl   @audio_B451               ; TODO
+       bl   @audio_B451
+       .endif
 loc_B69F:
 ;RAM:B69F C3 92 C6                    jp      set_wipe_and_draw_flags
        bl   @set_wipe_and_draw_flags
@@ -719,8 +725,10 @@ upd_143:
 * ---------------------------------------------------------------------------
 * block (moving NS)
 upd_55:
+       .ifeq sound_on,1
 ;RAM:B6B1 CD 62 B4                    call    audio_B462
-       bl   @audio_B462               ; TODO
+       bl   @audio_B462
+       .endif
 ;RAM:B6B4 21 0A 02                    ld      hl, #0x20A                              ; IX+2,IX+10 (Y,dY)
        li   hl,>020a
 ;RAM:B6B7 18 06                       jr      loc_B6BF
@@ -728,8 +736,10 @@ upd_55:
 * ---------------------------------------------------------------------------
 * block (moving EW)
 upd_54:
+       .ifeq sound_on,1
 ;RAM:B6B9 CD 5D B4                    call    audio_B45D
-       bl   @audio_B45D               ; TODO
+       bl   @audio_B45D
+       .endif
 ;RAM:B6BC 21 09 01                    ld      hl, #0x109                              ; IX+1,IX+9 (X,dX)
        li   hl,>0109
 loc_B6BF:
@@ -813,8 +823,10 @@ upd_144_to_149_152_to_157:
        mov  *sp,r11
        rt
 !
+       .ifeq sound_on,1
 ;RAM:B703 CD AD B4                    call    audio_guard_wizard
-       bl   @audio_guard_wizard       ; TODO
+       bl   @audio_guard_wizard
+       .endif
 ;RAM:B706 DD 7E 09                    ld      a, 9(ix)                                ; dX
        movb @9(ix),a
 ;RAM:B709 DD BE 0A                    cp      10(ix)                                  ; dX<dY?
@@ -1016,8 +1028,10 @@ spiked_ball_drop:
        andi tmp0,>0400
 ;RAM:B7D4 20 06                       jr      NZ, loc_B7DC                            ; yes, go
        jne  loc_B7DC
+       .ifeq sound_on,1
 ;RAM:B7D6 CD 51 B4                    call    audio_B451
-       bl   @audio_B451               ; TODO
+       bl   @audio_B451
+       .endif
 draw_spiked_ball:
 ;RAM:B7D9 C3 92 C6                    jp      set_wipe_and_draw_flags
        b    @set_wipe_and_draw_flags
@@ -1058,8 +1072,10 @@ upd_86_87:
 loc_B7FE:
 ;RAM:B7FE DD 77 09                    ld      9(ix), a                                ; dX=+/-2
        movb a,@9(ix)
+       .ifeq sound_on,1
 ;RAM:B801 CD 5D B4                    call    audio_B45D
-       bl   @audio_B45D               ; TODO
+       bl   @audio_B45D
+       .endif
 ;RAM:B804 CD 00 C7                    call    dec_dZ_and_update_XYZ
        bl   @dec_dZ_and_update_XYZ
 ;RAM:B807 DD CB 0C 46                 bit     0, 12(ix)                               ; X OOB?
@@ -1089,8 +1105,10 @@ upd_180_181:
 loc_B820:
 ;RAM:B820 DD 77 0A                    ld      10(ix), a                               ; dY=+/-2
        movb a,@10(ix)
+       .ifeq sound_on,1
 ;RAM:B823 CD 62 B4                    call    audio_B462
-       bl   @audio_B462               ; TODO
+       bl   @audio_B462
+       .endif
 ;RAM:B826 CD 00 C7                    call    dec_dZ_and_update_XYZ
        bl   @dec_dZ_and_update_XYZ
 ;RAM:B829 DD CB 0C 4E                 bit     1, 12(ix)                               ; Y OOB?
@@ -1106,8 +1124,10 @@ loc_B82F:
        xor tmp0,a
 ;RAM:B834 DD 77 0D                    ld      13(ix), a
        movb a,@13(ix)
+       .ifeq sound_on,1
 ;RAM:B837 CD 2E B4                    call    audio_B42E
-       bl   @audio_B42E               ; TODO
+       bl   @audio_B42E
+       .endif
 loc_B83A:
 ;RAM:B83A CD 85 B9                    call    toggle_next_prev_sprite
        bl   @toggle_next_prev_sprite
@@ -1176,8 +1196,10 @@ upd_178_179:
 loc_B876:
 ;RAM:B876 CD 85 B9                    call    toggle_next_prev_sprite                 ; toggle 178/179
        bl   @toggle_next_prev_sprite
+       .ifeq sound_on,1
 ;RAM:B879 CD 51 B4                    call    audio_B451
-       bl   @audio_B451               ; TODO
+       bl   @audio_B451
+       .endif
 ;RAM:B87C DD CB 0D 56                 bit     2, 13(ix)                               ; dir=up?
        movb @13(ix),tmp0
        andi tmp0,>0400
@@ -1192,8 +1214,10 @@ loc_B876:
        jeq  loc_B892
 ;RAM:B88B DD CB 0D D6                 set     2, 13(ix)                               ; set dir=up
        socb @b04h,@13(ix)
+       .ifeq sound_on,1
 ;RAM:B88F CD 2E B4                    call    audio_B42E
-       bl   @audio_B42E               ; TODO
+       bl   @audio_B42E
+       .endif
 loc_B892:
 ;RAM:B892 18 C2                       jr      set_deadly_wipe_and_draw_flags
        b    @set_deadly_wipe_and_draw_flags
@@ -1573,8 +1597,10 @@ upd_120_to_126:
        rt
 ;RAM:BF08 DD 34 00                    inc     0(ix)                                   ; next sprite
 !      ab   one,*ix
+       .ifeq sound_on,1
 ;RAM:BF0B CD 19 B4                    call    audio_B419                              ; make a sound?
-       bl   @audio_B419               ; TODO
+       bl   @audio_B419
+       .endif
 ;RAM:BF0E C3 92 C6                    jp      set_wipe_and_draw_flags
        b    @set_wipe_and_draw_flags
 * ---------------------------------------------------------------------------
@@ -1608,8 +1634,10 @@ upd_112_to_118_184:
        ab   one,*ix
 * START OF FUNCTION CHUNK FOR chk_and_init_transform
 loc_BF31:
+       .ifeq sound_on,1
 ;RAM:BF31 CD 03 B4                    call    audio_B403
-       bl   @audio_B403               ; TODO
+       bl   @audio_B403
+       .endif
 ;RAM:BF34 C3 92 C6                    jp      set_wipe_and_draw_flags
        b    @set_wipe_and_draw_flags
 * END OF FUNCTION CHUNK FOR chk_and_init_transform
@@ -1860,8 +1888,10 @@ upd_103:
 ;RAM:C1DE AF                          xor     a
 ;RAM:C1DF 32 C0 5B                    ld      (disable_spike_ball_drop), a
        szcb mone,@disable_spike_ball_drop
+       .ifeq sound_on,1
 ;RAM:C1E2 CD A3 B4                    call    toggle_audio_hw_x16
-       bl   @toggle_audio_hw_x16      ; TODO
+       bl   @toggle_audio_hw_x16
+       .endif
 ;RAM:C1E5 CD A3 BC                    call    print_lives
        bl   @print_lives
 ;RAM:C1E8 01 20 20                    ld      bc, #0x2020
@@ -1945,8 +1975,10 @@ loc_C22F:
 ;RAM:C22F CD 00 C7                    call    dec_dZ_and_update_XYZ
        bl   @dec_dZ_and_update_XYZ
 audio_B467_wipe_and_draw:
+       .ifeq sound_on,1
 ;RAM:C232 CD 67 B4                    call    audio_B467                              ; audio?
-       bl   @audio_B467               ; TODO
+       bl   @audio_B467
+       .endif
 ;RAM:C235 C3 92 C6                    jp      set_wipe_and_draw_flags
        b    @set_wipe_and_draw_flags
 * ---------------------------------------------------------------------------
@@ -2234,8 +2266,10 @@ loc_C349:
        .endif
 ;RAM:C34E C0                          ret     NZ                                      ; no, return
        jne  chk_and_init_transform_return
+       .ifeq sound_on,1
 ;RAM:C34F CD 72 B4                    call    audio_B472
-       bl   @audio_B472               ; TODO
+       bl   @audio_B472
+       .endif
 ;RAM:C352 DD 35 10                    dec     16(ix)                                  ; copy of graphic_no
        sb   one,@16(ix)
 ;RAM:C355 28 20                       jr      Z, loc_C377
@@ -2547,8 +2581,10 @@ upd_62:
        bl   @upd_6_7_0
 ;RAM:C4AD CD F3 C9                    call    clear_dX_dY
        bl   @clear_dX_dY
+       .ifeq sound_on,1
 ;RAM:C4B0 CD E9 B3                    call    audio_B3E9
-       bl   @audio_B3E9               ; TODO
+       bl   @audio_B3E9
+       .endif
 ;RAM:C4B3 C3 AF B5                    jp      dec_dZ_wipe_and_draw
        b    @dec_dZ_wipe_and_draw
 * ---------------------------------------------------------------------------
@@ -2955,8 +2991,10 @@ loc_C5DD:
        movb a,@10(ix)
 ;RAM:C5F7 CD 03 C6                    call    calc_ghost_sprite
        bl   @calc_ghost_sprite
+       .ifeq sound_on,1
 ;RAM:C5FA CD 67 B4                    call    audio_B467
-       bl   @audio_B467               ; TODO
+       bl   @audio_B467
+       .endif
 loc_C5FD:
 ;RAM:C5FD CD 85 B9                    call    toggle_next_prev_sprite
        bl   @toggle_next_prev_sprite
@@ -3144,8 +3182,10 @@ upd_9:
        andi tmp0,>0400
 ;RAM:C6DB 28 B5                       jr      Z, set_wipe_and_draw_flags              ; no, go
        jeq  set_wipe_and_draw_flags
+       .ifeq sound_on,1
 ;RAM:C6DD CD 89 B4                    call    audio_B489
-       bl   @audio_B489               ; TODO
+       bl   @audio_B489
+       .endif
 stop_portcullis:
 ;RAM:C6E0 AF                          xor     a                                       ; flag not moving
 ;RAM:C6E1 32 AF 5B                    ld      (portcullis_moving), a
@@ -3158,8 +3198,10 @@ stop_portcullis:
 move_portcullis_up:
 ;RAM:C6EA DD 36 0B 02                 ld      11(ix), #2                              ; dZ
        movb @b02h,@11(ix)
+       .ifeq sound_on,1
 ;RAM:C6EE CD 67 B4                    call    audio_B467
-       bl   @audio_B467               ; TODO
+       bl   @audio_B467
+       .endif
 ;RAM:C6F1 CD 00 C7                    call    dec_dZ_and_update_XYZ
        bl   @dec_dZ_and_update_XYZ
 ;RAM:C6F4 3A AE 5B                    ld      a, (room_size_Z)
@@ -3799,13 +3841,15 @@ loc_C8FD:
        andi tmp0,>0400
 ;RAM:C90E 20 05                       jr      NZ, loc_C915                            ; yes, skip
        jne  loc_C915
+       .ifeq sound_on,1
 ;RAM:C910 C5                          push    bc
        mov  bc,*sp+
 ;RAM:C911 CD C1 B4                    call    audio_B4C1
-       bl   @audio_B4C1               ; TODO
+       bl   @audio_B4C1
 ;RAM:C914 C1                          pop     bc
        dect sp
        mov  *sp,bc
+       .endif
 loc_C915:
 ;RAM:C915 DD 7E 0D                    ld      a, 13(ix)
        movb @13(ix),a
@@ -3889,13 +3933,15 @@ handle_jump:
        socb @b08h,@12(ix)
 ;RAM:C95F DD 36 0B 08                 ld      11(ix), #8                              ; dZ=8?
        movb @b08h,@11(ix)
+       .ifeq sound_on,1
 ;RAM:C963 C5                          push    bc
        mov  bc,*sp+
 ;RAM:C964 CD 41 B4                    call    audio_B441
-       bl   @audio_B441               ; TODO
+       bl   @audio_B441
 ;RAM:C967 C1                          pop     bc
        dect sp
        mov  *sp,bc
+       .endif
 ;RAM:C968 C9                          ret
 handle_jump_return:
        dect sp
@@ -3925,6 +3971,7 @@ handle_forward:
 ;RAM:C978 28 1A                       jr      Z, loc_C994                             ; no, go
        jeq  loc_C994
 loc_C97A:
+       .ifeq sound_on,1
 ;RAM:C97A C5                          push    bc
        mov  bc,*sp+
 ;RAM:C97B CD BB B4                    call    audio_B4BB
@@ -3932,6 +3979,7 @@ loc_C97A:
 ;RAM:C97E C1                          pop     bc
        dect sp
        mov  *sp,bc
+       .endif
        jmp  animate_human_legs
 animate_human_legs_0:                 ; For calling
        mov  r11,*sp+
@@ -4044,8 +4092,10 @@ loc_C9CD:
        movb a,@tmp_dZ
 ;RAM:C9D4 C6 02                       add     a, #2
        ab   @b02h,a
+       .ifeq sound_on,1
 ;RAM:C9D6 FC 51 B4                    call    M, audio_B451
-       bl   @audio_B451               ; TODO
+       bl   @audio_B451
+       .endif
 ;RAM:C9D9 CD 45 CB                    call    adj_for_out_of_bounds
        bl   @adj_for_out_of_bounds
 ;RAM:C9DC CD 70 CA                    call    handle_exit_screen

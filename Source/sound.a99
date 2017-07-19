@@ -74,30 +74,26 @@ play_audio_wait_key_return:
 ;RAM:B2C8 28 0F                       jr      Z, end_audio                            ; yes, exit
 ;RAM:B2CA CD DA B2                    call    play_note
 ;RAM:B2CD 18 EF                       jr      play_audio_until_keypress
-;RAM:B2CD             ; End of function play_audio_until_keypress
-;RAM:B2CD
-;RAM:B2CF
-;RAM:B2CF             ; =============== S U B R O U T I N E =======================================
-;RAM:B2CF
-;RAM:B2CF
+*
+* End of function play_audio_until_keypress
+*
+* =============== S U B R O U T I N E =======================================
+*
 play_audio:
-       rt
 ;RAM:B2CF 1A                          ld      a, (de)                                 ; audio data byte
 ;RAM:B2D0 FE FF                       cp      #0xFF                                   ; done?
 ;RAM:B2D2 28 05                       jr      Z, end_audio                            ; yes, return
 ;RAM:B2D4 CD DA B2                    call    play_note
 ;RAM:B2D7 18 F6                       jr      play_audio
-;RAM:B2D9             ; ---------------------------------------------------------------------------
-;RAM:B2D9
+* ---------------------------------------------------------------------------
 end_audio:
 ;RAM:B2D9 C9                          ret
        rt
-;RAM:B2D9             ; End of function play_audio
-;RAM:B2D9
-;RAM:B2DA
-;RAM:B2DA             ; =============== S U B R O U T I N E =======================================
-;RAM:B2DA
-;RAM:B2DA
+*
+* End of function play_audio
+*
+* =============== S U B R O U T I N E =======================================
+*
 play_note:
 ;RAM:B2DA E6 3F                       and     #0x3F ; '?'                             ; note
 ;RAM:B2DC 28 3E                       jr      Z, snd_delay
@@ -158,8 +154,9 @@ play_note:
 ;RAM:B31A 13                          inc     de
 ;RAM:B31B C9                          ret
        rt
-;RAM:B31C             ; ---------------------------------------------------------------------------
-;RAM:B31C
+*
+* ---------------------------------------------------------------------------
+*
 snd_delay:
 ;RAM:B31C 1A                          ld      a, (de)
 ;RAM:B31D 13                          inc     de
@@ -183,10 +180,13 @@ snd_delay:
 ;RAM:B32F 20 F6                       jr      NZ, loc_B327
 ;RAM:B331 C9                          ret
        rt
-;RAM:B331             ; End of function play_note
-;RAM:B331
-;RAM:B331             ; ---------------------------------------------------------------------------
-;RAM:B332             ; Frequency Table?
+*
+* End of function play_note
+*
+* ---------------------------------------------------------------------------
+*
+* Frequency Table?
+*
 ;RAM:B332 00 00 00 F4+freq_tbl:       byte 0, 0, 0
 ;RAM:B332 0A 08 65 0A+                byte 0xF4, 0xA, 8
 ;RAM:B332 09 DE 09 09+                byte 0x65, 0xA, 9
@@ -248,14 +248,12 @@ snd_delay:
 ;RAM:B332                             byte 0x5F, 1, 0xDC
 ;RAM:B332                             byte 0x59, 1, 0xE9
 ;RAM:B332                             byte 0x54, 1, 0xF7
-;RAM:B3E9             ;
-;RAM:B3E9             ; block (62)
-;RAM:B3E9
-;RAM:B3E9             ; =============== S U B R O U T I N E =======================================
-;RAM:B3E9
-;RAM:B3E9
+*
+* =============== S U B R O U T I N E =======================================
+*
+* block (62)
+*
 audio_B3E9:
-       rt
 ;RAM:B3E9 3A A2 5B                    ld      a, (seed_2)
 ;RAM:B3EC E6 07                       and     #7
 ;RAM:B3EE 6F                          ld      l, a
@@ -265,18 +263,18 @@ audio_B3E9:
 ;RAM:B3F5 46                          ld      b, (hl)
 ;RAM:B3F6 0E 04                       ld      c, #4
 ;RAM:B3F8 C3 E6 B4                    jp      toggle_audio_hw_xC
-;RAM:B3F8             ; End of function audio_B3E9
-;RAM:B3F8
-;RAM:B3F8             ; ---------------------------------------------------------------------------
-;RAM:B3FB A0 B0 C0 90+byte_B3FB:      byte 0xA0, 0xB0, 0xC0, 0x90, 0xA0, 0xE0, 0x80, 0x60
-;RAM:B403             ;
-;RAM:B403             ; eg. death sparkles
-;RAM:B403
-;RAM:B403             ; =============== S U B R O U T I N E =======================================
-;RAM:B403
-;RAM:B403
-audio_B403:
        rt
+*
+* End of function audio_B3E9
+*
+* ---------------------------------------------------------------------------
+;RAM:B3FB A0 B0 C0 90+byte_B3FB:      byte 0xA0, 0xB0, 0xC0, 0x90, 0xA0, 0xE0, 0x80, 0x60
+*
+* =============== S U B R O U T I N E =======================================
+*
+* eg. death sparkles
+*
+audio_B403:
 ;RAM:B403 DD 7E 00                    ld      a, 0(ix)                                ; sprite index
 ;RAM:B406 2F                          cpl
 ;RAM:B407 E6 1F                       and     #0x1F
@@ -292,15 +290,15 @@ audio_B403:
 ;RAM:B415 1D                          dec     e
 ;RAM:B416 20 F5                       jr      NZ, loc_B40D
 ;RAM:B418 C9                          ret
-;RAM:B418             ; End of function audio_B403
-;RAM:B418
-;RAM:B419             ; eg. player appears sparkles
-;RAM:B419
-;RAM:B419             ; =============== S U B R O U T I N E =======================================
-;RAM:B419
-;RAM:B419
-audio_B419:
        rt
+*
+* End of function audio_B403
+*
+* =============== S U B R O U T I N E =======================================
+*
+* eg. player appears sparkles
+*
+audio_B419:
 ;RAM:B419 DD 7E 00                    ld      a, 0(ix)                                ; player sprite graphic no.
 ;RAM:B41C 07                          rlca
 ;RAM:B41D 07                          rlca
@@ -317,15 +315,15 @@ audio_B419:
 ;RAM:B42A 0D                          dec     c
 ;RAM:B42B 20 F6                       jr      NZ, loc_B423
 ;RAM:B42D C9                          ret
-;RAM:B42D             ; End of function audio_B419
-;RAM:B42D
-;RAM:B42E             ; ball bouncing around
-;RAM:B42E
-;RAM:B42E             ; =============== S U B R O U T I N E =======================================
-;RAM:B42E
-;RAM:B42E
-audio_B42E:
        rt
+*
+* End of function audio_B419
+*
+* =============== S U B R O U T I N E =======================================
+*
+* ball bouncing around
+*
+audio_B42E:
 ;RAM:B42E 21 00 00                    ld      hl, #0
 ;RAM:B431 1E 04                       ld      e, #4
 ;RAM:B433
@@ -339,13 +337,14 @@ audio_B42E:
 ;RAM:B43D 1D                          dec     e
 ;RAM:B43E 20 F3                       jr      NZ, loc_B433
 ;RAM:B440 C9                          ret
-;RAM:B440             ; End of function audio_B42E
-;RAM:B440
-;RAM:B441             ; jumping
-;RAM:B441
-;RAM:B441             ; =============== S U B R O U T I N E =======================================
-;RAM:B441
-;RAM:B441
+       rt
+*
+* End of function audio_B42E
+*
+* =============== S U B R O U T I N E =======================================
+*
+* jumping
+*
 audio_B441:
        rt
 ;RAM:B441 0E 20                       ld      c, #0x20 ; ' '
@@ -362,75 +361,74 @@ audio_B441:
 ;RAM:B44D 0D                          dec     c
 ;RAM:B44E 20 F3                       jr      NZ, loc_B443
 ;RAM:B450 C9                          ret
-;RAM:B450             ; End of function audio_B441
-;RAM:B450
-;RAM:B451             ; eg. dropping block, spiked ball drop, ball up/down
-;RAM:B451
-;RAM:B451             ; =============== S U B R O U T I N E =======================================
-;RAM:B451
-;RAM:B451
+*
+* End of function audio_B441
+*
+* =============== S U B R O U T I N E =======================================
+*
+* eg. dropping block, spiked ball drop, ball up/down
+*
 audio_B451:
        rt
 ;RAM:B451 DD 7E 03                    ld      a, 3(ix)                                ; Z
-;RAM:B451             ; End of function audio_B451
-;RAM:B451
-;RAM:B454             ; eg. rising blocks
-;RAM:B454
-;RAM:B454             ; =============== S U B R O U T I N E =======================================
-;RAM:B454
-;RAM:B454
+*
+* End of function audio_B451
+*
+* =============== S U B R O U T I N E =======================================
+*
+* eg. rising blocks
+*
 audio_B454:
-       rt
 ;RAM:B454 2F                          cpl
 ;RAM:B455 07                          rlca
 ;RAM:B456 07                          rlca
 ;RAM:B457 47                          ld      b, a
 ;RAM:B458 0E 06                       ld      c, #6
 ;RAM:B45A C3 E6 B4                    jp      toggle_audio_hw_xC
-;RAM:B45A             ; End of function audio_B454
-;RAM:B45A
-;RAM:B45D             ; block, fire movng (EW)
-;RAM:B45D
-;RAM:B45D             ; =============== S U B R O U T I N E =======================================
-;RAM:B45D
-;RAM:B45D
-audio_B45D:
        rt
+*
+* End of function audio_B454
+*
+* =============== S U B R O U T I N E =======================================
+*
+* block, fire movng (EW)
+*
+audio_B45D:
 ;RAM:B45D DD 7E 01                    ld      a, 1(ix)                                ; X
 ;RAM:B460 18 F2                       jr      audio_B454
-;RAM:B460             ; End of function audio_B45D
-;RAM:B460
-;RAM:B462             fire, block moving (NS)
-;RAM:B462
-;RAM:B462             ; =============== S U B R O U T I N E =======================================
-;RAM:B462
-;RAM:B462
-audio_B462:
        rt
+*
+* End of function audio_B45D
+*
+* =============== S U B R O U T I N E =======================================
+*
+* fire, block moving (NS)
+*
+audio_B462:
 ;RAM:B462 DD 7E 02                    ld      a, 2(ix)                                ; Y
 ;RAM:B465 18 ED                       jr      audio_B454
-;RAM:B465             ; End of function audio_B462
-;RAM:B465
-;RAM:B467             ; eg. special objects, ghost, portcullis (up)
-;RAM:B467
-;RAM:B467             ; =============== S U B R O U T I N E =======================================
-;RAM:B467
-;RAM:B467
-audio_B467:
        rt
+*
+* End of function audio_B462
+*
+* =============== S U B R O U T I N E =======================================
+*
+* eg. special objects, ghost, portcullis (up)
+*
+audio_B467:
 ;RAM:B467 DD 7E 01                    ld      a, 1(ix)
 ;RAM:B46A DD 86 02                    add     a, 2(ix)
 ;RAM:B46D DD 86 03                    add     a, 3(ix)
 ;RAM:B470 18 E2                       jr      audio_B454
-;RAM:B470             ; End of function audio_B467
-;RAM:B470
-;RAM:B472             ; human/wulf transform
-;RAM:B472
-;RAM:B472             ; =============== S U B R O U T I N E =======================================
-;RAM:B472
-;RAM:B472
-audio_B472:
        rt
+*
+* End of function audio_B467
+*
+* =============== S U B R O U T I N E =======================================
+*
+* human/wulf transform
+*
+audio_B472:
 ;RAM:B472 DD 7E 00                    ld      a, 0(ix)
 ;RAM:B475 07                          rlca
 ;RAM:B476 07                          rlca
@@ -448,13 +446,15 @@ audio_B472:
 ;RAM:B485 0D                          dec     c
 ;RAM:B486 20 F5                       jr      NZ, loc_B47D
 ;RAM:B488 C9                          ret
-;RAM:B488             ; End of function audio_B472
-;RAM:B488
-;RAM:B489             ; portcullis
-;RAM:B489
-* =============== S U B R O U T I N E =======================================
-audio_B489:
        rt
+*
+* End of function audio_B472
+*
+* =============== S U B R O U T I N E =======================================
+*
+* portcullis
+*
+audio_B489:
 ;RAM:B489 3A A5 5B                    ld      a, (seed_3)
 ;RAM:B48C 6F                          ld      l, a
 ;RAM:B48D 3A A2 5B                    ld      a, (seed_2)
@@ -472,22 +472,22 @@ audio_B489:
 ;RAM:B49F 1D                          dec     e
 ;RAM:B4A0 20 F3                       jr      NZ, loc_B495
 ;RAM:B4A2 C9                          ret
+       rt
 *
 * End of function audio_B489
 *
 * =============== S U B R O U T I N E =======================================
 toggle_audio_hw_x16:
-       rt
 ;RAM:B4A3 01 10 80                    ld      bc, #0x8010
 ;RAM:B4A6 18 3E                       jr      toggle_audio_hw_xC
+       rt
 * ---------------------------------------------------------------------------
-;RAM:B4A8
-;RAM:B4A8             toggle_audio_hw_x24:
+toggle_audio_hw_x24:
 ;RAM:B4A8 01 18 50                    ld      bc, #0x5018
 ;RAM:B4AB 18 39                       jr      toggle_audio_hw_xC
+       rt
 * ---------------------------------------------------------------------------
 audio_guard_wizard:
-       rt
 ;RAM:B4AD DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
 ;RAM:B4B0 E6 01                       and     #1                                      ; even?
 ;RAM:B4B2 C0                          ret     NZ                                      ; no, exit
@@ -495,8 +495,12 @@ audio_guard_wizard:
 ;RAM:B4B5 3A A2 5B                    ld      a, (seed_2)
 ;RAM:B4B8 2F                          cpl
 ;RAM:B4B9 18 0B                       jr      loc_B4C6
+       rt
+*
 * ---------------------------------------------------------------------------
+*
 * eg. walking
+*
 audio_B4BB:
        mov  r11,*sp+
 ;RAM:B4BB DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
@@ -538,15 +542,16 @@ audio_B4C1:
 ;RAM:B4E2 0F                          rrca
 ;RAM:B4E3 E6 0F                       and     #0xF
 ;RAM:B4E5 4F                          ld      c, a
-;RAM:B4E6
-;RAM:B4E6             toggle_audio_hw_xC:
+*
+toggle_audio_hw_xC:
 ;RAM:B4E6 CD ED B4                    call    toggle_audio_hw
 ;RAM:B4E9 0D                          dec     c
 ;RAM:B4EA 20 FA                       jr      NZ, toggle_audio_hw_xC
 ;RAM:B4EC C9                          ret
-;RAM:B4EC             ; End of function toggle_audio_hw_x16
-;RAM:B4EC
-;RAM:B4ED
+       rt
+*
+* End of function toggle_audio_hw_x16
+*
 * =============== S U B R O U T I N E =======================================
 toggle_audio_hw:
 ;RAM:B4ED 3E 10                       ld      a, #0x10                                ; EAR output
@@ -565,7 +570,9 @@ toggle_audio_hw:
 ;RAM:B4FB 47                          ld      b, a
 ;RAM:B4FC C9                          ret
        rt
+*
 * End of function toggle_audio_hw
+*
 
 *********************************************************************
 *
