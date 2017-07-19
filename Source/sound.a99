@@ -276,6 +276,7 @@ audio_B3E9:
 * eg. death sparkles
 *
 audio_B403:
+       mov  r11,*sp+
 ;RAM:B403 DD 7E 00                    ld      a, 0(ix)                                ; sprite index
 ;RAM:B406 2F                          cpl
 ;RAM:B407 E6 1F                       and     #0x1F
@@ -288,9 +289,14 @@ audio_B403:
 ;RAM:B40F 47                          ld      b, a
 ;RAM:B410 0E 02                       ld      c, #2
 ;RAM:B412 CD E6 B4                    call    toggle_audio_hw_xC
+       li   tmp0,chirp_sound
+       clr  tmp1
+       bl   @plysnd
 ;RAM:B415 1D                          dec     e
 ;RAM:B416 20 F5                       jr      NZ, loc_B40D
 ;RAM:B418 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function audio_B403
@@ -300,6 +306,7 @@ audio_B403:
 * eg. player appears sparkles
 *
 audio_B419:
+       mov  r11,*sp+
 ;RAM:B419 DD 7E 00                    ld      a, 0(ix)                                ; player sprite graphic no.
 ;RAM:B41C 07                          rlca
 ;RAM:B41D 07                          rlca
@@ -313,9 +320,14 @@ audio_B419:
 ;RAM:B425 07                          rlca                                            ; bits 6:2 only
 ;RAM:B426 47                          ld      b, a
 ;RAM:B427 CD ED B4                    call    toggle_audio_hw
+       li   tmp0,chirp_sound
+       clr  tmp1
+       bl   @plysnd
 ;RAM:B42A 0D                          dec     c
 ;RAM:B42B 20 F6                       jr      NZ, loc_B423
 ;RAM:B42D C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function audio_B419
@@ -395,7 +407,7 @@ audio_B454:
 ;RAM:B45A C3 E6 B4                    jp      toggle_audio_hw_xC
        movb a,tmp1
        swpb tmp1
-       andi tmp1,>001c
+       andi tmp1,>003c
        srl  tmp1,1
        mov  @beeps(tmp1),tmp0
        li   tmp1,1
@@ -451,6 +463,7 @@ audio_B467:
 * human/wulf transform
 *
 audio_B472:
+       mov  r11,*sp+
 ;RAM:B472 DD 7E 00                    ld      a, 0(ix)
 ;RAM:B475 07                          rlca
 ;RAM:B476 07                          rlca
@@ -465,9 +478,14 @@ audio_B472:
 ;RAM:B480 81                          add     a, c
 ;RAM:B481 47                          ld      b, a
 ;RAM:B482 CD ED B4                    call    toggle_audio_hw
+       li   tmp0,chirp_sound
+       clr  tmp1
+       bl   @plysnd
 ;RAM:B485 0D                          dec     c
 ;RAM:B486 20 F5                       jr      NZ, loc_B47D
 ;RAM:B488 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function audio_B472
@@ -477,6 +495,7 @@ audio_B472:
 * portcullis
 *
 audio_B489:
+       mov  r11,*sp+
 ;RAM:B489 3A A5 5B                    ld      a, (seed_3)
 ;RAM:B48C 6F                          ld      l, a
 ;RAM:B48D 3A A2 5B                    ld      a, (seed_2)
@@ -491,9 +510,14 @@ audio_B489:
 ;RAM:B499 47                          ld      b, a
 ;RAM:B49A 0E 02                       ld      c, #2
 ;RAM:B49C CD E6 B4                    call    toggle_audio_hw_xC
+       li   tmp0,step_sound_1
+       clr  tmp1
+       bl   @plysnd
 ;RAM:B49F 1D                          dec     e
 ;RAM:B4A0 20 F3                       jr      NZ, loc_B495
 ;RAM:B4A2 C9                          ret
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function audio_B489
@@ -510,13 +534,19 @@ toggle_audio_hw_x24:
        rt
 * ---------------------------------------------------------------------------
 audio_guard_wizard:
+       mov  r11,*sp+
 ;RAM:B4AD DD 7E 00                    ld      a, 0(ix)                                ; graphic_no
 ;RAM:B4B0 E6 01                       and     #1                                      ; even?
 ;RAM:B4B2 C0                          ret     NZ                                      ; no, exit
+       li   tmp0,guard_sound
+       clr  tmp1
+       bl   @plysnd
 ;RAM:B4B3 06 80                       ld      b, #0x80 ; '�'
 ;RAM:B4B5 3A A2 5B                    ld      a, (seed_2)
 ;RAM:B4B8 2F                          cpl
 ;RAM:B4B9 18 0B                       jr      loc_B4C6
+       dect sp
+       mov  *sp,r11
        rt
 *
 * ---------------------------------------------------------------------------
@@ -531,8 +561,14 @@ audio_B4BB:
        andi a,>0100
 ;RAM:B4C0 C0                          ret     NZ
        jne  audio_B4BB_return
+       movb @1(ix),a
+       ab   @2(ix),a
+       andi a,>0200
+       jeq  !
        li   tmp0,step_sound_1
-       li   tmp1,0
+       jmp  !!
+!      li   tmp0,step_sound_2
+!      li   tmp1,0
        bl   @plysnd
 audio_B4BB_return:
        dect sp
@@ -837,58 +873,87 @@ step_sound_2:
        byte >01, >f6, >01
        byte >01, >f8, >01
        byte >01, >ff, >00
+chirp_sound:
+       byte >03, >80, >03, >94, >01        * D51
+       byte >03, >80, >02, >96, >01        * A51
+       byte >03, >88, >01, >98, >01
+       byte >03, >80, >03, >96, >01        * D61
+       byte >03, >80, >02, >98, >01        * D51
+       byte >03, >88, >01, >9c, >01        * A51
+       byte >01, >9f, >00                  * D61
+guard_sound:
+       BYTE >03,>A9,>3F,>B4,>01                              * A02
+       BYTE >01,>B8,>01
+       BYTE >01,>BF,>00
 beeps:
-       data beep_c21, beep_d21, beep_e21, beep_f21
-       data beep_g21, beep_a21, beep_b21, beep_c21
+       data beep_c21, beep_c#21, beep_d21, beep_d#21
+       data beep_e21, beep_f21, beep_f#21, beep_g21
+       data beep_g#21, beep_a21, beep_a#21, beep_b21
+       data beep_c31, beep_c#31, beep_d31, beep_d#31
 beep_c21:
-       byte >03, >ac, >1a, >b0, >01    ; C21
-       byte >01, >b4, >01
+       byte >03, >ac, >1a, >b4, >01    ; C21
        byte >01, >b8, >01
-       byte >01, >bc, >01
+       byte >01, >bf, >00
+beep_c#21:
+       byte >03, >A4, >19, >b4, >01    ; C#21
+       byte >01, >b8, >01
        byte >01, >bf, >00
 beep_d21:
-       byte >03, >ad, >17, >b0, >01    ; D21
-       byte >01, >b4, >01
+       byte >03, >ad, >17, >b4, >01    ; D21
        byte >01, >b8, >01
-       byte >01, >bc, >01
+       byte >01, >bf, >00
+beep_d#21:
+       byte >03, >A8, >16, >b4, >01    ; D#21
+       byte >01, >b8, >01
        byte >01, >bf, >00
 beep_e21:
-       byte >03, >a3, >15, >b0, >01    ; E21
-       byte >01, >b4, >01
+       byte >03, >a3, >15, >b4, >01    ; E21
        byte >01, >b8, >01
-       byte >01, >bc, >01
        byte >01, >bf, >00
 beep_f21:
-       byte >03, >a0, >14, >b0, >01    ; F21
-       byte >01, >b4, >01
+       byte >03, >a0, >14, >b4, >01    ; F21
        byte >01, >b8, >01
-       byte >01, >bc, >01
+       byte >01, >bf, >00
+beep_f#21:
+       byte >03, >AE, >12, >b4, >01    ; F#21
+       byte >01, >b8, >01
        byte >01, >bf, >00
 beep_g21:
-       byte >03, >ad, >11, >b0, >01    ; G21
-       byte >01, >b4, >01
+       byte >03, >ad, >11, >b4, >01    ; G21
        byte >01, >b8, >01
-       byte >01, >bc, >01
+       byte >01, >bf, >00
+beep_g#21:
+       byte >03, >AD, >10, >b4, >01    ; G#21
+       byte >01, >b8, >01
        byte >01, >bf, >00
 beep_a21:
-       byte >03, >ae, >0f, >b0, >01    ; A21
-       byte >01, >b4, >01
+       byte >03, >ae, >0f, >b4, >01    ; A21
        byte >01, >b8, >01
-       byte >01, >bc, >01
+       byte >01, >bf, >00
+beep_a#21:
+       byte >03, >A0, >0F, >b4, >01    ; A#21
+       byte >01, >b8, >01
        byte >01, >bf, >00
 beep_b21:
-       byte >03, >a2, >0e, >b0, >01    ; B21
-       byte >01, >b4, >01
+       byte >03, >a2, >0e, >b4, >01    ; B21
        byte >01, >b8, >01
-       byte >01, >bc, >01
        byte >01, >bf, >00
 beep_c31:
-       byte >03, >a6, >0d, >b0, >01    ; C31
-       byte >01, >b4, >01
+       byte >03, >a6, >0d, >b4, >01    ; C31
        byte >01, >b8, >01
-       byte >01, >bc, >01
        byte >01, >bf, >00
-
+beep_c#31:
+       byte >03, >AA, >0C, >b4, >01    ; C#31
+       byte >01, >b8, >01
+       byte >01, >bf, >00
+beep_d31:
+       byte >03, >AE, >0B, >b4, >01    ; D31
+       byte >01, >b8, >01
+       byte >01, >bf, >00
+beep_d#31:
+       byte >03, >A4, >0B, >b4, >01    ; D#31
+       byte >01, >b8, >01
+       byte >01, >bf, >00
        even
 intro_music:
        bcopy "..\sound\intro.vgm.spf"
