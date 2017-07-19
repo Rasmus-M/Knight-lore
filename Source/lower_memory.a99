@@ -65,9 +65,9 @@ main:                                                                           
 ;RAM:AFA2 CD 0C BD                    call    do_menu_selection
        bl   @do_menu_selection
 ;RAM:AFA5 11 0E B2                    ld      de, #start_game_tune
-       li   de,start_game_tune
+       li   tmp0,start_music
 ;RAM:AFA8 CD CF B2                    call    play_audio                              ; play tune
-       bl   @play_audio               ; TODO
+       bl   @play_tune
 ;RAM:AFAB CD 44 B5                    call    shuffle_objects_required                ; randomise order of required objects
        bl   @shuffle_objects_required
 ;RAM:AFAE CD B1 D1                    call    init_start_location                     ; randomise player start location
@@ -3970,7 +3970,6 @@ handle_forward:
        andi tmp0,>0400
 ;RAM:C978 28 1A                       jr      Z, loc_C994                             ; no, go
        jeq  loc_C994
-loc_C97A:
        .ifeq sound_on,1
 ;RAM:C97A C5                          push    bc
        mov  bc,*sp+
@@ -3980,6 +3979,7 @@ loc_C97A:
        dect sp
        mov  *sp,bc
        .endif
+loc_C97A:
        jmp  animate_human_legs
 animate_human_legs_0:                 ; For calling
        mov  r11,*sp+
@@ -4090,11 +4090,14 @@ loc_C9CD:
        movb a,@11(ix)
 ;RAM:C9D1 32 C1 5B                    ld      (tmp_dZ), a
        movb a,@tmp_dZ
+       .ifeq sound_on,1
 ;RAM:C9D4 C6 02                       add     a, #2
        ab   @b02h,a
-       .ifeq sound_on,1
 ;RAM:C9D6 FC 51 B4                    call    M, audio_B451
+       jgt  !
+       jeq  !
        bl   @audio_B451
+!
        .endif
 ;RAM:C9D9 CD 45 CB                    call    adj_for_out_of_bounds
        bl   @adj_for_out_of_bounds

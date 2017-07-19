@@ -5,10 +5,11 @@ start_game_tune:
 ;       byte >59, >5C, >5B, >54, >19, >17, >14, >17, >D9
 ;       byte >FF
 game_over_tune:
-;       byte >2E, >17, >27, >17, >2E, >17, >27, >17, >2C
-;       byte >19, >27, >19, >2C, >19, >27, >19, >2A, >1B
-;       byte >27, >1B, >2A, >1B, >27, >1B, >2A, >1B, >27
-;       byte >1B, >2A, >1B, >27, >1B, >FF
+;       byte >2E, >17, >27, >17, >2E, >17, >27, >17
+;       byte >2C, >19, >27, >19, >2C, >19, >27, >19
+;       byte >2A, >1B, >27, >1B, >2A, >1B, >27, >1B
+;       byte >2A, >1B, >27, >1B, >2A, >1B, >27, >1B
+;       byte >FF
 game_complete_tune:
 ;       byte >1B, >1D, >1E, >1B, >1D, >1E, >20, >1D, >1E
 ;       byte >20, >22, >1E, >1D, >1E, >20, >1D, >1B, >1D
@@ -346,7 +347,7 @@ audio_B42E:
 * jumping
 *
 audio_B441:
-       rt
+       mov  r11,*sp+
 ;RAM:B441 0E 20                       ld      c, #0x20 ; ' '
 ;RAM:B443
 ;RAM:B443             loc_B443:
@@ -358,9 +359,15 @@ audio_B441:
 ;RAM:B448 0F                          rrca
 ;RAM:B449 47                          ld      b, a
 ;RAM:B44A CD ED B4                    call    toggle_audio_hw
+       li   tmp0,jump_sound
+       clr  tmp1
+       bl   @plysnd
 ;RAM:B44D 0D                          dec     c
 ;RAM:B44E 20 F3                       jr      NZ, loc_B443
 ;RAM:B450 C9                          ret
+       dect sp
+       mov  *sp,r11
+       rt
 *
 * End of function audio_B441
 *
@@ -369,8 +376,8 @@ audio_B441:
 * eg. dropping block, spiked ball drop, ball up/down
 *
 audio_B451:
-       rt
 ;RAM:B451 DD 7E 03                    ld      a, 3(ix)                                ; Z
+       movb @3(ix),a
 *
 * End of function audio_B451
 *
@@ -379,12 +386,22 @@ audio_B451:
 * eg. rising blocks
 *
 audio_B454:
+       mov  r11,*sp+
 ;RAM:B454 2F                          cpl
 ;RAM:B455 07                          rlca
 ;RAM:B456 07                          rlca
 ;RAM:B457 47                          ld      b, a
 ;RAM:B458 0E 06                       ld      c, #6
 ;RAM:B45A C3 E6 B4                    jp      toggle_audio_hw_xC
+       movb a,tmp1
+       swpb tmp1
+       andi tmp1,>001c
+       srl  tmp1,1
+       mov  @beeps(tmp1),tmp0
+       li   tmp1,1
+       bl   @plysnd
+       dect sp
+       mov  *sp,r11
        rt
 *
 * End of function audio_B454
@@ -395,8 +412,9 @@ audio_B454:
 *
 audio_B45D:
 ;RAM:B45D DD 7E 01                    ld      a, 1(ix)                                ; X
+       movb @1(ix),a
 ;RAM:B460 18 F2                       jr      audio_B454
-       rt
+       jmp  audio_B454
 *
 * End of function audio_B45D
 *
@@ -406,8 +424,9 @@ audio_B45D:
 *
 audio_B462:
 ;RAM:B462 DD 7E 02                    ld      a, 2(ix)                                ; Y
+       movb @2(ix),a
 ;RAM:B465 18 ED                       jr      audio_B454
-       rt
+       jmp  audio_B454
 *
 * End of function audio_B462
 *
@@ -417,10 +436,13 @@ audio_B462:
 *
 audio_B467:
 ;RAM:B467 DD 7E 01                    ld      a, 1(ix)
+       movb @1(ix),a
 ;RAM:B46A DD 86 02                    add     a, 2(ix)
+       ab   @2(ix),a
 ;RAM:B46D DD 86 03                    add     a, 3(ix)
+       ab   @3(ix),a
 ;RAM:B470 18 E2                       jr      audio_B454
-       rt
+       jmp  audio_B454
 *
 * End of function audio_B467
 *
@@ -509,7 +531,7 @@ audio_B4BB:
        andi a,>0100
 ;RAM:B4C0 C0                          ret     NZ
        jne  audio_B4BB_return
-       li   tmp0,step1
+       li   tmp0,step_sound_1
        li   tmp1,0
        bl   @plysnd
 audio_B4BB_return:
@@ -573,6 +595,24 @@ toggle_audio_hw:
 *
 * End of function toggle_audio_hw
 *
+
+*********************************************************************
+*
+* Play whole tune
+*
+* tmp0: Address of sound data to play
+*
+play_tune:
+       mov  r11,*sp+
+       clr  tmp1
+       bl   @plysnd
+!      bl   @sndplr
+       mov  @sndad0,tmp0
+       jne  -!
+       dect sp
+       mov  *sp,r11
+       rt
+*// plysnd
 
 *********************************************************************
 *
@@ -718,8 +758,8 @@ playm1:
 *
 init_music:
        mov  r11,*sp+                   ; Push return address onto the stack
-       li   r0,intro_music
-       clr  r1
+       li   tmp0,intro_music
+       clr  tmp1
        bl   @stinit
 *      Return
        dect sp                         ; Pop return address off the stack
@@ -729,25 +769,125 @@ init_music:
 
 *********************************************************************************
 *
-sound1:
-       byte >03, >8e, >0f, >90, >01        * A21
-       byte >01, >94, >01
-       byte >01, >98, >01
-       byte >01, >9c, >01
+* Sound and music data
+*
+start_music:
+       byte >03, >8d, >10, >94, >10       * G#21
+       byte >02, >82, >0e, >10            * B21
+       byte >02, >80, >0f, >10            * A#21
+       byte >02, >88, >16, >10            * D#21
+       byte >02, >8d, >10, >08            * G#21
+       byte >02, >8e, >12, >08            * F#21
+       byte >02, >88, >16, >08            * D#21
+       byte >02, >8e, >12, >08            * F#21
+       byte >02, >8d, >10, >20            * G#21
        byte >01, >9f, >00
-
-sound2:
-       byte >03, >8c, >1f, >90, >01        * A11
-       byte >01, >94, >01
-       byte >01, >98, >01
-       byte >01, >9c, >01
+game_over_music:
+       byte >03, >80, >0a, >94, >0a       * F31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0a, >0a            * F31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >84, >0b, >0a            * D#31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >84, >0b, >0a            * D#31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >8a, >0c, >0a            * C#31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >8a, >0c, >0a            * C#31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >8a, >0c, >0a            * C#31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >8a, >0c, >0a            * C#31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
        byte >01, >9f, >00
-
-step1:
-       byte >02, >e6, >f4, >01            * W2
+jump_sound:
+       byte >03, >8e, >0f, >94, >01       * A21
+       byte >02, >86, >0d, >01            * C31
+       byte >02, >84, >0b, >01            * D#31
+       byte >02, >87, >09, >01            * F#31
+       byte >02, >8f, >07, >01            * A31
+       byte >02, >8b, >06, >01            * C41
+       byte >02, >8a, >05, >01            * D#41
+       byte >02, >8c, >04, >01            * F#41
+       byte >02, >80, >04, >01            * A41
+       byte >01, >9f, >00
+step_sound_1:
+       byte >02, >e6, >f4, >01         ; W2
        byte >01, >f6, >01
        byte >01, >f8, >01
        byte >01, >ff, >00
+step_sound_2:
+       byte >02, >e5, >f4, >01         ; W1
+       byte >01, >f6, >01
+       byte >01, >f8, >01
+       byte >01, >ff, >00
+beeps:
+       data beep_c21, beep_d21, beep_e21, beep_f21
+       data beep_g21, beep_a21, beep_b21, beep_c21
+beep_c21:
+       byte >03, >ac, >1a, >b0, >01    ; C21
+       byte >01, >b4, >01
+       byte >01, >b8, >01
+       byte >01, >bc, >01
+       byte >01, >bf, >00
+beep_d21:
+       byte >03, >ad, >17, >b0, >01    ; D21
+       byte >01, >b4, >01
+       byte >01, >b8, >01
+       byte >01, >bc, >01
+       byte >01, >bf, >00
+beep_e21:
+       byte >03, >a3, >15, >b0, >01    ; E21
+       byte >01, >b4, >01
+       byte >01, >b8, >01
+       byte >01, >bc, >01
+       byte >01, >bf, >00
+beep_f21:
+       byte >03, >a0, >14, >b0, >01    ; F21
+       byte >01, >b4, >01
+       byte >01, >b8, >01
+       byte >01, >bc, >01
+       byte >01, >bf, >00
+beep_g21:
+       byte >03, >ad, >11, >b0, >01    ; G21
+       byte >01, >b4, >01
+       byte >01, >b8, >01
+       byte >01, >bc, >01
+       byte >01, >bf, >00
+beep_a21:
+       byte >03, >ae, >0f, >b0, >01    ; A21
+       byte >01, >b4, >01
+       byte >01, >b8, >01
+       byte >01, >bc, >01
+       byte >01, >bf, >00
+beep_b21:
+       byte >03, >a2, >0e, >b0, >01    ; B21
+       byte >01, >b4, >01
+       byte >01, >b8, >01
+       byte >01, >bc, >01
+       byte >01, >bf, >00
+beep_c31:
+       byte >03, >a6, >0d, >b0, >01    ; C31
+       byte >01, >b4, >01
+       byte >01, >b8, >01
+       byte >01, >bc, >01
+       byte >01, >bf, >00
 
        even
 intro_music:

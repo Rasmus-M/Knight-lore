@@ -172,8 +172,9 @@ game_complete_msg:
 ;RAM:BAC1 CD BF BE                    call    display_text_list
        bl   @display_text_list
 ;RAM:BAC4 11 39 B2                    ld      de, #game_complete_tune
+       li   tmp0,game_over_music
 ;RAM:BAC7 CD CF B2                    call    play_audio
-;      TODO
+       bl   @play_tune
 ;RAM:BACA 06 08                       ld      b, #8
        movb @b08h,b
 ;RAM:BACC CD 9B BA                    call    wait_for_key_press

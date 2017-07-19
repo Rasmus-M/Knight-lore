@@ -41,7 +41,7 @@ delay_on:
 lives_init:
        equ  5
 sound_on:
-       equ  0
+       equ  1
 
 **
 * Memory mapped addresses
