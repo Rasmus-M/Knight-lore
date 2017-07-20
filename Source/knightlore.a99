@@ -39,7 +39,7 @@ invincible:
 delay_on:
        equ  0
 lives_init:
-       equ  5
+       equ  1
 sound_on:
        equ  1
 
@@ -170,13 +170,13 @@ num_scrns_visited:
 audio_played:                          ; Moved from after render_obj_2
        equ  num_scrns_visited+1
 gfxbase_8x8:
-       equ  audio_played+2
+       equ  audio_played+1
 percent_msw:
        equ  gfxbase_8x8+2
 percent_lsw:
-       equ  percent_msw+2
+       equ  percent_msw+1
 tmp_objects_to_draw:
-       equ  percent_lsw+2
+       equ  percent_lsw+1
 render_obj_1:
        equ  tmp_objects_to_draw+2
 render_obj_2:
@@ -196,7 +196,7 @@ object_carried_2:
 end_of_objects_carried:
        equ  object_carried_2+3
 variables_end:
-       equ  end_of_objects_carried+2
+       equ  end_of_objects_carried+1
 
 stack  equ  variables_end              ; Stack grows up
 
