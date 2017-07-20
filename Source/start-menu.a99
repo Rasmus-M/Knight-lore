@@ -108,7 +108,10 @@ check_for_start_game:
 ;RAM:BD6F BE                          cp      (hl)                                    ; changed input method?
        cb   a,*hl
 ;RAM:BD70 C4 A3 B4                    call    NZ, toggle_audio_hw_x16                 ; yes
-;      TODO
+       jeq  !
+       li   de,jump_sound
+       bl   @play_tune
+!
 ;RAM:BD73 3E EF                       ld      a, #0xEF ; '�'                          ; 0,9,8,7,6
 ;RAM:BD75 CD F7 B5                    call    read_port
 ;RAM:BD78 CB 47                       bit     0, a                                    ; '0' (Start Game)?

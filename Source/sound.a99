@@ -718,6 +718,7 @@ play_tune:
 !      bl   @sndplr
        mov  @sndad0,tmp0
        jne  -!
+       bl   @mtesnd
        dect sp
        mov  *sp,r11
        rt

@@ -293,7 +293,7 @@ adjust_carried:
 ;RAM:C131 01 0C 00                    ld      bc, #12
        li   bc,12
 ;RAM:C134 ED B8                       lddr                                            ; shift down by 1 entry
-!      movb *hl,*de                   ; TODO: check lddr
+!      movb *hl,*de
        dec  hl
        dec  de
        dec  bc
@@ -322,7 +322,7 @@ pickup_object:
 ;RAM:C151 23                          inc     hl
        movb @7(iy),*hl+
 ;RAM:C152 FD 5E 10                    ld      e, 16(iy)
-       movb @16(iy),@e                ; TODO: Little endian!
+       movb @16(iy),@e                ; Little endian!
 ;RAM:C155 FD 56 11                    ld      d, 17(iy)                               ; ptr graphic object
        movb @17(iy),d
 ;RAM:C158 AF                          xor     a
@@ -331,9 +331,9 @@ pickup_object:
        movb a,*de
 ;RAM:C15A 73                          ld      (hl), e
 ;RAM:C15B 23                          inc     hl
-       movb @e,*hl+                   ; TODO: Little endian @16
+       movb @e,*hl+                   ; Little endian!
 ;RAM:C15C 72                          ld      (hl), d                                 ; store ptr
-       movb d,*hl                     ; TODO: Little endian @17
+       movb d,*hl                     ; Little endian!
 ;RAM:C15D CD 9D C6                    call    set_wipe_and_draw_IY
        bl   @set_wipe_and_draw_IY
 ;RAM:C160 FD 36 00 01                 ld      0(iy), #1

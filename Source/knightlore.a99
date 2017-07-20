@@ -196,7 +196,7 @@ object_carried_2:
 end_of_objects_carried:
        equ  object_carried_2+3
 variables_end:
-       equ  end_of_objects_carried
+       equ  end_of_objects_carried+2
 
 stack  equ  variables_end              ; Stack grows up
 
