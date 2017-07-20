@@ -749,10 +749,10 @@ mtesnd:
        clr  @sndad2                    ; Sound address channel 2
        clr  @sndad3                    ; Sound address channel 3
        li   tmp0,mutetb                ; Mute all
+       movb *tmp0+,@sound
+       movb *tmp0+,@sound
+       movb *tmp0+,@sound
        movb *tmp0,@sound
-       movb *tmp0+,@sound
-       movb *tmp0+,@sound
-       movb *tmp0+,@sound
        rt
 *// mteend
 
