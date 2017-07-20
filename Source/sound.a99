@@ -539,7 +539,7 @@ audio_guard_wizard:
 ;RAM:B4B0 E6 01                       and     #1                                      ; even?
 ;RAM:B4B2 C0                          ret     NZ                                      ; no, exit
        li   tmp0,guard_sound
-       clr  tmp1
+       li   tmp1,1
        bl   @plysnd
 ;RAM:B4B3 06 80                       ld      b, #0x80 ; '�'
 ;RAM:B4B5 3A A2 5B                    ld      a, (seed_2)
@@ -882,9 +882,9 @@ chirp_sound:
        byte >03, >88, >01, >9c, >01        * A51
        byte >01, >9f, >00                  * D61
 guard_sound:
-       BYTE >03,>A9,>3F,>B4,>01                              * A02
-       BYTE >01,>B8,>01
-       BYTE >01,>BF,>00
+       byte >03, >a9, >3f, >b4, >01        * A02
+       byte >01, >b8, >01
+       byte >01, >bf, >00
 beeps:
        data beep_c21, beep_c#21, beep_d21, beep_d#21
        data beep_e21, beep_f21, beep_f#21, beep_g21
