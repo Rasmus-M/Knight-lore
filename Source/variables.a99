@@ -114,5 +114,11 @@ render_list:
        byte >FF
        byte >FF
 * ---------------------------------------------------------------------------
+* table of bits (flags) denoting room has been visited
+* - used only in ratings calculations
+*
+scrn_visited:
+       bss  >20
+* ---------------------------------------------------------------------------
 render_dynamic_objects_stack:
        bss  >100

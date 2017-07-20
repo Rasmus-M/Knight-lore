@@ -39,6 +39,10 @@ start_menu:                                                                     
        li   hl,graphic_objs_tbl
        li   bc,graphic_objs_tbl_end-graphic_objs_tbl
        bl   @clr_mem
+*      Clear rooms visited table
+       li   hl,scrn_visited
+       li   bc,>20
+       bl   @clr_mem
 main:                                                                                 ; for bit reversal & shifting
 ;RAM:AF88 CD 9E D6                    call    build_lookup_tbls
 ;      bl   @build_lookup_tbls        ; Only bit reversal implemented
@@ -5905,9 +5909,8 @@ plyr_spr_init_data:
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
 * ---------------------------------------------------------------------------
 start_locations:
-;        byte >2F, >44, >B3, >8F         ; Default
-;      byte >b3,>b3,>b3,>b3            ; 3 ways
-       byte >8a,>8a,>8a,>8a            ; Near cauldron room
+       byte >2F, >44, >B3, >8F         ; Default
+;      byte >8a,>8a,>8a,>8a            ; Near cauldron room
 * ---------------------------------------------------------------------------
 *
 * End of function init_start_location

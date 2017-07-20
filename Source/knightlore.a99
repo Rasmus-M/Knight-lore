@@ -195,14 +195,8 @@ object_carried_2:
        equ  unk_5BE3+1
 end_of_objects_carried:
        equ  object_carried_2+3
-*
-* table of bits (flags) denoting room has been visited
-* - used only in ratings calculations
-*
-scrn_visited:
-       equ end_of_objects_carried
 variables_end:
-       equ  scrn_visited+32
+       equ  end_of_objects_carried
 
 stack  equ  variables_end              ; Stack grows up
 
