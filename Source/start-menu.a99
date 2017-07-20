@@ -29,6 +29,7 @@ menu_loop:
 ;RAM:BD23 CD B3 BE                    call    display_menu
        bl   @display_menu
 ;RAM:BD26 11 53 B2                    ld      de, #menu_tune
+       li   de,menu_tune
 ;RAM:BD29 CD B6 B2                    call    play_audio_wait_key
        bl   @play_audio_wait_key
 ;RAM:BD2C 3E F7                       ld      a, #0xF7 ; '�'                          ; 1,2,3,4,5

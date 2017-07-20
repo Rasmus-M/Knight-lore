@@ -65,7 +65,7 @@ main:                                                                           
 ;RAM:AFA2 CD 0C BD                    call    do_menu_selection
        bl   @do_menu_selection
 ;RAM:AFA5 11 0E B2                    ld      de, #start_game_tune
-       li   tmp0,start_music
+       li   de,start_game_tune
 ;RAM:AFA8 CD CF B2                    call    play_audio                              ; play tune
        bl   @play_tune
 ;RAM:AFAB CD 44 B5                    call    shuffle_objects_required                ; randomise order of required objects

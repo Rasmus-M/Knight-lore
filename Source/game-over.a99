@@ -100,7 +100,7 @@ loc_BA87:
 ;RAM:BA88 CD F7 B5                    call    read_port
 ;RAM:BA8B 20 FA                       jr      NZ, loc_BA87                            ; wait for key release
 ;RAM:BA8D 11 18 B2                    ld      de, #game_over_tune
-       li   tmp0,game_over_music
+       li   de,game_over_tune
 ;RAM:BA90 CD BE B2                    call    play_audio_until_keypress
        bl   @play_tune
 ;RAM:BA93 06 08                       ld      b, #8                                   ; how long to wait
@@ -167,7 +167,7 @@ game_complete_msg:
 ;RAM:BAC1 CD BF BE                    call    display_text_list
        bl   @display_text_list
 ;RAM:BAC4 11 39 B2                    ld      de, #game_complete_tune
-       li   tmp0,game_over_music      ; TODO
+       li   de,game_complete_tune
 ;RAM:BAC7 CD CF B2                    call    play_audio
        bl   @play_tune
 ;RAM:BACA 06 08                       ld      b, #8

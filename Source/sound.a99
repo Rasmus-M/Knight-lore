@@ -2,35 +2,107 @@
 * Audio Tunes
 *
 start_game_tune:
-;       byte >59, >5C, >5B, >54, >19, >17, >14, >17, >D9
-;       byte >FF
+;      byte >59, >5C, >5B, >54, >19, >17, >14, >17, >D9
+;      byte >FF
+       byte >03, >8d, >10, >94, >10       * G#21
+       byte >02, >82, >0e, >10            * B21
+       byte >02, >80, >0f, >10            * A#21
+       byte >02, >88, >16, >10            * D#21
+       byte >02, >8d, >10, >08            * G#21
+       byte >02, >8e, >12, >08            * F#21
+       byte >02, >88, >16, >08            * D#21
+       byte >02, >8e, >12, >08            * F#21
+       byte >02, >8d, >10, >20            * G#21
+       byte >01, >9f, >00
 game_over_tune:
-;       byte >2E, >17, >27, >17, >2E, >17, >27, >17
-;       byte >2C, >19, >27, >19, >2C, >19, >27, >19
-;       byte >2A, >1B, >27, >1B, >2A, >1B, >27, >1B
-;       byte >2A, >1B, >27, >1B, >2A, >1B, >27, >1B
-;       byte >FF
+;      byte >2E, >17, >27, >17, >2E, >17, >27, >17
+;      byte >2C, >19, >27, >19, >2C, >19, >27, >19
+;      byte >2A, >1B, >27, >1B, >2A, >1B, >27, >1B
+;      byte >2A, >1B, >27, >1B, >2A, >1B, >27, >1B
+;      byte >FF
+       byte >03, >80, >0a, >94, >0a       * F31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0a, >0a            * F31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >84, >0b, >0a            * D#31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >84, >0b, >0a            * D#31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >8a, >0c, >0a            * C#31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >8a, >0c, >0a            * C#31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >8a, >0c, >0a            * C#31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >8a, >0c, >0a            * C#31
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >80, >0f, >0a            * A#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >01, >9f, >00
 game_complete_tune:
-;       byte >1B, >1D, >1E, >1B, >1D, >1E, >20, >1D, >1E
-;       byte >20, >22, >1E, >1D, >1E, >20, >1D, >1B, >1D
-;       byte >1E, >1B, >1A, >1B, >1D, >1A, >9B, >FF
+;      byte >1B, >1D, >1E, >1B, >1D, >1E, >20, >1D, >1E
+;      byte >20, >22, >1E, >1D, >1E, >20, >1D, >1B, >1D
+;      byte >1E, >1B, >1A, >1B, >1D, >1A, >9B, >FF
+       byte >03, >80, >1e, >94, >0a       * A#11
+       byte >02, >8c, >1a, >0a            * C21
+       byte >02, >84, >19, >0a            * C#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >8c, >1a, >0a            * C21
+       byte >02, >84, >19, >0a            * C#21
+       byte >02, >88, >16, >0a            * D#21
+       byte >02, >8c, >1a, >0a            * C21
+       byte >02, >84, >19, >0a            * C#21
+       byte >02, >88, >16, >0a            * D#21
+       byte >02, >80, >14, >0a            * F21
+       byte >02, >84, >19, >0a            * C#21
+       byte >02, >8c, >1a, >0a            * C21
+       byte >02, >84, >19, >0a            * C#21
+       byte >02, >88, >16, >0a            * D#21
+       byte >02, >8c, >1a, >0a            * C21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >8c, >1a, >0a            * C21
+       byte >02, >84, >19, >0a            * C#21
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >8c, >1f, >0a            * A11
+       byte >02, >80, >1e, >0a            * A#11
+       byte >02, >8c, >1a, >0a            * C21
+       byte >02, >8c, >1f, >0a            * A11
+       byte >02, >80, >1e, >28            * A#11
+       byte >01, >9f, >00
+       even
 menu_tune:
-;       byte >1B
-;       byte >27, >1B, >27, >1B, >2A, >2E
-;       byte >1B, >27, >1B, >27, >1B, >2A, >1B, >2E
-;       byte >16, >25, >16, >24, >16, >22, >16, >22
-;       byte >16, >25, >16, >24, >16, >22, >16, >22
-;       byte >16, >22
-;       byte >1B, >27, >1B, >27, >1B, >2A, >2E
-;       byte >1B, >27, >1B, >27, >1B, >2A, >1B, >2E
-;       byte >16, >25, >16, >24, >16, >22, >16, >22
-;       byte >16, >25, >16, >24, >16, >22, >16, >22
-;       byte >16, >22
-;       byte >17, >2E, >17, >2E, >17, >2E, >17, >2E
-;       byte >19, >2E, >19, >2E, >19, >2E, >19, >2E
-;       byte >1B, >2E, >1B, >2E, >1B, >2E, >1B, >2E
-;       byte >1B, >2E, >1B, >2E, >1B, >2E, >1B, >2E
-;       byte >FF
+;      byte >1B
+;      byte >27, >1B, >27, >1B, >2A, >2E
+;      byte >1B, >27, >1B, >27, >1B, >2A, >1B, >2E
+;      byte >16, >25, >16, >24, >16, >22, >16, >22
+;      byte >16, >25, >16, >24, >16, >22, >16, >22
+;      byte >16, >22
+;      byte >1B, >27, >1B, >27, >1B, >2A, >2E
+;      byte >1B, >27, >1B, >27, >1B, >2A, >1B, >2E
+;      byte >16, >25, >16, >24, >16, >22, >16, >22
+;      byte >16, >25, >16, >24, >16, >22, >16, >22
+;      byte >16, >22
+;      byte >17, >2E, >17, >2E, >17, >2E, >17, >2E
+;      byte >19, >2E, >19, >2E, >19, >2E, >19, >2E
+;      byte >1B, >2E, >1B, >2E, >1B, >2E, >1B, >2E
+;      byte >1B, >2E, >1B, >2E, >1B, >2E, >1B, >2E
+;      byte >FF
+       bcopy "..\sound\intro.vgm.spf"
+       even
 *
 * =============== S U B R O U T I N E =======================================
 *
@@ -289,7 +361,7 @@ audio_B403:
 ;RAM:B40F 47                          ld      b, a
 ;RAM:B410 0E 02                       ld      c, #2
 ;RAM:B412 CD E6 B4                    call    toggle_audio_hw_xC
-       li   tmp0,chirp_sound
+       li   tmp0,chirp_sound_2
        clr  tmp1
        bl   @plysnd
 ;RAM:B415 1D                          dec     e
@@ -320,7 +392,7 @@ audio_B419:
 ;RAM:B425 07                          rlca                                            ; bits 6:2 only
 ;RAM:B426 47                          ld      b, a
 ;RAM:B427 CD ED B4                    call    toggle_audio_hw
-       li   tmp0,chirp_sound
+       li   tmp0,chirp_sound_1
        clr  tmp1
        bl   @plysnd
 ;RAM:B42A 0D                          dec     c
@@ -478,7 +550,7 @@ audio_B472:
 ;RAM:B480 81                          add     a, c
 ;RAM:B481 47                          ld      b, a
 ;RAM:B482 CD ED B4                    call    toggle_audio_hw
-       li   tmp0,chirp_sound
+       li   tmp0,chirp_sound_1
        clr  tmp1
        bl   @plysnd
 ;RAM:B485 0D                          dec     c
@@ -636,10 +708,11 @@ toggle_audio_hw:
 *
 * Play whole tune
 *
-* tmp0: Address of sound data to play
+* de: Address of sound data to play
 *
 play_tune:
        mov  r11,*sp+
+       mov  de,tmp0
        clr  tmp1
        bl   @plysnd
 !      bl   @sndplr
@@ -794,7 +867,7 @@ playm1:
 *
 init_music:
        mov  r11,*sp+                   ; Push return address onto the stack
-       li   tmp0,intro_music
+       mov  de,tmp0
        clr  tmp1
        bl   @stinit
 *      Return
@@ -807,51 +880,6 @@ init_music:
 *
 * Sound and music data
 *
-start_music:
-       byte >03, >8d, >10, >94, >10       * G#21
-       byte >02, >82, >0e, >10            * B21
-       byte >02, >80, >0f, >10            * A#21
-       byte >02, >88, >16, >10            * D#21
-       byte >02, >8d, >10, >08            * G#21
-       byte >02, >8e, >12, >08            * F#21
-       byte >02, >88, >16, >08            * D#21
-       byte >02, >8e, >12, >08            * F#21
-       byte >02, >8d, >10, >20            * G#21
-       byte >01, >9f, >00
-game_over_music:
-       byte >03, >80, >0a, >94, >0a       * F31
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >80, >0f, >0a            * A#21
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >80, >0a, >0a            * F31
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >80, >0f, >0a            * A#21
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >84, >0b, >0a            * D#31
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >80, >0f, >0a            * A#21
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >84, >0b, >0a            * D#31
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >80, >0f, >0a            * A#21
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >8a, >0c, >0a            * C#31
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >80, >0f, >0a            * A#21
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >8a, >0c, >0a            * C#31
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >80, >0f, >0a            * A#21
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >8a, >0c, >0a            * C#31
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >80, >0f, >0a            * A#21
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >8a, >0c, >0a            * C#31
-       byte >02, >80, >1e, >0a            * A#11
-       byte >02, >80, >0f, >0a            * A#21
-       byte >02, >80, >1e, >0a            * A#11
-       byte >01, >9f, >00
 jump_sound:
        byte >03, >8e, >0f, >94, >01       * A21
        byte >02, >86, >0d, >01            * C31
@@ -873,14 +901,16 @@ step_sound_2:
        byte >01, >f6, >01
        byte >01, >f8, >01
        byte >01, >ff, >00
-chirp_sound:
+chirp_sound_1:
        byte >03, >80, >03, >94, >01        * D51
-       byte >03, >80, >02, >96, >01        * A51
-       byte >03, >88, >01, >98, >01
-       byte >03, >80, >03, >96, >01        * D61
-       byte >03, >80, >02, >98, >01        * D51
-       byte >03, >88, >01, >9c, >01        * A51
-       byte >01, >9f, >00                  * D61
+       byte >03, >80, >02, >98, >01        * A51
+       byte >03, >88, >01, >9c, >01        * D61
+       byte >01, >9f, >00
+chirp_sound_2:
+       byte >05, >80, >04, >90, >e7, >f4, >01  * A41, W3
+       byte >03, >8b, >06, >f8, >01            * C41
+       byte >03, >8f, >07, >fc, >01            * A31
+       byte >02, >9f, >ff, >00
 guard_sound:
        byte >03, >a9, >3f, >b4, >01        * A02
        byte >01, >b8, >01
@@ -954,6 +984,3 @@ beep_d#31:
        byte >03, >A4, >0B, >b4, >01    ; D#31
        byte >01, >b8, >01
        byte >01, >bf, >00
-       even
-intro_music:
-       bcopy "..\sound\intro.vgm.spf"
