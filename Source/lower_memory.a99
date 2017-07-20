@@ -1661,6 +1661,7 @@ upd_185_187:
 ;RAM:BF3D             ;
 ;RAM:BF3D             ; BUG VERIFIED! on the Spectrum under MESS
 ;RAM:BF3D             ;
+       jeq  upd_119                   ; Bug fix
 ;RAM:BF3D 36 00                       ld      (hl), #0                                ; zap graphic_no in special_objs_tbl
        szcb mone,*hl
 * last death sparkle
@@ -1919,10 +1920,10 @@ upd_104_to_110:
 ;RAM:C1FB 3E 01                       ld      a, #1
 ;RAM:C1FD FA 02 C2                    jp      M, loc_C202
 ;RAM:C200 ED 44                       neg
-!      jl   loc_C202
+!      jl   !
        movb mone,a
        jmp  loc_C202
-       movb one,a
+!      movb one,a
 loc_C202:
 ;RAM:C202 DD 77 09                    ld      9(ix), a                                ; dX towards centre of room
        movb a,@9(ix)
@@ -1937,10 +1938,10 @@ loc_C202:
 ;RAM:C20C 3E 01                       ld      a, #1
 ;RAM:C20E FA 13 C2                    jp      M, loc_C213
 ;RAM:C211 ED 44                       neg
-!      jl   loc_C213
+!      jl   !
        movb mone,a
        jmp  loc_C213
-       movb one,a
+!      movb one,a
 loc_C213:
 ;RAM:C213 DD 77 0A                    ld      10(ix), a                               ; dY towards cente of room
        movb a,@10(ix)
@@ -2902,7 +2903,7 @@ loc_C595:
        movb @16(iy),@e                ; Little endian!
 ;RAM:C59E FD 56 11                    ld      d, 17(iy)                               ; DE=ptr object table entry
        movb @17(iy),d
-       jeq  loc_C5B7                  ; Bug fix?
+       jeq  loc_C5B7                  ; Bug fix
 ;RAM:C5A1 FD 7E 00                    ld      a, 0(iy)                                ; get graphic no.
 ;RAM:C5A4 12                          ld      (de), a                                 ; store
        movb *iy,*de
@@ -5904,10 +5905,9 @@ plyr_spr_init_data:
        byte >78, >80, >80, >8C, >05, >05, >00, >1E
 * ---------------------------------------------------------------------------
 start_locations:
-        byte >2F, >44, >B3, >8F         ; Default
-;       byte >b3,>b3,>b3,>b3            ; 3 ways
-;       byte >8a,>8a,>8a,>8a            ; Near cauldron room
-;       byte >87,>87,>87,>87            ; Portcullis room
+;        byte >2F, >44, >B3, >8F         ; Default
+;      byte >b3,>b3,>b3,>b3            ; 3 ways
+       byte >8a,>8a,>8a,>8a            ; Near cauldron room
 * ---------------------------------------------------------------------------
 *
 * End of function init_start_location
@@ -6566,6 +6566,12 @@ loc_D4EA:
 *
 render_dynamic_objects:
        mov  r11,*sp+
+*      For the final animation this requires a lot of stack
+       movb @all_objs_in_cauldron,a
+       jeq  !
+       mov  sp,@tmp_SP
+       li   sp,render_dynamic_objects_stack
+!
 ;RAM:D59F AF                          xor     a
 ;RAM:D5A0 32 A8 5B                    ld      (objs_wiped_cnt), a                     ; zero count of wiped objects
        szcb mone,@objs_wiped_cnt
@@ -6805,6 +6811,11 @@ loc_D679:
 ;RAM:D679 DD E1                       pop     ix
        dect sp
        mov  *sp,ix
+*      Restore stack for the final animation
+       movb @all_objs_in_cauldron,a
+       jeq  !
+       mov  @tmp_SP,sp
+!
 ;RAM:D67B C9                          ret
        dect sp
        mov  *sp,r11

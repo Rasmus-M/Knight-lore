@@ -113,3 +113,6 @@ render_list:
        byte >FF
        byte >FF
        byte >FF
+* ---------------------------------------------------------------------------
+render_dynamic_objects_stack:
+       bss  >100
