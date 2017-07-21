@@ -7,4 +7,8 @@ copy /b kl18.bin + /b binary-data\sprite-rom.bin + /b binary-data\start-screen-p
 
 java -jar tools/CopyHeader.jar knightlore8.bin 60
 
+WHERE jar
+@IF %ERRORLEVEL% NEQ 0 GOTO :end
+jar -cvf knightlore.rpk knightlore8.bin layout.xml > make.log
+
 :end

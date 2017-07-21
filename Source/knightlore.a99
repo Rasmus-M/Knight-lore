@@ -244,8 +244,9 @@ zx_aram:
 * Upper memory
 *
        aorg >A000
-       copy "lower_memory.a99"
-       copy "upper_memory.a99"
+
+       copy "main_code.a99"
+       copy "subroutines.a99"
        copy "pickup-drop-objects.a99"
        copy "start-menu.a99"
        copy "game-over.a99"
@@ -258,6 +259,7 @@ zx_aram:
        copy "special-objects.a99"
        copy "update-sprite-jump-table.a99"
        copy "tiplayer.a99"
+       copy "byte-constants.a99"
 *
 upper_memory_end:
        data -1
@@ -266,7 +268,8 @@ upper_memory_end:
 * Lower memory
 *
        aorg >2000
-       copy "variables.a99"
+
+       copy "object_data.a99"
 *
 * Linear video memory buffer, length >1800
 *
