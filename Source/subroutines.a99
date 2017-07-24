@@ -1790,6 +1790,8 @@ skip_setup_shift:
        clr  tmp1
        movb a,@r1lb                   ; width
        mov  tmp1,tmp0                 ; copy width
+       li   bc_,e
+       li   hl_,l
        clr  a
 loc_D73C:                                                                             ; self-modifying code
 ;RAM:D73C 32 AD D7                    ld      (loc_D7AC+1), a                         ; set jump offset
@@ -1937,12 +1939,12 @@ loc_D7AC:
        clr  de
        clr  hl
 plot_shifted_line:
-       movb *de_+,@e                    ; get pattern
-       movb *de_+,@l                    ; get mask
+       movb *de_+,*bc_                  ; load pattern into e
+       movb *de_+,*hl_                  ; load mask into l
 shift_pattern_1:
        sla  de,0                       ; Shift (8 - bit offset) pattern bits into MSB
 shift_mask_1:
-       sla  hl,0                       ; Actual shift values inserted by self-modiyfying code
+       sla  hl,0                       ; Actual shift values inserted by self-modifying code
        szcb d,*bc
        socb h,*bc+
        dec  tmp1
@@ -1950,13 +1952,11 @@ shift_mask_1:
 shift_pattern_2:
        sla  de,0                       ; Shift (bit offset) bits into MSB
 shift_mask_2:
-       sla  hl,0                       ; Actual shift values inserted by self-modiyfying code
+       sla  hl,0                       ; Actual shift values inserted by self-modifying code
        jmp  plot_shifted_line
 plot_shifted_line_1:
-       swpb de
-       swpb hl
-       szcb d,*bc
-       socb h,*bc
+       szcb *bc_,*bc
+       socb *hl_,*bc
 * 16 bytes per routine
 * -- 1st byte --                                                                      ; a holds the screen byte
 ;RAM:D7AE D1                          pop     de                                      ; get pattern d and mask e
