@@ -37,7 +37,7 @@
 invincible:
        equ  0
 delay_on:
-       equ  0
+       equ  1
 lives_init:
        equ  5
 sound_on:

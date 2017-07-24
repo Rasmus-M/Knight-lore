@@ -89,7 +89,8 @@ SCRATCH:5BC3 ??          all_objs_in_cauldron:.ds 1
 SCRATCH:5BC4 ??          obj_dropping_into_cauldron:.ds 1
 SCRATCH:5BC5 ??          rising_blocks_z:.ds 1
 SCRATCH:5BC6 ??          num_scrns_visited:.ds 1
-SCRATCH:5BC7 ?? ??       gfxbase_8x8:    .ds 2
+SCRATCH:5BC7 ?? ??       gfxbase
+_8x8:    .ds 2
 SCRATCH:5BC9 ??          percent_msw:    .ds 1
 SCRATCH:5BCA ??          percent_lsw:    .ds 1
 SCRATCH:5BCB ?? ??       tmp_objects_to_draw:.ds 2
@@ -3257,7 +3258,7 @@ RAM:B433             loc_B433:
 RAM:B433 0E 03                       ld      c, #3
 RAM:B435 7E                          ld      a, (hl)
 RAM:B436 23                          inc     hl
-RAM:B437 F6 C0                       or      #0xC0 ; 'À'
+RAM:B437 F6 C0                       or      #0xC0 ; 'ï¿½'
 RAM:B439 47                          ld      b, a
 RAM:B43A CD E6 B4                    call    toggle_audio_hw_xC
 RAM:B43D 1D                          dec     e
@@ -3410,7 +3411,7 @@ RAM:B4AD             audio_guard_wizard:                                        
 RAM:B4AD DD 7E 00                    ld      a, 0(ix)
 RAM:B4B0 E6 01                       and     #1                                      ; even?
 RAM:B4B2 C0                          ret     NZ                                      ; no, exit
-RAM:B4B3 06 80                       ld      b, #0x80 ; '€'
+RAM:B4B3 06 80                       ld      b, #0x80 ; 'ï¿½'
 RAM:B4B5 3A A2 5B                    ld      a, (seed_2)
 RAM:B4B8 2F                          cpl
 RAM:B4B9 18 0B                       jr      loc_B4C6
@@ -3578,7 +3579,7 @@ RAM:B577 07                          rlca
 RAM:B578 E6 01                       and     #1
 RAM:B57A 6F                          ld      l, a                                    ; X bit7->bit0
 RAM:B57B DD 7E 02                    ld      a, 2(ix)                                ; Y
-RAM:B57E E6 80                       and     #0x80 ; '€'                             ; Y bit7
+RAM:B57E E6 80                       and     #0x80 ; 'ï¿½'                             ; Y bit7
 RAM:B580 B5                          or      l
 RAM:B581 07                          rlca                                            ; bit0->bit1, bit7->bit1
 RAM:B582 E6 03                       and     #3
@@ -4046,7 +4047,7 @@ RAM:B85C
 RAM:B85C
 RAM:B85C             set_both_deadly_flags:
 RAM:B85C DD 7E 0D                    ld      a, 13(ix)
-RAM:B85F F6 A0                       or      #0xA0 ; ' '                             ; fatal if you hit it, it hits you
+RAM:B85F F6 A0                       or      #0xA0 ; 'ï¿½'                             ; fatal if you hit it, it hits you
 RAM:B861 DD 77 0D                    ld      13(ix), a
 RAM:B864 C9                          ret
 RAM:B864             ; End of function set_both_deadly_flags
@@ -4233,7 +4234,7 @@ RAM:B98C
 RAM:B98C             next_graphic_no_mod_4:                                          ; graphic no.
 RAM:B98C DD 7E 00                    ld      a, 0(ix)
 RAM:B98F 4F                          ld      c, a
-RAM:B990 E6 FC                       and     #0xFC ; 'ü'                             ; mask off low 2 bits
+RAM:B990 E6 FC                       and     #0xFC ; 'ï¿½'                             ; mask off low 2 bits
 RAM:B992 47                          ld      b, a
 RAM:B993 79                          ld      a, c
 RAM:B994 3C                          inc     a
@@ -4293,7 +4294,7 @@ RAM:B9DE 15 BA                       .dw guard_S
 RAM:B9E0             ; ---------------------------------------------------------------------------
 RAM:B9E0
 RAM:B9E0             guard_W:                                                        ; dY=0, dX=-2
-RAM:B9E0 21 FE 00                    ld      hl, #0xFE ; 'þ'
+RAM:B9E0 21 FE 00                    ld      hl, #0xFE ; 'ï¿½'
 RAM:B9E3 DD CB 0C 46                 bit     0, 12(ix)                               ; X OOB?
 RAM:B9E7 C8                          ret     Z                                       ; no, exit
 RAM:B9E8 21 00 02                    ld      hl, #0x200                              ; dY=2, dX=0
@@ -4305,7 +4306,7 @@ RAM:B9EF 3C                          inc     a
 RAM:B9F0 E6 03                       and     #3                                      ; relevant bits
 RAM:B9F2 47                          ld      b, a
 RAM:B9F3 79                          ld      a, c
-RAM:B9F4 E6 FC                       and     #0xFC ; 'ü'
+RAM:B9F4 E6 FC                       and     #0xFC ; 'ï¿½'
 RAM:B9F6 B0                          or      b                                       ; inc lowest 2 bits (mod 4)
 RAM:B9F7 DD 77 0D                    ld      13(ix), a
 RAM:B9FA C9                          ret
@@ -4331,7 +4332,7 @@ RAM:BA15             guard_S:                                                   
 RAM:BA15 21 00 FE                    ld      hl, #0xFE00
 RAM:BA18 DD CB 0C 4E                 bit     1, 12(ix)                               ; Y OOB?
 RAM:BA1C C8                          ret     Z                                       ; no, exit
-RAM:BA1D 21 FE 00                    ld      hl, #0xFE ; 'þ'                         ; dY=0, dX=-2
+RAM:BA1D 21 FE 00                    ld      hl, #0xFE ; 'ï¿½'                         ; dY=0, dX=-2
 RAM:BA20 18 C9                       jr      next_guard_dir
 RAM:BA22             ; ---------------------------------------------------------------------------
 RAM:BA22             ; START OF FUNCTION CHUNK FOR lose_life
@@ -4357,7 +4358,7 @@ RAM:BA46 CD AE BC                    call    print_BCD_number
 RAM:BA49 CD 10 BC                    call    calc_and_display_percent
 RAM:BA4C 3A C6 5B                    ld      a, (num_scrns_visited)
 RAM:BA4F 07                          rlca
-RAM:BA50 E6 C0                       and     #0xC0 ; 'À'
+RAM:BA50 E6 C0                       and     #0xC0 ; 'ï¿½'
 RAM:BA52 4F                          ld      c, a
 RAM:BA53 3A C3 5B                    ld      a, (all_objs_in_cauldron)
 RAM:BA56 E6 01                       and     #1
@@ -4595,7 +4596,7 @@ RAM:BC7A
 RAM:BC7A
 RAM:BC7A             print_lives_gfx:
 RAM:BC7A DD 21 DB BF                 ld      ix, #sprite_scratchpad
-RAM:BC7E DD 36 00 8C                 ld      0(ix), #0x8C ; 'Œ'                      ; sprite index
+RAM:BC7E DD 36 00 8C                 ld      0(ix), #0x8C ; 'ï¿½'                      ; sprite index
 RAM:BC82 DD 36 07 00                 ld      7(ix), #0                               ; clear flags
 RAM:BC86 DD 36 1A 10                 ld      26(ix), #16                             ; pixel X
 RAM:BC8A DD 36 1B 20                 ld      27(ix), #32                             ; pixel Y
@@ -4698,25 +4699,25 @@ RAM:BD23             menu_loop:
 RAM:BD23 CD B3 BE                    call    display_menu
 RAM:BD26 11 53 B2                    ld      de, #menu_tune
 RAM:BD29 CD B6 B2                    call    play_audio_wait_key
-RAM:BD2C 3E F7                       ld      a, #0xF7 ; '÷'                          ; 1,2,3,4,5
+RAM:BD2C 3E F7                       ld      a, #0xF7 ; 'ï¿½'                          ; 1,2,3,4,5
 RAM:BD2E CD F7 B5                    call    read_port
 RAM:BD31 5F                          ld      e, a                                    ; store keybd status
 RAM:BD32 3A A4 5B                    ld      a, (user_input_method)
 RAM:BD35 32 A6 5B                    ld      (old_input_method), a
 RAM:BD38 CB 43                       bit     0, e                                    ; '1' (keyboard)?
 RAM:BD3A 28 02                       jr      Z, check_for_kempston_joystick          ; no, skip
-RAM:BD3C E6 F9                       and     #0xF9 ; 'ù'                             ; mask off (bits 2,1)
+RAM:BD3C E6 F9                       and     #0xF9 ; 'ï¿½'                             ; mask off (bits 2,1)
 RAM:BD3E
 RAM:BD3E             check_for_kempston_joystick:                                    ; '2' (Kempston Joystick)?
 RAM:BD3E CB 4B                       bit     1, e
 RAM:BD40 28 04                       jr      Z, check_for_cursor_joystick            ; no, skip
-RAM:BD42 E6 F9                       and     #0xF9 ; 'ù'                             ; mask off (bits 2,1)
+RAM:BD42 E6 F9                       and     #0xF9 ; 'ï¿½'                             ; mask off (bits 2,1)
 RAM:BD44 F6 02                       or      #2                                      ; set bit 1
 RAM:BD46
 RAM:BD46             check_for_cursor_joystick:                                      ; '3' (Cursor Joystick)?
 RAM:BD46 CB 53                       bit     2, e
 RAM:BD48 28 04                       jr      Z, check_for_interface_ii               ; no, skip
-RAM:BD4A E6 F9                       and     #0xF9 ; 'ù'                             ; mask off (bits 2,1)
+RAM:BD4A E6 F9                       and     #0xF9 ; 'ï¿½'                             ; mask off (bits 2,1)
 RAM:BD4C F6 04                       or      #4                                      ; set bit 2
 RAM:BD4E
 RAM:BD4E             check_for_interface_ii:                                         ; '4' (Interface II)?
@@ -4740,7 +4741,7 @@ RAM:BD6C             check_for_start_game:
 RAM:BD6C 21 A6 5B                    ld      hl, #old_input_method
 RAM:BD6F BE                          cp      (hl)                                    ; changed input method?
 RAM:BD70 C4 A3 B4                    call    NZ, toggle_audio_hw_x16                 ; yes
-RAM:BD73 3E EF                       ld      a, #0xEF ; 'ï'                          ; 0,9,8,7,6
+RAM:BD73 3E EF                       ld      a, #0xEF ; 'ï¿½'                          ; 0,9,8,7,6
 RAM:BD75 CD F7 B5                    call    read_port
 RAM:BD78 CB 47                       bit     0, a                                    ; '0' (Start Game)?
 RAM:BD7A C0                          ret     NZ                                      ; yes, exit
@@ -5586,7 +5587,7 @@ RAM:C2AA 01 00 03                    ld      bc, #0x300                         
 RAM:C2AD
 RAM:C2AD             cycle_attribute_mem:
 RAM:C2AD 7E                          ld      a, (hl)
-RAM:C2AE E6 F8                       and     #0xF8 ; 'ø'
+RAM:C2AE E6 F8                       and     #0xF8 ; 'ï¿½'
 RAM:C2B0 5F                          ld      e, a
 RAM:C2B1 7E                          ld      a, (hl)
 RAM:C2B2 3C                          inc     a
@@ -5667,7 +5668,7 @@ RAM:C306 3A B1 5B                    ld      a, (transform_flag_graphic)
 RAM:C309 A7                          and     a
 RAM:C30A C8                          ret     Z
 RAM:C30B DD 7E 0C                    ld      a, 12(ix)
-RAM:C30E E6 F0                       and     #0xF0 ; 'ð'
+RAM:C30E E6 F0                       and     #0xF0 ; 'ï¿½'
 RAM:C310 C0                          ret     NZ
 RAM:C311 DD CB 0C 5E                 bit     3, 12(ix)                               ; already jumping?
 RAM:C315 C0                          ret     NZ                                      ; yes, exit
@@ -5792,7 +5793,7 @@ RAM:C3E1 DD 36 1A B8                 ld      26(ix), #184                       
 RAM:C3E5 DD 36 1B 00                 ld      27(ix), #0                              ; pixel Y
 RAM:C3E9 CD 18 D7                    call    print_sprite
 RAM:C3EC DD 36 1A D0                 ld      26(ix), #208                            ; pixel X
-RAM:C3F0 DD 36 00 BA                 ld      0(ix), #0xBA ; 'º'                      ; sun/moon frame right
+RAM:C3F0 DD 36 00 BA                 ld      0(ix), #0xBA ; 'ï¿½'                      ; sun/moon frame right
 RAM:C3F4 CD 18 D7                    call    print_sprite
 RAM:C3F7 E1                          pop     hl
 RAM:C3F8 C1                          pop     bc
@@ -6324,7 +6325,7 @@ RAM:C67B 38 08                       jr      C, init_portcullis_down            
 RAM:C67D 3A A5 5B                    ld      a, (seed_3)
 RAM:C680 E6 1F                       and     #0x1F                                   ; 1in32 chance?
 RAM:C682 C0                          ret     NZ                                      ; no, return
-RAM:C683 F6 80                       or      #0x80 ; '€'                             ; arbitrarily large count
+RAM:C683 F6 80                       or      #0x80 ; 'ï¿½'                             ; arbitrarily large count
 RAM:C685
 RAM:C685             init_portcullis_down:
 RAM:C685 3C                          inc     a
@@ -6376,7 +6377,7 @@ RAM:C6BD             upd_9:
 RAM:C6BD CD DD C4                    call    adj_m6_m12
 RAM:C6C0 DD CB 0D FE                 set     7, 13(ix)                               ; fatal if it hits player
 RAM:C6C4 3A 14 5C                    ld      a, (graphic_objs_tbl+0xC)
-RAM:C6C7 E6 F0                       and     #0xF0 ; 'ð'                             ; entering screen?
+RAM:C6C7 E6 F0                       and     #0xF0 ; 'ï¿½'                             ; entering screen?
 RAM:C6C9 C0                          ret     NZ                                      ; yes, exit
 RAM:C6CA DD 7E 0B                    ld      a, 11(ix)                               ; dZ
 RAM:C6CD A7                          and     a                                       ; up?
@@ -6698,7 +6699,7 @@ RAM:C8A5 28 4B                       jr      Z, left_right_rotational           
 RAM:C8A7 CB 5E                       bit     3, (hl)                                 ; directional?
 RAM:C8A9 28 47                       jr      Z, left_right_rotational
 RAM:C8AB DD 7E 0C                    ld      a, 12(ix)                               ; flags12
-RAM:C8AE E6 F0                       and     #0xF0 ; 'ð'                             ; entering screen?
+RAM:C8AE E6 F0                       and     #0xF0 ; 'ï¿½'                             ; entering screen?
 RAM:C8B0 C0                          ret     NZ                                      ; yes, exit
 RAM:C8B1 DD CB 0C 56                 bit     2, 12(ix)                               ; Z OOB?
 RAM:C8B5 C8                          ret     Z                                       ; no, exit
@@ -6770,7 +6771,7 @@ RAM:C8FD 79                          ld      a, c
 RAM:C8FE E6 03                       and     #3                                      ; left or right?
 RAM:C900 C8                          ret     Z                                       ; no, return
 RAM:C901 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
-RAM:C904 E6 F0                       and     #0xF0 ; 'ð'                             ; entering screen?
+RAM:C904 E6 F0                       and     #0xF0 ; 'ï¿½'                             ; entering screen?
 RAM:C906 C0                          ret     NZ                                      ; yes, exit
 RAM:C907 DD CB 0C 5E                 bit     3, 12(ix)                               ; already jumping?
 RAM:C90B C0                          ret     NZ                                      ; yes, exit
@@ -6820,7 +6821,7 @@ RAM:C948             handle_jump:
 RAM:C948 CB 59                       bit     3, c                                    ; jump?
 RAM:C94A C8                          ret     Z                                       ; no, exit
 RAM:C94B DD 7E 0C                    ld      a, 12(ix)                               ; flags12
-RAM:C94E E6 F0                       and     #0xF0 ; 'ð'                             ; entering screen?
+RAM:C94E E6 F0                       and     #0xF0 ; 'ï¿½'                             ; entering screen?
 RAM:C950 C0                          ret     NZ                                      ; yes, exit
 RAM:C951 DD CB 0C 5E                 bit     3, 12(ix)                               ; already jumping?
 RAM:C955 C0                          ret     NZ                                      ; yes, exit
@@ -6841,7 +6842,7 @@ RAM:C969
 RAM:C969
 RAM:C969             handle_forward:
 RAM:C969 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
-RAM:C96C E6 F0                       and     #0xF0 ; 'ð'                             ; entering sccreen?
+RAM:C96C E6 F0                       and     #0xF0 ; 'ï¿½'                             ; entering sccreen?
 RAM:C96E 20 0A                       jr      NZ, loc_C97A                            ; yes, skip
 RAM:C970 DD CB 0C 5E                 bit     3, 12(ix)                               ; already jumping?
 RAM:C974 20 04                       jr      NZ, loc_C97A                            ; yes, skip
@@ -6865,7 +6866,7 @@ RAM:C98B
 RAM:C98B             loc_C98B:
 RAM:C98B 57                          ld      d, a
 RAM:C98C 7B                          ld      a, e
-RAM:C98D E6 F8                       and     #0xF8 ; 'ø'
+RAM:C98D E6 F8                       and     #0xF8 ; 'ï¿½'
 RAM:C98F B2                          or      d
 RAM:C990 DD 77 00                    ld      0(ix), a                                ; update sprite
 RAM:C993 C9                          ret
@@ -6895,7 +6896,7 @@ RAM:C9AB             loc_C9AB:                                                  
 RAM:C9AB DD CB 0C 5E                 bit     3, 12(ix)
 RAM:C9AF 20 0B                       jr      NZ, loc_C9BC                            ; yes, skip
 RAM:C9B1 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
-RAM:C9B4 E6 F0                       and     #0xF0 ; 'ð'                             ; entering screen?
+RAM:C9B4 E6 F0                       and     #0xF0 ; 'ï¿½'                             ; entering screen?
 RAM:C9B6 20 04                       jr      NZ, loc_C9BC                            ; yes, skip
 RAM:C9B8 CB 51                       bit     2, c                                    ; forward?
 RAM:C9BA 28 05                       jr      Z, loc_C9C1                             ; no, skip
@@ -6989,7 +6990,7 @@ RAM:CA3A             ; ---------------------------------------------------------
 RAM:CA3A
 RAM:CA3A             move_plyr_W:                                                    ; dX
 RAM:CA3A DD 7E 09                    ld      a, 9(ix)
-RAM:CA3D C6 FD                       add     a, #0xFD ; 'ý'                          ; -3
+RAM:CA3D C6 FD                       add     a, #0xFD ; 'ï¿½'                          ; -3
 RAM:CA3F
 RAM:CA3F             loc_CA3F:
 RAM:CA3F DD 77 09                    ld      9(ix), a
@@ -7013,7 +7014,7 @@ RAM:CA53             ; ---------------------------------------------------------
 RAM:CA53
 RAM:CA53             move_plyr_S:                                                    ; dY
 RAM:CA53 DD 7E 0A                    ld      a, 10(ix)
-RAM:CA56 C6 FD                       add     a, #0xFD ; 'ý'                          ; -3
+RAM:CA56 C6 FD                       add     a, #0xFD ; 'ï¿½'                          ; -3
 RAM:CA58 18 F5                       jr      loc_CA4F
 RAM:CA5A
 RAM:CA5A             ; =============== S U B R O U T I N E =======================================
@@ -7042,7 +7043,7 @@ RAM:CA70
 RAM:CA70
 RAM:CA70             handle_exit_screen:
 RAM:CA70 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
-RAM:CA73 E6 F0                       and     #0xF0 ; 'ð'                             ; entering room?
+RAM:CA73 E6 F0                       and     #0xF0 ; 'ï¿½'                             ; entering room?
 RAM:CA75 C0                          ret     NZ                                      ; yes, exit
 RAM:CA76 DD CB 07 46                 bit     0, 7(ix)                                ; near an arch?
 RAM:CA7A C8                          ret     Z                                       ; no, return
@@ -7097,7 +7098,7 @@ RAM:CAB3             screen_e_w:                                                
 RAM:CAB3 E6 0F                       and     #0xF
 RAM:CAB5 67                          ld      h, a
 RAM:CAB6 7D                          ld      a, l
-RAM:CAB7 E6 F0                       and     #0xF0 ; 'ð'                             ; high nibble - don't change row
+RAM:CAB7 E6 F0                       and     #0xF0 ; 'ï¿½'                             ; high nibble - don't change row
 RAM:CAB9 B4                          or      h                                       ; same row - wraps???
 RAM:CABA
 RAM:CABA             exit_screen:                                                    ; store new screen
@@ -7184,7 +7185,7 @@ RAM:CB45 DD CB 07 4E                 bit     1, 7(ix)
 RAM:CB49 C0                          ret     NZ
 RAM:CB4A DD CB 07 CE                 set     1, 7(ix)
 RAM:CB4E DD 7E 0C                    ld      a, 12(ix)
-RAM:CB51 E6 F8                       and     #0xF8 ; 'ø'                             ; clear X,Y,Z OOB
+RAM:CB51 E6 F8                       and     #0xF8 ; 'ï¿½'                             ; clear X,Y,Z OOB
 RAM:CB53 DD 77 0C                    ld      12(ix), a
 RAM:CB56 2E 00                       ld      l, #0
 RAM:CB58 4D                          ld      c, l
@@ -7452,7 +7453,7 @@ RAM:CCDD
 RAM:CCDD
 RAM:CCDD             adj_dX_for_out_of_bounds:
 RAM:CCDD DD 7E 0C                    ld      a, 12(ix)                               ; flags12
-RAM:CCE0 E6 F0                       and     #0xF0 ; 'ð'                             ; entering room?
+RAM:CCE0 E6 F0                       and     #0xF0 ; 'ï¿½'                             ; entering room?
 RAM:CCE2 C0                          ret     NZ                                      ; yes, exit
 RAM:CCE3 DD CB 07 46                 bit     0, 7(ix)                                ; near an arch?
 RAM:CCE7 C0                          ret     NZ                                      ; yes, exit
@@ -7486,7 +7487,7 @@ RAM:CD08
 RAM:CD08
 RAM:CD08             adj_dY_for_out_of_bounds:
 RAM:CD08 DD 7E 0C                    ld      a, 12(ix)                               ; flags12
-RAM:CD0B E6 F0                       and     #0xF0 ; 'ð'                             ; entering room?
+RAM:CD0B E6 F0                       and     #0xF0 ; 'ï¿½'                             ; entering room?
 RAM:CD0D C0                          ret     NZ                                      ; yes, exit
 RAM:CD0E DD CB 07 46                 bit     0, 7(ix)                                ; near and arch?
 RAM:CD12 C0                          ret     NZ                                      ; yes, exit
@@ -7687,7 +7688,7 @@ RAM:CE14             loc_CE14:                                                  
 RAM:CE14 3A A5 5B                    ld      a, (seed_3)
 RAM:CE17 FE 02                       cp      #2                                      ; one way?
 RAM:CE19 38 18                       jr      C, loc_CE33                             ; yes, go
-RAM:CE1B FE FE                       cp      #0xFE ; 'þ'                             ; other way?
+RAM:CE1B FE FE                       cp      #0xFE ; 'ï¿½'                             ; other way?
 RAM:CE1D 30 21                       jr      NC, loc_CE40                            ; yes, go
 RAM:CE1F FD 7E 00                    ld      a, 0(iy)                                ; straight ahead
 RAM:CE22
@@ -7705,7 +7706,7 @@ RAM:CE33             ; ---------------------------------------------------------
 RAM:CE33
 RAM:CE33             loc_CE33:                                                       ; graphic_no (bottom half)
 RAM:CE33 FD 7E 00                    ld      a, 0(iy)
-RAM:CE36 E6 F8                       and     #0xF8 ; 'ø'
+RAM:CE36 E6 F8                       and     #0xF8 ; 'ï¿½'
 RAM:CE38 F6 06                       or      #6                                      ; look one way
 RAM:CE3A
 RAM:CE3A             loc_CE3A:                                                       ; look for 8 iterations
@@ -7715,7 +7716,7 @@ RAM:CE40             ; ---------------------------------------------------------
 RAM:CE40
 RAM:CE40             loc_CE40:
 RAM:CE40 FD 7E 00                    ld      a, 0(iy)
-RAM:CE43 E6 F8                       and     #0xF8 ; 'ø'
+RAM:CE43 E6 F8                       and     #0xF8 ; 'ï¿½'
 RAM:CE45 F6 07                       or      #7                                      ; look the other way
 RAM:CE47 18 F1                       jr      loc_CE3A
 RAM:CE49
@@ -8029,7 +8030,7 @@ RAM:D03B 3D                          dec     a
 RAM:D03C 28 5E                       jr      Z, cursor
 RAM:D03E
 RAM:D03E             interface_ii:                                                   ; address interface ii joystick
-RAM:D03E 3E F7                       ld      a, #0xF7 ; '÷'
+RAM:D03E 3E F7                       ld      a, #0xF7 ; 'ï¿½'
 RAM:D040 CD F7 B5                    call    read_port                               ; read joystick
 RAM:D043 C5                          push    bc
 RAM:D044 06 05                       ld      b, #5                                   ; 5 bits to read
@@ -8041,7 +8042,7 @@ RAM:D049 10 FB                       djnz    loc_D046                           
 RAM:D04B 79                          ld      a, c
 RAM:D04C C1                          pop     bc
 RAM:D04D 4F                          ld      c, a                                    ; store joystick reading
-RAM:D04E 3E EF                       ld      a, #0xEF ; 'ï'                          ; 0,9,8,7,6
+RAM:D04E 3E EF                       ld      a, #0xEF ; 'ï¿½'                          ; 0,9,8,7,6
 RAM:D050 CD F7 B5                    call    read_port
 RAM:D053 B1                          or      c                                       ; add joystick bits
 RAM:D054 0E 00                       ld      c, #0
@@ -8106,14 +8107,14 @@ RAM:D09C             ; ---------------------------------------------------------
 RAM:D09C
 RAM:D09C             cursor:
 RAM:D09C 0E 00                       ld      c, #0
-RAM:D09E 3E F7                       ld      a, #0xF7 ; '÷'                          ; row 3
+RAM:D09E 3E F7                       ld      a, #0xF7 ; 'ï¿½'                          ; row 3
 RAM:D0A0 CD F7 B5                    call    read_port
 RAM:D0A3 CB 67                       bit     4, a                                    ; '5'?
 RAM:D0A5 28 02                       jr      Z, loc_D0A9
 RAM:D0A7 CB C1                       set     0, c
 RAM:D0A9
 RAM:D0A9             loc_D0A9:                                                       ; row 4
-RAM:D0A9 3E EF                       ld      a, #0xEF ; 'ï'
+RAM:D0A9 3E EF                       ld      a, #0xEF ; 'ï¿½'
 RAM:D0AB CD F7 B5                    call    read_port
 RAM:D0AE CB 47                       bit     0, a                                    ; '0'?
 RAM:D0B0 28 02                       jr      Z, loc_D0B4
@@ -8137,7 +8138,7 @@ RAM:D0C6 18 49                       jr      finished_input
 RAM:D0C8             ; ---------------------------------------------------------------------------
 RAM:D0C8
 RAM:D0C8             keyboard:                                                       ; row 0 (SHIFT,Z,X,C,V)
-RAM:D0C8 3E FE                       ld      a, #0xFE ; 'þ'
+RAM:D0C8 3E FE                       ld      a, #0xFE ; 'ï¿½'
 RAM:D0CA CD F7 B5                    call    read_port
 RAM:D0CD 0F                          rrca
 RAM:D0CE 4F                          ld      c, a
@@ -8169,19 +8170,19 @@ RAM:D0F2 28 02                       jr      Z, loc_D0F6
 RAM:D0F4 CB C1                       set     0, c                                    ; flag LEFT
 RAM:D0F6
 RAM:D0F6             loc_D0F6:                                                       ; row 1,6 (2nd row) A,S,F,G,G,H,J,K,L,ENTER (FORWARD)
-RAM:D0F6 3E BD                       ld      a, #0xBD ; '½'
+RAM:D0F6 3E BD                       ld      a, #0xBD ; 'ï¿½'
 RAM:D0F8 CD F7 B5                    call    read_port
 RAM:D0FB 28 02                       jr      Z, loc_D0FF
 RAM:D0FD CB D1                       set     2, c                                    ; flag FORWARD
 RAM:D0FF
 RAM:D0FF             loc_D0FF:                                                       ; row 2,5 (1st row) QWERTYUIOP (JUMP)
-RAM:D0FF 3E DB                       ld      a, #0xDB ; 'Û'
+RAM:D0FF 3E DB                       ld      a, #0xDB ; 'ï¿½'
 RAM:D101 CD F7 B5                    call    read_port
 RAM:D104 28 02                       jr      Z, loc_D108
 RAM:D106 CB D9                       set     3, c                                    ; flag JUMP
 RAM:D108
 RAM:D108             loc_D108:                                                       ; row 3,4 (0-9) (PICKUP/DROP)
-RAM:D108 3E E7                       ld      a, #0xE7 ; 'ç'
+RAM:D108 3E E7                       ld      a, #0xE7 ; 'ï¿½'
 RAM:D10A CD F7 B5                    call    read_port
 RAM:D10D 28 02                       jr      Z, finished_input
 RAM:D10F CB E1                       set     4, c                                    ; flag PICKUP/DROP
@@ -8192,7 +8193,7 @@ RAM:D113 CD F7 B5                    call    read_port
 RAM:D116 E6 1E                       and     #0x1E                                   ; Z,X,C,V,SYMSHIFT,M,N,B
 RAM:D118 C5                          push    bc
 RAM:D119 47                          ld      b, a
-RAM:D11A 3E 99                       ld      a, #0x99 ; '™'
+RAM:D11A 3E 99                       ld      a, #0x99 ; 'ï¿½'
 RAM:D11C CD F7 B5                    call    read_port
 RAM:D11F B0                          or      b
 RAM:D120 C1                          pop     bc
@@ -8330,12 +8331,12 @@ RAM:D226 07                          rlca
 RAM:D227 07                          rlca
 RAM:D228 07                          rlca
 RAM:D229 E6 38                       and     #0x38 ; '8'
-RAM:D22B F6 C6                       or      #0xC6 ; 'Æ'                             ; SET 0,(HL)
+RAM:D22B F6 C6                       or      #0xC6 ; 'ï¿½'                             ; SET 0,(HL)
 RAM:D22D 32 35 D2                    ld      (byte_D235), a                          ; self-modifying code
 RAM:D230 01 E8 5B                    ld      bc, #scrn_visited
 RAM:D233 09                          add     hl, bc                                  ; offset to room flag
 RAM:D233             ; ---------------------------------------------------------------------------
-RAM:D234 CB                          .db 0xCB ; Ë                                    ; SET n,(HL)
+RAM:D234 CB                          .db 0xCB ; ï¿½                                    ; SET n,(HL)
 RAM:D235 C6          byte_D235:      .db 0xC6                                        ; flag as visited?
 RAM:D236             ; ---------------------------------------------------------------------------
 RAM:D236 C9                          ret
@@ -8786,7 +8787,7 @@ RAM:D4B7 87                          add     a, a                               
 RAM:D4B8 83                          add     a, e                                    ; z*12
 RAM:D4B9 86                          add     a, (hl)                                 ; z*12+z1*4+rubbish
 RAM:D4BA 23                          inc     hl
-RAM:D4BB E6 FC                       and     #0xFC ; 'ü'                             ; mask off rubbish bits
+RAM:D4BB E6 FC                       and     #0xFC ; 'ï¿½'                             ; mask off rubbish bits
 RAM:D4BD 5F                          ld      e, a
 RAM:D4BE 3A AE 5B                    ld      a, (room_size_Z)
 RAM:D4C1 83                          add     a, e                                    ; z*12+z1*4+room_size_Z
@@ -9334,7 +9335,7 @@ RAM:D71E E6 07                       and     #7                                 
 RAM:D720 28 4D                       jr      Z, loc_D76F                             ; no, skip
 RAM:D722 07                          rlca
 RAM:D723 E6 0E                       and     #0xE
-RAM:D725 F6 F0                       or      #0xF0 ; 'ð'
+RAM:D725 F6 F0                       or      #0xF0 ; 'ï¿½'
 RAM:D727 67                          ld      h, a
 RAM:D728 1A                          ld      a, (de)
 RAM:D729 13                          inc     de
@@ -9578,7 +9579,7 @@ RAM:D832 78                          ld      a, b
 RAM:D833 2F                          cpl
 RAM:D834 07                          rlca
 RAM:D835 07                          rlca
-RAM:D836 E6 E0                       and     #0xE0 ; 'à'
+RAM:D836 E6 E0                       and     #0xE0 ; 'ï¿½'
 RAM:D838 B3                          or      e
 RAM:D839 5F                          ld      e, a
 RAM:D83A 78                          ld      a, b
@@ -9628,10 +9629,10 @@ RAM:D865             vflip_sprite_data:                                         
 RAM:D865 D5                          push    de
 RAM:D866 1A                          ld      a, (de)                                 ; width
 RAM:D867 DD AE 07                    xor     7(ix)                                   ; same Vflip as stored?
-RAM:D86A E6 80                       and     #0x80 ; '€'
+RAM:D86A E6 80                       and     #0x80 ; 'ï¿½'
 RAM:D86C 28 34                       jr      Z, loc_D8A2                             ; yes, skip
 RAM:D86E 1A                          ld      a, (de)                                 ; width
-RAM:D86F EE 80                       xor     #0x80 ; '€'                             ; toggle Vflip
+RAM:D86F EE 80                       xor     #0x80 ; 'ï¿½'                             ; toggle Vflip
 RAM:D871 12                          ld      (de), a                                 ; store updated flag
 RAM:D872 07                          rlca                                            ; *2
 RAM:D873 E6 1E                       and     #0x1E
@@ -9694,7 +9695,7 @@ RAM:D8B8 EB                          ex      de, hl                             
 RAM:D8B9 E5                          push    hl
 RAM:D8BA D9                          exx
 RAM:D8BB E1                          pop     hl                                      ; HL'=sprite data
-RAM:D8BC 06 F1                       ld      b, #0xF1 ; 'ñ'
+RAM:D8BC 06 F1                       ld      b, #0xF1 ; 'ï¿½'
 RAM:D8BE D9                          exx
 RAM:D8BF
 RAM:D8BF             loc_D8BF:

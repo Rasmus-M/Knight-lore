@@ -1749,6 +1749,9 @@ print_sprite_1:
 ;RAM:D729 13                          inc     de
 *
 *      Setup shifts
+       cb   a,@last_shift
+       jeq  skip_setup_shift
+       movb a,@last_shift
        movb @b08h,b                   ; 8
        sb a,b                         ; 8 - offset
        sla  b,4                       ; Move bit offset shift into place for SLA instruction
@@ -1764,7 +1767,7 @@ print_sprite_1:
        socb a,@shift_pattern_2+1
        szcb h,@shift_mask_2+1
        socb a,@shift_mask_2+1
-*
+skip_setup_shift:
        movb *de+,a
 ;RAM:D72A E6 07                       and     #7
        andi a,>0700
@@ -1848,87 +1851,82 @@ loc_D76F:
 ;RAM:D777 87                          add     a, a                                    ; multiply by 8
 ;RAM:D778 87                          add     a, a
 ;RAM:D779 87                          add     a, a                                    ; 8, 16, 24, 32, 40
-       sla  a,3
+       sla  a,2                       ; Only 4 on TI
 ;RAM:D77A ED 44                       neg                                             ; -8, -16, -24, -32, -40
        inv  a
        ab   one,a
 ;RAM:D77C D6 06                       sub     #6                                      ; -14, -20, -30, -38, -46
-       sb   @b0ah,a                   ; 10 on the TI
+       sb   @b04h,a                   ; 4 on TI
 * TMS9900 offsets are in words
        sra  a,1
 ;RAM:D77E 18 BC                       jr      loc_D73C                                ; to self modifying code
        jmp  loc_D73C
 ;RAM:D780             ; ---------------------------------------------------------------------------
-* For sprites with no bit offset, 8 bytes per routine
+* For sprites with no bit offset, 8 bytes per routine (4 on TI)
 * -- 1st byte --
 ;RAM:D780 D1                          pop     de                                      ; get pattern d and mask e
-       mov  *de_+,de
 ;RAM:D781 0A                          ld      a, (bc)                                 ; get existing byte
 ;RAM:D782 2F                          cpl                                             ; invert
 ;RAM:D783 B3                          or      e                                       ; apply mask
 ;RAM:D784 2F                          cpl                                             ; invert
-       szcb d,*bc
+       szcb *de_+,*bc
 ;RAM:D785 B2                          or      d                                       ; apply pattern
 ;RAM:D786 02                          ld      (bc), a                                 ; store
 ;RAM:D787 03                          inc     bc                                      ; next destination address
-       socb  @e,*bc+
+       socb *de_+,*bc+
 * -- 2nd byte --
 ;RAM:D788 D1                          pop     de
-       mov  *de_+,de
 ;RAM:D789 0A                          ld      a, (bc)
 ;RAM:D78A 2F                          cpl
 ;RAM:D78B B3                          or      e
 ;RAM:D78C 2F                          cpl
-       szcb d,*bc
+       szcb *de_+,*bc
 ;RAM:D78D B2                          or      d
 ;RAM:D78E 02                          ld      (bc), a
 ;RAM:D78F 03                          inc     bc
-       socb  @e,*bc+
+       socb *de_+,*bc+
 loc_D790:
 * -- 3rd byte --
 ;RAM:D790 D1                          pop     de
-       mov  *de_+,de
 ;RAM:D791 0A                          ld      a, (bc)
 ;RAM:D792 2F                          cpl
 ;RAM:D793 B3                          or      e
 ;RAM:D794 2F                          cpl
-       szcb d,*bc
+       szcb *de_+,*bc
 ;RAM:D795 B2                          or      d
 ;RAM:D796 02                          ld      (bc), a
 ;RAM:D797 03                          inc     bc
-       socb  @e,*bc+
+       socb *de_+,*bc+
 * -- 4th byte --
 ;RAM:D798 D1                          pop     de
-       mov  *de_+,de
 ;RAM:D799 0A                          ld      a, (bc)
 ;RAM:D79A 2F                          cpl
 ;RAM:D79B B3                          or      e
 ;RAM:D79C 2F                          cpl
-       szcb d,*bc
+       szcb *de_+,*bc
 ;RAM:D79D B2                          or      d
 ;RAM:D79E 02                          ld      (bc), a
 ;RAM:D79F 03                          inc     bc
-       socb  @e,*bc+
+       socb *de_+,*bc+
 * -- 5th byte --
 ;RAM:D7A0 D1                          pop     de
-       mov  *de_+,de
 ;RAM:D7A1 0A                          ld      a, (bc)
 ;RAM:D7A2 2F                          cpl
 ;RAM:D7A3 B3                          or      e
 ;RAM:D7A4 2F                          cpl
-       szcb d,*bc
+       szcb *de_+,*bc
 ;RAM:D7A5 B2                          or      d
 ;RAM:D7A6 02                          ld      (bc), a
-       socb  @e,*bc
+       socb *de_+,*bc
 * ---------------------------------------------------------------------------
 ;RAM:D7A7 C3 FF D7                    jp      loc_D7FF
-       b    @loc_D7FF
+       jmp  loc_D7FF
 * ---------------------------------------------------------------------------
 loc_D7AA:
 ;RAM:D7AA 08                          ex      af, af'                                 ; save height
-       mov  af,af_
+;      mov  af,af_
 ;RAM:D7AB 0A                          ld      a, (bc)                                 ; get screen byte
-       movb *bc,a
+;      movb *bc,a
 ;RAM:D7AC                                                                             ; only required for forward jumps
 loc_D7AC:
 ;RAM:D7AC 18 E2                       jr      loc_D790                                ; patched jump (forwards/backwards)
@@ -2051,7 +2049,6 @@ plot_shifted_line_1:
 loc_D7FF:
 * Next line
 ;RAM:D7FF 79                          ld      a, c
-       movb @c,a
 loc_D800:
 ;RAM:D800 C6 1E                       add     a, #0x1E                                ; patched line increment
 ;RAM:D802 4F                          ld      c, a
@@ -2060,7 +2057,7 @@ loc_D800:
 ;RAM:D806 47                          ld      b, a
        ai   bc,>001e                  ; patched
 ;RAM:D807 08                          ex      af, af'                                 ; restore height
-       mov  af_,af
+;      mov  af_,af
 ;RAM:D808 3D                          dec     a
        sb   one,a
 ;RAM:D809 C2 AA D7                    jp      NZ, loc_D7AA                            ; line loop
@@ -2071,6 +2068,8 @@ loc_D800:
        dect sp
        mov  *sp,r11
        rt
+last_shift:
+       data 0
 *
 * =============== S U B R O U T I N E =======================================
 *

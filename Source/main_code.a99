@@ -222,7 +222,7 @@ loc_B000:
        jeq  no_delay
 game_delay:
 ;RAM:B035 21 00 05                    ld      hl, #0x500
-       li   hl,>800
+       li   hl,>400
 delay_loop:
 ;RAM:B038 2B                          dec     hl
        dec  hl
