@@ -3462,7 +3462,7 @@ chk_plyr_spec_near_arch:
        li   de,32
 ;RAM:C7E2 06 04                       ld      b, #4                                   ; player and special objects only
 ;      movb @b04h,b
-       movb @b02h,b                   ; Rasmus' optimization
+       movb one,b                     ; Rasmus' optimization
 loc_C7E4:
 ;RAM:C7E4 FD 7E 00                    ld      a, 0(iy)                                ; graphic no
        movb *iy,a
@@ -5536,6 +5536,9 @@ loc_CEDB:
        cb   a,@l                      ; Carry flag
 ;RAM:CF12 38 01                       jr      C, loc_CF15                             ; overlap (C+=1)
        jl   loc_CF15
+; Optimization from Atari version of Pentagram
+; If we are here, then C will be 2,5,8,11,14,17,20,23,26 (3*n+2), but these always go to loc_CEDB through jump table
+       jmp  loc_CEDB
 ;RAM:CF14 0C                          inc     c                                       ; no overlap (C+=2)
        ab   one,@c
 loc_CF15:
@@ -5555,7 +5558,10 @@ loc_CF16:
 ;RAM:CF23 95                          sub     l                                       ; Y1-D1-(Y2+d2)
        cb   a,@l                      ; Carry flag
 ;RAM:CF24 30 16                       jr      NC, loc_CF3C                            ; no overlap (C+=0)
-       jhe  loc_CF3C
+; Optimization from Atari version of Pentagram
+; If this branch is taken, code will always go to loc_CEDB (through jump table), as C is 0,1,2 here and it can only 0,1,2 or 9,10,11 or 18,19,20 finally but all of these go to loc_CEDB
+;      jhe  loc_CF3C
+       jhe  loc_CEDB
 ;RAM:CF26 DD 7E 02                    ld      a, 2(ix)                                ; Y1
        movb @2(ix),a
 ;RAM:CF29 DD 86 05                    add     a, 5(ix)                                ; add D1
@@ -5612,6 +5618,9 @@ loc_CF3C:
        cb   tmp0,@l
 ;RAM:CF5B 38 02                       jr      C, loc_CF5F                             ; overlap (C+=9)
        jl   loc_Cf5F
+; Optimization from Atari version of Pentagram
+; If we are here, then final value of C will be 18+, but for all values bigger or equal to 18, code always go to loc_CEDB through jump table
+       jmp loc_CEDB
 ;RAM:CF5D C6 09                       add     a, #9                                   ; no overlap (c+=18)
        ab   @b09h,a
 loc_CF5F:
