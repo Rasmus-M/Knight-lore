@@ -1584,7 +1584,7 @@ flip_sprite:
        srl  tmp0,12                   ; Move to bits 3-2
        soc  tmp0,tmp1                 ; Combine with index
        ai   tmp1,>6040                ; Add offset to index
-       seto @>6008                    ; Select ROM bank containing index
+       seto @>600c                    ; Select ROM bank containing index
        mov  *tmp1+,tmp0               ; Bank select address
        mov  *tmp1,de                  ; Bank address
        seto *tmp0                     ; Select bank
@@ -2449,7 +2449,7 @@ ti_99_4a_init:
 start_screen:
        mov  r11,*sp+
 ;      Patterns
-       seto @>603C                     ; Select bank 30
+       seto @>6008                     ; Select bank 4
        li   tmp0,PTRNTB
        bl   @vwad
        li   hl,>6800
@@ -2458,7 +2458,7 @@ start_screen:
        dec  bc
        jne  -!
 ;      Colors
-       seto @>603E                     ; Select bank 31
+       seto @>600a                     ; Select bank 5
        li   tmp0,COLRTB
        bl   @vwad
        li   hl,>6800
