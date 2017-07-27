@@ -42,29 +42,26 @@ public class SpritesToROM implements Runnable {
         indexAddr = START_BANK * BANK_SIZE + HEADER_SIZE;
         dataAddr = (START_BANK + 1) * BANK_SIZE + HEADER_SIZE;
         indexMap = new HashMap<>();
-        int totalSize = 0;
         for (int spriteNo = 0; spriteNo < 188; spriteNo++) {
             System.out.println("Sprite No: " + spriteNo);
             int srcAddr = getWord(sprites, spriteNo * 2) - SPRITE_DATA_ADDR;
+            System.out.println("Src addr: " + hexWord(srcAddr));
             int[] dataAddrs = indexMap.get(srcAddr);
             if (dataAddrs == null) {
+                System.out.println("New");
                 dataAddrs = new int[4];
-                dataAddrs[0] = dataAddr;
-                totalSize += writeSprite(getSprite(spriteNo, false, false));
-                dataAddrs[1] = dataAddr;
-                totalSize += writeSprite(getSprite(spriteNo, false, true));
-                dataAddrs[2] = dataAddr;
-                totalSize += writeSprite(getSprite(spriteNo, true, false));
-                dataAddrs[3] = dataAddr;
-                totalSize += writeSprite(getSprite(spriteNo, true, true));
+                dataAddrs[0] = writeSprite(getSprite(spriteNo, false, false));
+                dataAddrs[1] = writeSprite(getSprite(spriteNo, false, true));
+                dataAddrs[2] = writeSprite(getSprite(spriteNo, true, false));
+                dataAddrs[3] = writeSprite(getSprite(spriteNo, true, true));
                 indexMap.put(srcAddr, dataAddrs);
             } else {
+                System.out.println("Already used");
                 for (int dataAddr : dataAddrs) {
                     writeIndex(dataAddr);
                 }
             }
         }
-        System.out.println("Total size: " + totalSize);
         try {
             saveFile("sprite-rom.bin", rom);
         } catch (IOException e) {
@@ -73,21 +70,24 @@ public class SpritesToROM implements Runnable {
     }
 
     private int writeSprite(byte[] spriteData) {
-        System.out.println("Data addr=" + dataAddr);
+        // System.out.println("Data addr=" + dataAddr);
         int size = spriteData.length;
         int bankBytesLeft = BANK_SIZE - (dataAddr % BANK_SIZE);
         if (bankBytesLeft < size) {
             dataAddr += bankBytesLeft + HEADER_SIZE;
         }
+        int tmp = dataAddr;
         writeIndex(dataAddr);
         dataAddr += writeBytes(rom, dataAddr, spriteData);
-        return size;
+        return tmp;
     }
 
     private void writeIndex(int dataAddr) {
-        System.out.println("Index addr=" + indexAddr);
+        // System.out.println("Index addr=" + indexAddr);
         int bank = dataAddr / BANK_SIZE;
         int offset = dataAddr % BANK_SIZE;
+        System.out.println("Bank select=" + hexWord((bank + BANK_OFFSET) * 2 + 0x6000));
+        System.out.println("Bank addr=" + hexWord(offset + 0x6000));
         indexAddr += writeWord(rom, indexAddr, (bank + BANK_OFFSET) * 2 + 0x6000);
         indexAddr += writeWord(rom, indexAddr, offset + 0x6000);
     }
@@ -128,6 +128,14 @@ public class SpritesToROM implements Runnable {
     private String hexByte(byte b) {
         String s = Integer.toHexString(b & 0xff);
         if (s.length() == 1) {
+            s = "0" + s;
+        }
+        return s;
+    }
+
+    private String hexWord(int w) {
+        String s = Integer.toHexString(w & 0xffff);
+        while (s.length() < 4) {
             s = "0" + s;
         }
         return s;
