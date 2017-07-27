@@ -1745,9 +1745,9 @@ display_object:
 ;RAM:BF7F 01 18 03                    ld      bc, #0x318                              ; width=3, height=24
        li   bc,>0318
 ;RAM:BF82 AF                          xor     a                                       ; fill byte = 0
-       clr  a
+;      clr  a
 ;RAM:BF83 CD 15 C5                    call    fill_window                             ; wipe 24x24 pixel area
-       bl   @fill_window
+       bl   @clear_window
 ;RAM:BF86 E1                          pop     hl                                      ; ptr object
        dect sp
        mov  *sp,hl
@@ -2401,9 +2401,9 @@ display_frame:
 ;RAM:C3CD 47                          ld      b, a
        swpb bc
 ;RAM:C3CE AF                          xor     a
-       clr  a
+;      clr  a
 ;RAM:C3CF CD 15 C5                    call    fill_window
-       bl   @fill_window
+       bl   @clear_window
 ;RAM:C3D2 CD 18 D7                    call    print_sprite                            ; display sun/moon
        bl   @print_sprite
 ;RAM:C3D5 DD 21 DB BF                 ld      ix, #sprite_scratchpad
@@ -6752,9 +6752,9 @@ loc_D62C:
 ;RAM:D641 E5                          push    hl                                      ; screen buffer address
        mov  hl,*sp+
 ;RAM:D642 AF                          xor     a                                       ; wipe sprite
-       clr  a
+;      clr  a
 ;RAM:D643 CD 15 C5                    call    fill_window
-       bl   @fill_window
+       bl   @clear_window
 *      Call sound player
        bl   @sndplr
 ;RAM:D646 C3 B2 D5                    jp      wipe_next_object

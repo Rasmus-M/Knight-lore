@@ -1394,10 +1394,10 @@ blit8:
 * Note that line length is fixed at 32.
 *
 fill_window:
-       mov  bc,tmp0
-       swpb tmp0
+       mov  bc,tmp0                   ; tmp0=width,height
+       swpb tmp0                      ; tmp0=height,width
        andi tmp0,>00ff                ; tmp0=width
-       swpb bc
+       swpb bc                        ; bc=height,width
 ;RAM:C515 11 20 00                    ld      de, #32                                 ; Line length
        li   de,32
        s    tmp0,de
@@ -2519,6 +2519,87 @@ vregs:
        byte sprptb/>800                    ; Sprite pattern table
        byte >01                            ; Backdrop color
 *// gmode
+
+*********************************************************************************
+*
+* HL = starting location
+* B = width (bytes)
+* C = height (lines)
+*
+* Note that line length is fixed at 32.
+*
+clear_window:
+       mov  hl,@wrksp2                 ; r0 = dest
+       mov  bc,@wrksp2+2               ; r1 = width,height
+       lwpi wrksp2
+       mov  r1,r2                      ; r2 = width,height
+       andi r1,>00ff                   ; r1 = height
+       swpb r2                         ; r2 = height,width
+       andi r2,>00ff                   ; r2 = width
+       mov  r2,r3                      ; r3 = width
+       li   r4,32                      ; line width
+       s    r3,r4                      ; line width - width
+       clr  r5                         ; zero
+       mov  r0,r6                      ; dest
+       andi r6,1                       ; test if odd
+       jne  clear_odd
+clr_even:
+       mov  r2,r6                      ; width
+       andi r6,1                       ; test if odd
+       jne  clear_even_odd
+clear_even_even:
+       clr  *r0+
+       dect r2
+       jgt  clear_even_even
+       a    r4,r0
+       mov  r3,r2
+       dec  r1
+       jne  clear_even_even
+       jmp  clear_window_return
+clear_even_odd:
+       dec  r2
+       jeq  !!
+!      clr  *r0+
+       dect r2
+       jgt  -!
+!      movb r5,*r0+
+       a    r4,r0
+       mov  r3,r2
+       dec  r1
+       jne  clear_even_odd
+       jmp  clear_window_return
+clear_odd:
+       mov  r2,r6                      ; width
+       andi r6,1                       ; test if odd
+       jne  clear_odd_odd
+clear_odd_even:
+       movb r5,*r0+                    ; now it's even-odd
+       dect r2
+       jeq  !!
+!      clr  *r0+
+       dect r2
+       jgt  -!
+!      movb r5,*r0+
+       a    r4,r0
+       mov  r3,r2
+       dec  r1
+       jne  clear_odd_even
+       jmp  clear_window_return
+clear_odd_odd:
+       movb r5,*r0+                    ; now it's even_even
+       dec  r2
+       jeq  !!
+!      clr  *r0+
+       dect r2
+       jgt  -!
+!      a    r4,r0
+       mov  r3,r2
+       dec  r1
+       jne  clear_odd_odd
+clear_window_return:
+       lwpi wrksp
+       rt
+*// clear_window
 
 *********************************************************************************
 *
