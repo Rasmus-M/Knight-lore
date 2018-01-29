@@ -1,4 +1,4 @@
-IF EXIST DOA.dsk GOTO :dsk_ok
+IF EXIST knightlore.dsk GOTO :dsk_ok
 xdm99.py knightlore.dsk --initialize DSSD -n KNIGHTLORE
 :dsk_ok
 
