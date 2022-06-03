@@ -917,24 +917,24 @@ guard_sound:
        byte >01, >b8, >01
        byte >01, >bf, >00
 beeps:
-       data beep_c21, beep_c#21, beep_d21, beep_d#21
-       data beep_e21, beep_f21, beep_f#21, beep_g21
-       data beep_g#21, beep_a21, beep_a#21, beep_b21
-       data beep_c31, beep_c#31, beep_d31, beep_d#31
+       data beep_c21, beep_c♯21, beep_d21, beep_d♯21
+       data beep_e21, beep_f21, beep_f♯21, beep_g21
+       data beep_g♯21, beep_a21, beep_a♯21, beep_b21
+       data beep_c31, beep_c♯31, beep_d31, beep_d♯31
 beep_c21:
        byte >03, >ac, >1a, >b4, >01    ; C21
        byte >01, >b8, >01
        byte >01, >bf, >00
-beep_c#21:
-       byte >03, >A4, >19, >b4, >01    ; C#21
+beep_c♯21:
+       byte >03, >A4, >19, >b4, >01    ; C♯21
        byte >01, >b8, >01
        byte >01, >bf, >00
 beep_d21:
        byte >03, >ad, >17, >b4, >01    ; D21
        byte >01, >b8, >01
        byte >01, >bf, >00
-beep_d#21:
-       byte >03, >A8, >16, >b4, >01    ; D#21
+beep_d♯21:
+       byte >03, >A8, >16, >b4, >01    ; D♯21
        byte >01, >b8, >01
        byte >01, >bf, >00
 beep_e21:
@@ -945,24 +945,24 @@ beep_f21:
        byte >03, >a0, >14, >b4, >01    ; F21
        byte >01, >b8, >01
        byte >01, >bf, >00
-beep_f#21:
-       byte >03, >AE, >12, >b4, >01    ; F#21
+beep_f♯21:
+       byte >03, >AE, >12, >b4, >01    ; F♯21
        byte >01, >b8, >01
        byte >01, >bf, >00
 beep_g21:
        byte >03, >ad, >11, >b4, >01    ; G21
        byte >01, >b8, >01
        byte >01, >bf, >00
-beep_g#21:
-       byte >03, >AD, >10, >b4, >01    ; G#21
+beep_g♯21:
+       byte >03, >AD, >10, >b4, >01    ; G♯21
        byte >01, >b8, >01
        byte >01, >bf, >00
 beep_a21:
        byte >03, >ae, >0f, >b4, >01    ; A21
        byte >01, >b8, >01
        byte >01, >bf, >00
-beep_a#21:
-       byte >03, >A0, >0F, >b4, >01    ; A#21
+beep_a♯21:
+       byte >03, >A0, >0F, >b4, >01    ; A♯21
        byte >01, >b8, >01
        byte >01, >bf, >00
 beep_b21:
@@ -973,15 +973,15 @@ beep_c31:
        byte >03, >a6, >0d, >b4, >01    ; C31
        byte >01, >b8, >01
        byte >01, >bf, >00
-beep_c#31:
-       byte >03, >AA, >0C, >b4, >01    ; C#31
+beep_c♯31:
+       byte >03, >AA, >0C, >b4, >01    ; C♯31
        byte >01, >b8, >01
        byte >01, >bf, >00
 beep_d31:
        byte >03, >AE, >0B, >b4, >01    ; D31
        byte >01, >b8, >01
        byte >01, >bf, >00
-beep_d#31:
-       byte >03, >A4, >0B, >b4, >01    ; D#31
+beep_d♯31:
+       byte >03, >A4, >0B, >b4, >01    ; D♯31
        byte >01, >b8, >01
        byte >01, >bf, >00
